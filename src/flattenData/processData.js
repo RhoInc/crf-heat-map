@@ -81,7 +81,7 @@ export default function processData(data, settings, level) {
                 }
             } else {
                 return {
-                    //proprotions for everybody else
+                    //Proportions for everybody else
                     raw: v,
                     proportion:
                         d3.sum(v, function(d) {
@@ -95,7 +95,6 @@ export default function processData(data, settings, level) {
     //Flatten the nested data
     var flatData = [];
 
-    /* THIS IS NEW */
     nested.forEach(function(d) {
         var ptObj = {};
         ptObj.id = d.key;

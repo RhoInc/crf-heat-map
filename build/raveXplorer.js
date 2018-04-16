@@ -434,7 +434,7 @@
                     }
                 } else {
                     return {
-                        //proprotions for everybody else
+                        //Proportions for everybody else
                         raw: v,
                         proportion:
                             d3.sum(v, function(d) {
@@ -448,7 +448,6 @@
         //Flatten the nested data
         var flatData = [];
 
-        /* THIS IS NEW */
         nested.forEach(function(d) {
             var ptObj = {};
             ptObj.id = d.key;
@@ -606,9 +605,9 @@
             .append('text')
             .text(function(d, i) {
                 if (i == 0) {
-                    return '25';
+                    return '24';
                 } else if (i == 2) {
-                    return '16';
+                    return '12';
                 } else if (i == 4) {
                     return '0 Queries';
                 }
@@ -622,7 +621,6 @@
     }
 
     function onDraw() {
-        var chart = this;
         var config = this.config;
 
         var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
@@ -636,15 +634,7 @@
         //Separate Color Scale for Queries
         var colorScaleSum = d3.scale
             .quantile()
-            .domain([
-                0,
-                8,
-                16,
-                25,
-                d3.max(chart.data.raw, function(d) {
-                    return d3.max([d.has_open_query, d.has_answered_query]); // this needs to be changed -> scale is not going to split it at 25!
-                })
-            ])
+            .domain([0, 30])
             .range(colorsReversed);
 
         var rows = this.tbody.selectAll('tr');
@@ -669,7 +659,7 @@
             .style('width', '100px')
             .on('mouseover', function() {
                 d3.select(this).style('color', function(d) {
-                    if (d.col.includes('query')) return +d.text > 16 ? 'black' : 'white';
+                    if (d.col.includes('query')) return +d.text > 12 ? 'black' : 'white';
                     else return d.text > 0.5 ? 'white' : 'black';
                 });
             })

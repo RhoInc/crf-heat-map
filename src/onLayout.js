@@ -108,9 +108,9 @@ export default function onLayout() {
         .append('text')
         .text(function(d, i) {
             if (i == 0) {
-                return '25';
+                return '24';
             } else if (i == 2) {
-                return '16';
+                return '12';
             } else if (i == 4) {
                 return '0 Queries';
             }

@@ -13,15 +13,7 @@ export default function onDraw() {
     //Separate Color Scale for Queries
     var colorScaleSum = d3.scale
         .quantile()
-        .domain([
-            0,
-            8,
-            16,
-            25,
-            d3.max(chart.data.raw, function(d) {
-                return d3.max([d.has_open_query, d.has_answered_query]); // this needs to be changed -> scale is not going to split it at 25!
-            })
-        ])
+        .domain([0, 30])
         .range(colorsReversed);
 
     var rows = this.tbody.selectAll('tr');
@@ -46,7 +38,7 @@ export default function onDraw() {
         .style('width', '100px')
         .on('mouseover', function() {
             d3.select(this).style('color', function(d) {
-                if (d.col.includes('query')) return +d.text > 16 ? 'black' : 'white';
+                if (d.col.includes('query')) return +d.text > 12 ? 'black' : 'white';
                 else return d.text > 0.5 ? 'white' : 'black';
             });
         })
