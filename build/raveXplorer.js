@@ -464,7 +464,7 @@
         return flatData;
     }
 
-    function flattenData$1() {
+    function flattenData() {
         var config = this.config;
         var data = this.data.initial;
         var flatData = [];
@@ -492,7 +492,7 @@
 
     function onInit() {
         this.data.initial = this.data.raw;
-        this.data.raw = flattenData$1.call(this);
+        this.data.raw = flattenData.call(this);
     }
 
     function onLayout() {
@@ -528,6 +528,7 @@
             });
 
         idSelects.on('change', function() {
+            console.log('you changed it');
             var selectedLevels = [];
             idSelects.each(function(d, i) {
                 selectedLevels.push(this.value);

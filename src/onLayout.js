@@ -1,3 +1,5 @@
+import flattenData from './flattenData';
+
 export default function onLayout() {
     var chart = this;
     var config = this.config;
@@ -31,6 +33,7 @@ export default function onLayout() {
         });
 
     idSelects.on('change', function() {
+        console.log('you changed it');
         var selectedLevels = [];
         idSelects.each(function(d, i) {
             selectedLevels.push(this.value);

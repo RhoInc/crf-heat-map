@@ -1,3 +1,5 @@
+import flattenData from './flattenData';
+
 export default function onDraw() {
     var chart = this;
     var config = this.config;
