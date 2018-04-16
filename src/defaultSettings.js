@@ -6,7 +6,7 @@ var value_columns = [
     'is_verified',
     'has_open_query',
     'has_answered_query',
-    'is_not_frozen',
+    'is_frozen',
     'is_signed',
     'is_locked'
 ];
@@ -39,7 +39,7 @@ export function syncSettings(settings) {
     return settings;
 }
 
-// Default Control objects  - when do i get to say they're at the top!!
+// Default Control objects
 export const controlInputs = [
     {
         // need to deal with filtering in the flattenData function() at some point - these do not work as expected.

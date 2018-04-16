@@ -35,34 +35,53 @@ export default function processData(data, settings, level) {
             return d['flag'];
         })
         .rollup(function(v) {
-            // this needs to account for denominator in verified and signature
-
-            console.log(
-                v.filter(function(d) {
-                    d.needs_signature == 1;
-                }).length
-            );
+            // Sums for Queriy variables
             if (v[0].flag == 'has_open_query' || v[0].flag == 'has_answered_query') {
-                //want sums not proportions for query related variables
                 return {
                     raw: v,
                     proportion: d3.sum(v, function(d) {
                         return d[d.flag];
                     })
                 };
+
+                // Proportions for is_signed using needs_signature as denominator
             } else if (v[0].flag == 'is_signed') {
-                return {
-                    raw: v,
-                    proportion:
-                        d3.sum(v, function(d) {
-                            return d[d.flag];
-                        }) /
-                        v.filter(function(d) {
-                            d.needs_signature == 1;
-                        }).length
-                };
+                //If there's a denominator of zero we want to catch that - right now I'm saying they're 100% done, may change that
+                if (v.filter(d => d.needs_signature === '1').length === 0) {
+                    return {
+                        raw: v,
+                        proportion: 1
+                    };
+                } else {
+                    return {
+                        raw: v,
+                        proportion:
+                            d3.sum(v, function(d) {
+                                return d[d.flag];
+                            }) / v.filter(d => d.needs_signature === '1').length
+                    };
+                }
+                // Proportions for is_verified using needs_verification as denominator
+            } else if (v[0].flag == 'is_verified') {
+                //If there's a denominator of zero we want to catch that - right now I'm saying they're 100% done, may change that
+                if (v.filter(d => d.needs_verification === '1').length === 0) {
+                    return {
+                        raw: v,
+                        proportion: 1
+                    };
+                    // Proportions using total as denominator (for the rest of them)
+                } else {
+                    return {
+                        raw: v,
+                        proportion:
+                            d3.sum(v, function(d) {
+                                return d[d.flag];
+                            }) / v.filter(d => d.needs_verification === '1').length
+                    };
+                }
             } else {
                 return {
+                    //proprotions for everybody else
                     raw: v,
                     proportion:
                         d3.sum(v, function(d) {

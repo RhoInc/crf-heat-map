@@ -19,7 +19,7 @@ export default function onDraw() {
             16,
             25,
             d3.max(chart.data.raw, function(d) {
-                return d3.max([d.has_open_query, d.has_answered_query]); // this needs to be changed some
+                return d3.max([d.has_open_query, d.has_answered_query]); // this needs to be changed -> scale is not going to split it at 25!
             })
         ])
         .range(colorsReversed);
