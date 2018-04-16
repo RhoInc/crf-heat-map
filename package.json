@@ -1,0 +1,42 @@
+{
+  "name": "rave-xplorer",
+  "description": "Heatmap showing database form status at different levels",
+  "version": "0.1.0",
+  "author": "Rho, Inc.",
+  "license": "MIT",
+  "homepage": "https://github.com/rhoinc/rave-xplorer#readme",
+  "main": "./build/raveXplorer.js",
+  "module": "./src/wrapper.js",
+  "keywords": [
+    "visualization",
+    "explorer"
+  ],
+  "dependencies": {
+    "d3": "^3",
+    "webcharts": "^1.10"
+  },
+  "scripts": {
+    "build": "npm run bundle && npm run format",
+    "bundle": "rollup -c",
+    "format": "npm run format-src && npm run format-build",
+    "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write src/**/*.js",
+    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/raveXplorer.js",
+    "watch": "rollup -c -w"
+  },
+  "devDependencies": {
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-register": "^6.26.0",
+    "prettier": "^1.7.4",
+    "rollup": "^0.50.1",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-watch": "^4.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RhoInc/rave-xplorer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RhoInc/rave-xplorer/issues"
+  }
+}
