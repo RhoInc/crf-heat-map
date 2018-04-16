@@ -6,7 +6,6 @@ if (window.origin !== 'https://rhoinc.github.io') {
   head.appendChild(script);
 }
 
-console.log(script.src)
 
 d3.csv(
   'db_status_test.csv',
