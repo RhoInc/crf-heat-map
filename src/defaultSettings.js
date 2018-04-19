@@ -1,19 +1,16 @@
 export const rendererSpecificSettings = {};
 
-// Set this as variable so I can use it in the merge
-var value_columns = [
-    'is_partial_entry',
-    'is_verified',
-    'has_open_query',
-    'has_answered_query',
-    'is_frozen',
-    'is_signed',
-    'is_locked'
-];
-
 export const webchartsSettings = {
     id_cols: ['sitename', 'subjectnameoridentifier'],
-    value_cols: value_columns,
+    value_cols: [
+        'is_partial_entry',
+        'is_verified',
+        'has_open_query',
+        'has_answered_query',
+        'is_frozen',
+        'is_signed',
+        'is_locked'
+    ],
     filter_cols: ['sitename', 'ready_for_freeze', 'status'],
     pagination: false,
     searchable: false,
@@ -28,39 +25,49 @@ export const webchartsSettings = {
         'Signed',
         'Locked'
     ],
-    cols: d3.merge([['id'], value_columns])
+    cols: null
 };
+
+webchartsSettings.cols = d3.merge([['id'], webchartsSettings.value_cols]);
 
 export default Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
 // Replicate settings in multiple places in the settings object
 export function syncSettings(settings) {
+    settings.cols = d3.merge([['id'], settings.value_cols]);
     return settings;
 }
 
-// Default Control objects
-export const controlInputs = [
-    {
-        // need to deal with filtering in the flattenData function() at some point - these do not work as expected.
-        type: 'subsetter',
-        value_col: 'sitename',
-        label: 'Site'
-    },
-    {
-        type: 'subsetter',
-        value_col: 'ready_for_freeze',
-        label: 'Freeze Status'
-    },
-    {
-        type: 'subsetter',
-        value_col: 'status',
-        label: 'Subject Status'
-    }
-];
-
 // Map values from settings to control inputs
-export function syncControlInputs(controlInputs, settings) {
-    //Sync measure control.
+export function syncControlInputs(settings) {
+    const defaultControls = [
+        {
+            type: 'subsetter',
+            value_col: 'sitename',
+            label: 'Site'
+        },
+        {
+            type: 'subsetter',
+            value_col: 'ready_for_freeze',
+            label: 'Freeze Status'
+        },
+        {
+            type: 'subsetter',
+            value_col: 'status',
+            label: 'Subject Status'
+        }
+    ];
 
-    return controlInputs;
+    if (Array.isArray(settings.filters) && settings.filters.length > 0) {
+        const otherFilters = settings.filters.map(filter => {
+            const filterObject = {
+                type: 'subsetter',
+                value_col: filter.value_col || filter,
+                label: filter.label || filter.value_col || filter
+            };
+            return filterObject;
+        });
+
+        return defaultControls.concat(otherFilters);
+    } else return defaultControls;
 }

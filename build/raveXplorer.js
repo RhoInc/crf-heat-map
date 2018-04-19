@@ -244,20 +244,17 @@
 
     var rendererSpecificSettings = {};
 
-    // Set this as variable so I can use it in the merge
-    var value_columns = [
-        'is_partial_entry',
-        'is_verified',
-        'has_open_query',
-        'has_answered_query',
-        'is_frozen',
-        'is_signed',
-        'is_locked'
-    ];
-
     var webchartsSettings = {
         id_cols: ['sitename', 'subjectnameoridentifier'],
-        value_cols: value_columns,
+        value_cols: [
+            'is_partial_entry',
+            'is_verified',
+            'has_open_query',
+            'has_answered_query',
+            'is_frozen',
+            'is_signed',
+            'is_locked'
+        ],
         filter_cols: ['sitename', 'ready_for_freeze', 'status'],
         pagination: false,
         searchable: false,
@@ -272,41 +269,51 @@
             'Signed',
             'Locked'
         ],
-        cols: d3.merge([['id'], value_columns])
+        cols: null
     };
+
+    webchartsSettings.cols = d3.merge([['id'], webchartsSettings.value_cols]);
 
     var defaultSettings = Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
     // Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
+        settings.cols = d3.merge([['id'], settings.value_cols]);
         return settings;
     }
 
-    // Default Control objects
-    var controlInputs = [
-        {
-            // need to deal with filtering in the flattenData function() at some point - these do not work as expected.
-            type: 'subsetter',
-            value_col: 'sitename',
-            label: 'Site'
-        },
-        {
-            type: 'subsetter',
-            value_col: 'ready_for_freeze',
-            label: 'Freeze Status'
-        },
-        {
-            type: 'subsetter',
-            value_col: 'status',
-            label: 'Subject Status'
-        }
-    ];
-
     // Map values from settings to control inputs
-    function syncControlInputs(controlInputs, settings) {
-        //Sync measure control.
+    function syncControlInputs(settings) {
+        var defaultControls = [
+            {
+                type: 'subsetter',
+                value_col: 'sitename',
+                label: 'Site'
+            },
+            {
+                type: 'subsetter',
+                value_col: 'ready_for_freeze',
+                label: 'Freeze Status'
+            },
+            {
+                type: 'subsetter',
+                value_col: 'status',
+                label: 'Subject Status'
+            }
+        ];
 
-        return controlInputs;
+        if (Array.isArray(settings.filters) && settings.filters.length > 0) {
+            var otherFilters = settings.filters.map(function(filter) {
+                var filterObject = {
+                    type: 'subsetter',
+                    value_col: filter.value_col || filter,
+                    label: filter.label || filter.value_col || filter
+                };
+                return filterObject;
+            });
+
+            return defaultControls.concat(otherFilters);
+        } else return defaultControls;
     }
 
     function processData(data, settings, level) {
@@ -492,13 +499,11 @@
         this.data.raw = flattenData.call(this);
     }
 
-    function onLayout() {
+    function createNestControl() {
         var chart = this;
         var config = this.config;
-        /*************************************
-    / Custom Nest Control
-    *************************************/
-        var idControlWrap = this.controls.wrap.append('div').attr('class', 'control-group');
+
+        var idControlWrap = chart.controls.wrap.append('div').attr('class', 'control-group');
         idControlWrap
             .append('div')
             .attr('class', 'wc-control-label')
@@ -549,10 +554,9 @@
             chart.data.raw = flattenData.call(chart);
             chart.draw();
         });
+    }
 
-        /*************************************
-    / Draw legend
-    **************************************/
+    function drawLegend() {
         var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
 
         var heatLegend = this.wrap
@@ -614,6 +618,11 @@
                 } else return 100 * (i + 1) - 17;
             })
             .attr('y', 30);
+    }
+
+    function onLayout() {
+        createNestControl.call(this);
+        drawLegend.call(this);
     }
 
     function onDraw() {
@@ -739,7 +748,7 @@
             //Merge user settings onto default settings.
             syncedSettings = syncSettings(mergedSettings),
             //Sync properties within merged settings, e.g. data mappings.
-            syncedControlInputs = syncControlInputs(controlInputs, syncedSettings),
+            syncedControlInputs = syncControlInputs(syncedSettings),
             //Sync merged settings with controls.
             controls = webcharts.createControls(element, {
                 location: 'top',
