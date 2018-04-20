@@ -28,8 +28,6 @@ export const webchartsSettings = {
     cols: null
 };
 
-webchartsSettings.cols = d3.merge([['id'], webchartsSettings.value_cols]);
-
 export default Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
 // Replicate settings in multiple places in the settings object

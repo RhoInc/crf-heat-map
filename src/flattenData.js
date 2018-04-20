@@ -1,8 +1,16 @@
 import processData from './flattenData/processData';
 
 export default function flattenData() {
+    var data;
+
+    if (this.data.filtered) {
+        data = this.data.filtered;
+    } else {
+        data = this.data.initial;
+    }
+
     var config = this.config;
-    var data = this.data.initial;
+
     var flatData = [];
     config.id_cols.forEach(function(d, i) {
         flatData = d3.merge([flatData, processData(data, config, i + 1)]);
