@@ -272,8 +272,6 @@
         cols: null
     };
 
-    webchartsSettings.cols = d3.merge([['id'], webchartsSettings.value_cols]);
-
     var defaultSettings = Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
     // Replicate settings in multiple places in the settings object
@@ -469,8 +467,16 @@
     }
 
     function flattenData() {
+        var data;
+
+        if (this.data.filtered_) {
+            data = this.data.filtered_;
+        } else {
+            data = this.data.initial;
+        }
+
         var config = this.config;
-        var data = this.data.initial;
+
         var flatData = [];
         config.id_cols.forEach(function(d, i) {
             flatData = d3.merge([flatData, processData(data, config, i + 1)]);
@@ -550,7 +556,6 @@
                 });
 
             config.id_cols = uniqueLevels;
-
             chart.data.raw = flattenData.call(chart);
             chart.draw();
         });
@@ -620,9 +625,85 @@
             .attr('y', 30);
     }
 
+    function clone(obj) {
+        var copy = void 0;
+
+        //boolean, number, string, null, undefined
+        if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj)
+            return obj;
+
+        //date
+        if (obj instanceof Date) {
+            copy = new Date();
+            copy.setTime(obj.getTime());
+            return copy;
+        }
+
+        //array
+        if (obj instanceof Array) {
+            copy = [];
+            for (var i = 0, len = obj.length; i < len; i++) {
+                copy[i] = clone(obj[i]);
+            }
+            return copy;
+        }
+
+        //object
+        if (obj instanceof Object) {
+            copy = {};
+            for (var attr in obj) {
+                if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+            }
+            return copy;
+        }
+
+        throw new Error('Unable to copy [obj]! Its type is not supported.');
+    }
+
+    function applyFilters() {
+        var _this = this;
+
+        //If there are filters, return a filtered data array of the raw data.
+        //Otherwise return the raw data.
+
+        this.data.filtered_ = this.filters //need to make this unique for the if in flattenData
+            ? clone(this.data.initial).filter(function(d) {
+                  var match = true;
+                  _this.filters.forEach(function(filter) {
+                      if (match === true && filter.val !== 'All')
+                          match =
+                              filter.val instanceof Array
+                                  ? filter.val.indexOf(d[filter.col]) > -1
+                                  : filter.val === d[filter.col];
+                  });
+                  return match;
+              })
+            : clone(this.data.initial);
+    }
+
     function onLayout() {
-        createNestControl.call(this);
-        drawLegend.call(this);
+        var chart = this;
+        var selects = this.controls.wrap.selectAll('select');
+
+        selects.on('change', function() {
+            // Get the selected levels
+            var selectedfilterLevels = [];
+            selects.each(function(d, i) {
+                selectedfilterLevels.push(this.value);
+            });
+
+            // Update filters to reflect the selected levels
+            chart.filters.forEach(function(d, i) {
+                d.val = selectedfilterLevels[i];
+            });
+
+            applyFilters.call(chart);
+            chart.data.raw = flattenData.call(chart);
+            chart.draw();
+        });
+
+        createNestControl.call(chart);
+        drawLegend.call(chart);
     }
 
     function onDraw() {

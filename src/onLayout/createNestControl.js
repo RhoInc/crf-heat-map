@@ -50,7 +50,6 @@ export default function createNestControl() {
             });
 
         config.id_cols = uniqueLevels;
-
         chart.data.raw = flattenData.call(chart);
         chart.draw();
     });
