@@ -3,8 +3,8 @@ import processData from './flattenData/processData';
 export default function flattenData() {
     var data;
 
-    if (this.data.filtered) {
-        data = this.data.filtered;
+    if (this.data.filtered_) {
+        data = this.data.filtered_;
     } else {
         data = this.data.initial;
     }

@@ -41,7 +41,7 @@ function applyFilters() {
     //If there are filters, return a filtered data array of the raw data.
     //Otherwise return the raw data.
 
-    this.data.filtered = this.filters
+    this.data.filtered_ = this.filters  //need to make this unique for the if in flattenData
         ? clone(this.data.initial).filter(d => {
               let match = true;
               this.filters.forEach(filter => {
@@ -59,7 +59,7 @@ function applyFilters() {
 export default function onLayout() {
     var table = this;
     var selects = this.controls.wrap.selectAll('select');
-    console.log(table);
+
 
     selects.on('change', function() {
         // Get the selected levels
