@@ -19,7 +19,6 @@ export default function onLayout() {
             d.val = selectedfilterLevels[i];
         });
 
-
         applyFilters.call(chart);
         chart.data.raw = flattenData.call(chart);
 

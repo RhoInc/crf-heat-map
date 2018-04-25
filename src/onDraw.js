@@ -29,8 +29,6 @@ export default function onDraw() {
             return d.col.includes('query') ? d.text : d3.format('0.1%')(d.text);
         });
 
-    
-
     //format values cells
     cells
         .filter(function(d) {

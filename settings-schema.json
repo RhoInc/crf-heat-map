@@ -1,0 +1,7 @@
+{"title": "settings",
+  "description": "JSON schema for the configuration of Rave-Xplorer",
+  "overview": "Currently Rave-Xplorer does not have any renderer specific settings. Since Rave-Xplorer is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/rave-Xplorer/blob/master/src/defaultSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings. ",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {}
+}

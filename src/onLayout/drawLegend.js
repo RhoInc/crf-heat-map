@@ -42,7 +42,6 @@ export default function drawLegend() {
         })
         .attr('y', 80);
 
-
     //Information for Queries (Sums)
     heatLegend
         .append('text')
@@ -60,7 +59,5 @@ export default function drawLegend() {
                 return 425;
             } else return 100 * (i + 1) - 17;
         })
-        .attr('y', 30)
-
-
+        .attr('y', 30);
 }
