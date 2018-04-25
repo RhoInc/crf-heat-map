@@ -19,8 +19,8 @@ export const webchartsSettings = {
         'ID',
         'CRFs Entered',
         'Source Data Verified',
-        'Opened Queries',
-        'Answered Queries',
+        'Opened Queries*',
+        'Answered Queries*',
         'Frozen',
         'Signed',
         'Locked'

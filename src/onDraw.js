@@ -16,6 +16,7 @@ export default function onDraw() {
         .domain([0, 30])
         .range(colorsReversed);
 
+    var headers = this.tbody.selectAll('th');
     var rows = this.tbody.selectAll('tr');
     var cells = rows
         .selectAll('td')
@@ -27,6 +28,8 @@ export default function onDraw() {
         .text(function(d) {
             return d.col.includes('query') ? d.text : d3.format('0.1%')(d.text);
         });
+
+    
 
     //format values cells
     cells
