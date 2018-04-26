@@ -1,8 +1,8 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('babel-polyfill')))
+        ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts', 'babel-polyfill'], factory)
+            ? define(['webcharts'], factory)
             : (global.raveXplorer = factory(global.webCharts));
 })(this, function(webcharts) {
     'use strict';
