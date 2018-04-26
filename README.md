@@ -14,5 +14,5 @@ The code to initialize the chart looks like this:
 ```
 
 ## Links
-- [Interactive Example](https://rhoinc.github.io/rave-xplorer/build/test-page/) 
+- [Interactive Example](https://rawgit.com/RhoInc/rave-xplorer/master/build/test-page/index.html)
 - [Configuration](https://github.com/RhoInc/rave-xplorer/wiki/Configuration)
