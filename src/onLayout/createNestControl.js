@@ -50,7 +50,10 @@ export default function createNestControl() {
             });
 
         config.id_cols = uniqueLevels;
+var t0 = performance.now();
         chart.data.raw = flattenData.call(chart);
+var t1 = performance.now();
+console.log("Call to flattenData took " + (t1 - t0) + " milliseconds.");
         chart.draw();
     });
 }

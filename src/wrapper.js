@@ -1,4 +1,5 @@
 import './util/object-assign';
+import defineStyles from './defineStyles';
 import merge from './util/merge';
 import defaultSettings, { syncSettings, syncControlInputs } from './defaultSettings';
 import { createControls, createTable } from 'webcharts';
@@ -19,6 +20,8 @@ export default function raveXplorer(element, settings) {
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('draw', onDraw);
+
+    defineStyles();
 
     return chart;
 }
