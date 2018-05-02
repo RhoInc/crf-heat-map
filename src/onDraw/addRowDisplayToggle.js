@@ -6,10 +6,11 @@ export default function addRowDisplayToggle() {
         .filter(function(d) {
             return d.level < config.id_cols.length;
         })
-        .select('td')
+        .select('td');
 
     //get children for each row
     expandable_rows.each(function(d) {
+        console.log(d);
         var matchVars = config.id_cols.filter(function(f, i) {
             return i <= d.level - 1;
         });
@@ -17,6 +18,7 @@ export default function addRowDisplayToggle() {
         d.children = chart.rows.filter(function(r) {
             return r.level == d.level + 1;
         });
+
         matchVars.forEach(function(mv) {
             d.children = d.children.filter(function(r) {
                 return d[mv] == r[mv];
@@ -25,7 +27,6 @@ export default function addRowDisplayToggle() {
     });
 
     expandable_rows.on('click', function(d) {
-        console.log(d);
         var row = d3.select(this.parentNode);
         var collapsed = !row.classed('row--collapsed');
 

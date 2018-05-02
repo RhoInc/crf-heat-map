@@ -4,14 +4,17 @@ export default function processData(data, settings, level) {
     const variables = Object.keys(data[0]).filter(key => settings.value_cols.indexOf(key) < 0);
     data.forEach(d => {
         //make key variable for specified levels
-        const nestKey = '' + level + settings.id_cols
-            .filter((id_col,i) => i < level)
-            .map(id_col => d[id_col])
-            .join(':');
+        const nestKey =
+            '' +
+            level +
+            settings.id_cols
+                .filter((id_col, i) => i < level)
+                .map(id_col => d[id_col])
+                .join(':');
 
         settings.value_cols.forEach(flag => {
             const newD = {
-                'nestKey': nestKey
+                nestKey: nestKey
             };
 
             for (const variable of variables) newD[variable] = d[variable];
