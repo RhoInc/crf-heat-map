@@ -7,7 +7,7 @@ export default function onDraw() {
 
     var colorScaleProp = d3.scale
         .quantile()
-        .domain([0, 1])
+        .domain([0, 1.25]) //because the first bar is only for those with 0 queries
         .range(colors);
 
     //Separate Color Scale for Queries
@@ -23,7 +23,7 @@ export default function onDraw() {
         .style('background', function(d) {
             if (d.col.includes('query')) {
                 return colorScaleSum(d.text);
-            } else return d.col == 'id' ? 'white' : colorScaleProp(d.text);
+            } else return d.col == 'id' ? 'white' : colorScaleProp(d.text);  // change this to have dark blue be 100% not >80%
         })
         .text(function(d) {
             return d.col.includes('query') ? d.text : d3.format('0.1%')(d.text);
