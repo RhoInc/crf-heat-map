@@ -41,6 +41,52 @@
         });
     }
 
+    function defineStyles() {
+        var styles = [
+            '.row--hidden {' + '    display: none;' + '}',
+
+            /* ID cells */
+
+            '.cell--id {' + '    background: white;' + '}',
+            '.row--expandable .cell--id {' +
+                '    color: blue;' +
+                '    cursor: pointer;' +
+                '    text-decoration: underline;' +
+                '}',
+            '.cell--id--level1 {' + '    padding-left: 0em !important;' + '}',
+            '.cell--id--level2 {' + '    padding-left: 1em !important;' + '}',
+            '.cell--id--level3 {' + '    padding-left: 2em !important;' + '}',
+
+            /* heat cells */
+
+            '.cell--heat {' +
+                '    text-align: center;' +
+                '    color: transparent;' +
+                '    width: 100px;' +
+                '}',
+            '.cell--heat--level1:hover,' +
+                '.cell--heat--level2:hover,' +
+                '.cell--heat--level3:hover {' +
+                '    color: black;' +
+                '}',
+            '.cell--heat--level4:hover,' +
+                '.cell--heat--level5:hover {' +
+                '    color: white;' +
+                '}',
+            '.cell--heat--level1 {' + '    background: #eff3ff;' + '}',
+            '.cell--heat--level2 {' + '    background: #bdd7e7;' + '}',
+            '.cell--heat--level3 {' + '    background: #6baed6;' + '}',
+            '.cell--heat--level4 {' + '    background: #3182bd;' + '}',
+            '.cell--heat--level5 {' + '    background: #08519c;' + '}'
+        ];
+
+        //Attach styles to DOM.
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = styles.join('\n');
+        document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
     var _typeof =
         typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
             ? function(obj) {
@@ -315,22 +361,42 @@
     }
 
     function processData(data, settings, level) {
+        //add array item for each flag
         var longData = [];
+        var variables = Object.keys(data[0]).filter(function(key) {
+            return settings.value_cols.indexOf(key) < 0;
+        });
         data.forEach(function(d) {
+            //make key variable for specified levels
+            var nestKey =
+                '' +
+                level +
+                settings.id_cols
+                    .filter(function(id_col, i) {
+                        return i < level;
+                    })
+                    .map(function(id_col) {
+                        return d[id_col];
+                    })
+                    .join(':');
+
             settings.value_cols.forEach(function(flag) {
-                var newD = {};
+                var newD = {
+                    nestKey: nestKey
+                };
+
                 var _iteratorNormalCompletion = true;
                 var _didIteratorError = false;
                 var _iteratorError = undefined;
 
                 try {
                     for (
-                        var _iterator = Object.keys(d)[Symbol.iterator](), _step;
+                        var _iterator = variables[Symbol.iterator](), _step;
                         !(_iteratorNormalCompletion = (_step = _iterator.next()).done);
                         _iteratorNormalCompletion = true
                     ) {
-                        var key = _step.value;
-                        newD[key] = d[key];
+                        var variable = _step.value;
+                        newD[variable] = d[variable];
                     }
                 } catch (err) {
                     _didIteratorError = true;
@@ -347,22 +413,10 @@
                     }
                 }
 
+                newD[flag] = d[flag];
                 newD.flag = flag;
                 longData.push(newD);
             });
-        });
-
-        //make key variable for specified levels
-        longData.forEach(function(d) {
-            d.nestKey = '';
-            settings.id_cols
-                .filter(function(d, i) {
-                    return i < level;
-                })
-                .forEach(function(l, i) {
-                    d.nestKey = d.nestKey + ':' + d[l];
-                });
-            d.nestKey = '' + level + ':' + d.nestKey.slice(1);
         });
 
         //Nest data and calculate values for cells
@@ -502,7 +556,11 @@
 
     function onInit() {
         this.data.initial = this.data.raw;
+
+        var t0 = performance.now();
         this.data.raw = flattenData.call(this);
+        var t1 = performance.now();
+        console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
     }
 
     function createNestControl() {
@@ -556,7 +614,10 @@
                 });
 
             config.id_cols = uniqueLevels;
+            var t0 = performance.now();
             chart.data.raw = flattenData.call(chart);
+            var t1 = performance.now();
+            console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
             chart.draw();
         });
     }
@@ -698,7 +759,10 @@
             });
 
             applyFilters.call(chart);
+            var t0 = performance.now();
             chart.data.raw = flattenData.call(chart);
+            var t1 = performance.now();
+            console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
 
             chart.draw();
         });
@@ -707,111 +771,112 @@
         drawLegend.call(chart);
     }
 
-    function onDraw() {
-        var config = this.config;
+    function customizeRows() {
+        var _this = this;
 
-        var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
-        var colorsReversed = colors.slice().reverse();
+        this.rows = this.tbody.selectAll('tr');
+        this.rows
+            .classed('row', true)
+            .classed('row--expandable row--collapsed', function(d) {
+                return d.level < _this.config.id_cols.length;
+            })
+            .classed('row--hidden', function(d) {
+                return d.level > 1;
+            });
+    }
 
-        var colorScaleProp = d3.scale
-            .quantile()
-            .domain([0, 1])
-            .range(colors);
+    function customizeCells() {
+        this.cells = this.tbody.selectAll('td');
+        this.cells
+            .attr('class', function(d) {
+                var cellClass = 'cell';
 
-        //Separate Color Scale for Queries
-        var colorScaleSum = d3.scale
-            .quantile()
-            .domain([0, 30])
-            .range(colorsReversed);
+                if (d.col === 'id')
+                    cellClass =
+                        cellClass + ' cell--id' + ' cell--id--level' + d.text.substring(0, 1);
+                else {
+                    cellClass = cellClass + ' cell--heat';
+                    var level = void 0;
+                    if (d.col.indexOf('query') > -1)
+                        level =
+                            d.text === 0
+                                ? 5
+                                : d.text < 7
+                                    ? 4
+                                    : d.text < 13
+                                        ? 3
+                                        : d.text < 19
+                                            ? 2
+                                            : 1;
+                    else
+                        level =
+                            d.text === 1
+                                ? 5
+                                : d.text > 0.75
+                                    ? 4
+                                    : d.text > 0.5
+                                        ? 3
+                                        : d.text > 0.25
+                                            ? 2
+                                            : 1;
+                    cellClass = cellClass + ' cell--heat--level' + level;
+                }
 
-        var headers = this.tbody.selectAll('th');
-        var rows = this.tbody.selectAll('tr');
-        var cells = rows
-            .selectAll('td')
-            .style('background', function(d) {
-                if (d.col.includes('query')) {
-                    return colorScaleSum(d.text);
-                } else return d.col == 'id' ? 'white' : colorScaleProp(d.text);
+                return cellClass;
             })
             .text(function(d) {
-                return d.col.includes('query') ? d.text : d3.format('0.1%')(d.text);
+                return d.col === 'id'
+                    ? d.text.indexOf(':') > -1
+                        ? d.text.substring(d.text.lastIndexOf(':') + 1)
+                        : d.text.substring(1)
+                    : d.col.indexOf('query') < 0
+                        ? d3.format('%')(d.text)
+                        : d.text;
             });
+    }
 
-        //format values cells
-        cells
-            .filter(function(d) {
-                return d.col != 'id';
-            })
-            .style('text-align', 'center')
-            .style('color', 'transparent')
-            .style('width', '100px')
-            .on('mouseover', function() {
-                d3.select(this).style('color', function(d) {
-                    if (d.col.includes('query')) return +d.text > 12 ? 'black' : 'white';
-                    else return d.text > 0.5 ? 'white' : 'black';
-                });
-            })
-            .on('mouseout', function() {
-                d3.select(this).style('color', 'transparent');
-            });
+    function addRowDisplayToggle() {
+        var chart = this;
+        var config = this.config;
 
-        //format id cells
-        rows.each(function(d) {
-            var labelVar = config.id_cols[d.level - 1];
-            var label = d[labelVar];
-            d3
-                .select(this)
-                .select('td')
-                .text(label)
-                .style('padding-left', function(d) {
-                    return d.level - 1 + 'em';
-                });
-        });
-
-        //hide nested rows
-        rows
-            .filter(function(d) {
-                return d.level > 1;
-            })
-            .style('display', 'none');
-
-        var expandable_rows = rows
+        var expandable_rows = this.rows
             .filter(function(d) {
                 return d.level < config.id_cols.length;
             })
-            .classed('collapsed', true)
-            .select('td')
-            .style('color', 'blue')
-            .style('text-decoration', 'underline')
-            .style('cursor', 'pointer');
+            .select('td');
 
         //get children for each row
         expandable_rows.each(function(d) {
-            var matchVars = config.id_cols.filter(function(f, i) {
-                return i <= d.level - 1;
-            });
-
-            d.children = rows.filter(function(r) {
-                return r.level == d.level + 1;
-            });
-            matchVars.forEach(function(mv) {
-                d.children = d.children.filter(function(r) {
-                    return d[mv] == r[mv];
-                });
+            var child_id =
+                d.level +
+                1 +
+                config.id_cols
+                    .filter(function(id_col, i) {
+                        return i <= d.level - 1;
+                    })
+                    .map(function(matchVar) {
+                        return d[matchVar];
+                    })
+                    .join(':') +
+                ':';
+            d.children = chart.rows.filter(function(d) {
+                return d.id.indexOf(child_id) > -1;
             });
         });
 
         expandable_rows.on('click', function(d) {
             var row = d3.select(this.parentNode);
-            var collapsed = !row.classed('collapsed');
+            var collapsed = !row.classed('row--collapsed');
 
             row
-                .classed('collapsed', collapsed) //toggle the class
-                .classed('expanded', !collapsed); //toggle the class
+                .classed('row--collapsed', collapsed) //toggle the class
+                .classed('row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
                 if (d.children) {
-                    d.children.style('display', 'none');
+                    d.children
+                        .classed('row--hidden row--collapsed', true)
+                        .classed('row--expanded', false);
                     d.children.each(function(di) {
                         iterativeCollapse(di);
                     });
@@ -821,9 +886,18 @@
             if (collapsed) {
                 iterativeCollapse(d); //hide the whole tree
             } else {
-                d.children.style('display', null); //show just the immediate children
+                d.children.classed('row--hidden', false); //show just the immediate children
             }
         });
+    }
+
+    function onDraw() {
+        var t0 = performance.now();
+        customizeRows.call(this);
+        customizeCells.call(this);
+        addRowDisplayToggle.call(this);
+        var t1 = performance.now();
+        console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
     }
 
     function raveXplorer(element, settings) {
@@ -843,6 +917,8 @@
         chart.on('init', onInit);
         chart.on('layout', onLayout);
         chart.on('draw', onDraw);
+
+        defineStyles();
 
         return chart;
     }

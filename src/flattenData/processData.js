@@ -1,25 +1,27 @@
 export default function processData(data, settings, level) {
+    //add array item for each flag
     const longData = [];
+    const variables = Object.keys(data[0]).filter(key => settings.value_cols.indexOf(key) < 0);
     data.forEach(d => {
+        //make key variable for specified levels
+        const nestKey =
+            '' +
+            level +
+            settings.id_cols
+                .filter((id_col, i) => i < level)
+                .map(id_col => d[id_col])
+                .join(':');
+
         settings.value_cols.forEach(flag => {
-            const newD = {};
-            for (const key of Object.keys(d)) newD[key] = d[key];
+            const newD = {
+                nestKey: nestKey
+            };
+
+            for (const variable of variables) newD[variable] = d[variable];
+            newD[flag] = d[flag];
             newD.flag = flag;
             longData.push(newD);
         });
-    });
-
-    //make key variable for specified levels
-    longData.forEach(function(d) {
-        d.nestKey = '';
-        settings.id_cols
-            .filter(function(d, i) {
-                return i < level;
-            })
-            .forEach(function(l, i) {
-                d.nestKey = d.nestKey + ':' + d[l];
-            });
-        d.nestKey = '' + level + ':' + d.nestKey.slice(1);
     });
 
     //Nest data and calculate values for cells
