@@ -13,7 +13,7 @@ export default function onDraw() {
     //Separate Color Scale for Queries
     var colorScaleSum = d3.scale
         .quantile()
-        .domain([0, 32]) // so that the last section is > 24
+        .domain([0, 32]) // so that the last section is 24 and above
         .range(colorsReversed.slice(1,5));  // we will want to set the dark color for 0 specifically
 
     var headers = this.tbody.selectAll('th');
@@ -21,17 +21,11 @@ export default function onDraw() {
     var cells = rows
         .selectAll('td')
         .style('background', function(d) {
-            if (d.col.includes('query')) {
-                if (d.text ==  0) { // No queries
-                  return '#08519c'
-                } else {
-                 return colorScaleSum(d.text);
+            if (d.col.includes('query')) { // deal with query columns first
+                return d.text ==  0 ? '#08519c' : colorScaleSum(d.text); //if no queries then dark blue
                }
-             } else if (d.text ==  1) { // 100% form completion
-               return '#08519c'
-                } else {
-                  return d.col == 'id' ? 'white' : colorScaleProp(d.text);  // change this to have dark blue be 100% not >80%
-                }
+            else return d.text ==  1 ? '#08519c' :    //if 100% form completion then dark blue
+                d.col == 'id' ? 'white' : colorScaleProp(d.text); // if id column then white
         })
         .text(function(d) {
             return d.col.includes('query') ? d.text : d3.format('0.1%')(d.text);
