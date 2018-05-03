@@ -10,20 +10,15 @@ export default function addRowDisplayToggle() {
 
     //get children for each row
     expandable_rows.each(function(d) {
-        console.log(d);
-        var matchVars = config.id_cols.filter(function(f, i) {
-            return i <= d.level - 1;
-        });
-
-        d.children = chart.rows.filter(function(r) {
-            return r.level == d.level + 1;
-        });
-
-        matchVars.forEach(function(mv) {
-            d.children = d.children.filter(function(r) {
-                return d[mv] == r[mv];
-            });
-        });
+        var child_id =
+            d.level +
+            1 +
+            config.id_cols
+                .filter((id_col, i) => i <= d.level - 1)
+                .map(matchVar => d[matchVar])
+                .join(':') +
+            ':';
+        d.children = chart.rows.filter(d => d.id.indexOf(child_id) > -1);
     });
 
     expandable_rows.on('click', function(d) {
