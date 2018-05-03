@@ -7,14 +7,14 @@ export default function onDraw() {
 
     var colorScaleProp = d3.scale
         .quantile()
-        .domain([0, 1.25]) //because the first bar is only for those with 0 queries
-        .range(colors);
+        .domain([0,1])
+        .range(colors.slice(0,4)); // we will want to set the dark color for 1 specifically
 
     //Separate Color Scale for Queries
     var colorScaleSum = d3.scale
         .quantile()
-        .domain([0, 30])
-        .range(colorsReversed);
+        .domain([0, 32]) // so that the last section is > 24
+        .range(colorsReversed.slice(1,5));  // we will want to set the dark color for 0 specifically
 
     var headers = this.tbody.selectAll('th');
     var rows = this.tbody.selectAll('tr');
@@ -22,8 +22,16 @@ export default function onDraw() {
         .selectAll('td')
         .style('background', function(d) {
             if (d.col.includes('query')) {
-                return colorScaleSum(d.text);
-            } else return d.col == 'id' ? 'white' : colorScaleProp(d.text);  // change this to have dark blue be 100% not >80%
+                if (d.text ==  0) { // No queries
+                  return '#08519c'
+                } else {
+                 return colorScaleSum(d.text);
+               }
+             } else if (d.text ==  1) { // 100% form completion
+               return '#08519c'
+                } else {
+                  return d.col == 'id' ? 'white' : colorScaleProp(d.text);  // change this to have dark blue be 100% not >80%
+                }
         })
         .text(function(d) {
             return d.col.includes('query') ? d.text : d3.format('0.1%')(d.text);
