@@ -11,7 +11,7 @@ export default function customizeCells() {
                 let level;
                 if (d.col.indexOf('query') > -1)
                     level =
-                        d.text === 0 ? 5 : d.text < 7 ? 4 : d.text < 13 ? 3 : d.text < 19 ? 2 : 1;
+                        d.text === 0 ? 5 : d.text < 9 ? 4 : d.text < 17 ? 3 : d.text < 25 ? 2 : 1;
                 else
                     level =
                         d.text === 1
