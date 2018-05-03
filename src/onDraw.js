@@ -7,25 +7,23 @@ export default function onDraw() {
 
     var colorScaleProp = d3.scale
         .quantile()
-        .domain([0,1])
-        .range(colors.slice(0,4)); // we will want to set the dark color for 1 specifically
+        .domain([0, 1])
+        .range(colors);
 
     //Separate Color Scale for Queries
     var colorScaleSum = d3.scale
         .quantile()
-        .domain([0, 32]) // so that the last section is 24 and above
-        .range(colorsReversed.slice(1,5));  // we will want to set the dark color for 0 specifically
+        .domain([0, 30])
+        .range(colorsReversed);
 
     var headers = this.tbody.selectAll('th');
     var rows = this.tbody.selectAll('tr');
     var cells = rows
         .selectAll('td')
         .style('background', function(d) {
-            if (d.col.includes('query')) { // deal with query columns first
-                return d.text ==  0 ? '#08519c' : colorScaleSum(d.text); //if no queries then dark blue
-               }
-            else return d.text ==  1 ? '#08519c' :    //if 100% form completion then dark blue
-                d.col == 'id' ? 'white' : colorScaleProp(d.text); // if id column then white
+            if (d.col.includes('query')) {
+                return colorScaleSum(d.text);
+            } else return d.col == 'id' ? 'white' : colorScaleProp(d.text);
         })
         .text(function(d) {
             return d.col.includes('query') ? d.text : d3.format('0.1%')(d.text);
