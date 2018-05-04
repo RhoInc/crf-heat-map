@@ -656,7 +656,7 @@
             .attr('y', (legendHeight - rectHeight) / 2);
 
         // Tick Labels for Top Axis (Sums)
-        var topTextData = ['>24', '16-24', '8-16', '1-8', '0'];
+        var topTextData = ['>24', '17-24', '9-16', '1-8', '0'];
 
         var topTextWidth = [];
 
