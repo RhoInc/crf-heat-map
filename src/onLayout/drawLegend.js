@@ -15,8 +15,6 @@ export default function drawLegend() {
     var heatCellWidth = 150;
     var idCellWidth = 90;
 
-    console.log();
-
     var legendSVG = d3
         .selectAll('.wc-chart')
         .insert('svg', ':first-child')
