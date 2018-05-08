@@ -40,6 +40,15 @@ export default function drawLegend() {
 
     var topTextWidth = [];
 
+    d3
+        .select('svg.legend')
+        .append('line') // attach a line
+        .style('stroke', 'black') // colour the line
+        .attr('x1', 90 + 160 * 5) // x position of the first end of the line
+        .attr('y1', 15) // y position of the first end of the line
+        .attr('x2', 90 + 160 * 5) // x position of the second end of the line
+        .attr('y2', 60);
+
     //Information for Queries (Sums)
     d3
         .select('svg.legend')
