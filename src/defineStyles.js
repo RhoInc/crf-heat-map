@@ -4,7 +4,8 @@ export default function defineStyles() {
 
         /* ID cells */
 
-        '.cell--id {' + '    background: white;' + 'width: 90px;' + '}',
+        '.cell--id {' + '    background: white;' + '    width: 90px;' + '}',
+
         '.row--expandable .cell--id {' +
             '    color: blue;' +
             '    cursor: pointer;' +
