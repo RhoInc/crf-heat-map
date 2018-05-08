@@ -3,22 +3,24 @@ export default function drawLegend() {
 
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
 
-    var legendHeight = 150;
-    var legendWidth = 600;
+    console.log(chart);
 
-    var rectHeight = 25;
-    var rectWidth = 120;
+    var legendHeight = 60;
+    var legendWidth = 1500;
 
-    var heatLegend = this.wrap
+    var rectHeight = 20;
+    var rectWidth = 60;
+
+    d3
+        .selectAll('.wc-chart')
         .insert('svg', ':first-child')
         .classed('legend', true)
         .attr('width', legendWidth)
+        //      .attr(x, 200)
         .attr('height', legendHeight)
         .selectAll('.legend')
         .data(colors)
-        .enter();
-
-    heatLegend
+        .enter()
         .append('rect')
         .style({
             fill: function(d) {
@@ -29,7 +31,7 @@ export default function drawLegend() {
         .attr('width', rectWidth)
         .attr('height', rectHeight)
         .attr('x', function(d, i) {
-            return rectWidth * i;
+            return rectWidth * i + 95;
         })
         .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -41,29 +43,25 @@ export default function drawLegend() {
     //Information for Queries (Sums)
     d3
         .select('svg.legend')
-        .selectAll('text')
-        .data(topTextData)
+        .selectAll('.legend')
+        .data(colors)
         .enter()
-        .append('text')
-        .text(d => d)
-        .each(function(d, i) {
-            // need to account for the length of the words in the calculation of x
-            var thisWidth = this.getComputedTextLength();
-            topTextWidth.push(thisWidth);
+        .append('rect')
+        .style({
+            fill: function(d) {
+                return d;
+            },
+            'fill-opacity': 1
         })
+        .attr('width', rectWidth)
+        .attr('height', rectHeight)
         .attr('x', function(d, i) {
-            return rectWidth * (i + 1) - topTextWidth[i];
+            return rectWidth * i + (95 + 160 * 5);
         })
-        .attr('y', (legendHeight - rectHeight) / 2 - 5)
-        .append('svg:tspan')
-        .attr('x', legendWidth - 80)
-        .attr('dy', -20)
-        .text('← Queries*');
+        .attr('y', (legendHeight - rectHeight) / 2);
 
-    // Tick Labels for Bottom Axis (Proportions)
-    var bottomTextData = ['0%-25%', '25%-50%', '50%-75%', '75%-<100%', '100%'];
+    var bottomTextData = ['0%', '25%', '50%', '75%', '100%'];
 
-    //Information for Proportions
     d3
         .select('svg.legend')
         .selectAll('g')
@@ -72,11 +70,31 @@ export default function drawLegend() {
         .append('text')
         .text(d => d)
         .attr('x', function(d, i) {
-            return rectWidth * i;
+            return rectWidth * i + 95;
         })
         .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15)
         .append('svg:tspan')
         .attr('x', 0)
-        .attr('dy', 20)
-        .text('Forms →');
+        .attr('dy', 20);
+
+    // Tick Labels for Bottom Axis (Proportions)
+
+    //Information for Proportions
+    d3
+        .select('svg.legend')
+        .selectAll('g')
+        .data(topTextData)
+        .enter()
+        .append('text')
+        .text(d => d)
+        .attr('x', function(d, i) {
+            console.log(chart);
+            console.log(d3.select('th.is_partial_entry'));
+            return rectWidth * i + (95 + 160 * 5);
+        })
+        .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15)
+        .append('svg:tspan')
+        .attr('x', 0)
+        .attr('dy', 20);
+    //      .text('Forms →');
 }

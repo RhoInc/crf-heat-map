@@ -4,7 +4,7 @@ export default function defineStyles() {
 
         /* ID cells */
 
-        '.cell--id {' + '    background: white;' + '}',
+        '.cell--id {' + '    background: white;' + 'width: 90px;' + '}',
         '.row--expandable .cell--id {' +
             '    color: blue;' +
             '    cursor: pointer;' +
@@ -19,7 +19,7 @@ export default function defineStyles() {
         '.cell--heat {' +
             '    text-align: center;' +
             '    color: transparent;' +
-            '    width: 100px;' +
+            '    width: 150px;' +
             '}',
         '.cell--heat--level1:hover,' +
             '.cell--heat--level2:hover,' +
