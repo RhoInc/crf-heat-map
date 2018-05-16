@@ -5,11 +5,11 @@ export const webchartsSettings = {
     value_cols: [
         'is_partial_entry',
         'is_verified',
-        'has_open_query',
-        'has_answered_query',
         'is_frozen',
         'is_signed',
-        'is_locked'
+        'is_locked',
+        'has_open_query',
+        'has_answered_query'
     ],
     filter_cols: ['sitename', 'ready_for_freeze', 'status'],
     pagination: false,
@@ -19,11 +19,11 @@ export const webchartsSettings = {
         'ID',
         'CRFs Entered',
         'Source Data Verified',
-        'Opened Queries*',
-        'Answered Queries*',
         'Frozen',
         'Signed',
-        'Locked'
+        'Locked',
+        'Opened Queries',
+        'Answered Queries'
     ],
     cols: null
 };
