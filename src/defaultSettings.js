@@ -11,7 +11,7 @@ export const webchartsSettings = {
         'has_open_query',
         'has_answered_query'
     ],
-    filter_cols: ['sitename', 'ready_for_freeze', 'status'],
+    filter_cols: ['sitename', 'ready_for_freeze', 'status','subset1','subset2','subset3'],
     pagination: false,
     searchable: false,
     sortable: false,
@@ -36,6 +36,8 @@ export function syncSettings(settings) {
     return settings;
 }
 
+
+
 // Map values from settings to control inputs
 export function syncControlInputs(settings) {
     const defaultControls = [
@@ -53,6 +55,21 @@ export function syncControlInputs(settings) {
             type: 'subsetter',
             value_col: 'status',
             label: 'Subject Status'
+        },
+        {
+            type: 'subsetter',
+            value_col: 'subset1',
+            label: 'Subsets: 1'
+        },
+        {
+            type: 'subsetter',
+            value_col: 'subset2',
+            label: '2'
+        },
+        {
+            type: 'subsetter',
+            value_col: 'subset3',
+            label: '3'
         }
     ];
 
