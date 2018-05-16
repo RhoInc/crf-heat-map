@@ -27,12 +27,19 @@ export default function defineStyles() {
             '.cell--heat--level3:hover {' +
             '    color: black;' +
             '}',
-        '.cell--heat--level4:hover,' + '.cell--heat--level5:hover {' + '    color: white;' + '}',
+        '.cell--heat--level4:hover,' +
+            '.cell--heat--level6:hover,' +
+            '.cell--heat--level5:hover {' +
+            '    color: white;' +
+            '}',
         '.cell--heat--level1 {' + '    background: #eff3ff;' + '}',
         '.cell--heat--level2 {' + '    background: #bdd7e7;' + '}',
         '.cell--heat--level3 {' + '    background: #6baed6;' + '}',
         '.cell--heat--level4 {' + '    background: #3182bd;' + '}',
-        '.cell--heat--level5 {' + '    background: #08519c;' + '}'
+        '.cell--heat--level5 {' + '    background: #08519c;' + '}',
+        '.cell--heat--level6 {' +
+            '    background: repeating-linear-gradient(-45deg,#08519c,#08519c 10px,black 3px,black 13px)' +
+            '}'
     ];
 
     //Attach styles to DOM.

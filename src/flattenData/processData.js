@@ -51,7 +51,7 @@ export default function processData(data, settings, level) {
                 if (v.filter(d => d.needs_signature === '1').length === 0) {
                     return {
                         raw: v,
-                        proportion: 1
+                        proportion: 'N/A'
                     };
                 } else {
                     return {
@@ -64,11 +64,11 @@ export default function processData(data, settings, level) {
                 }
                 // Proportions for is_verified using needs_verification as denominator
             } else if (v[0].flag == 'is_verified') {
-                //If there's a denominator of zero we want to catch that - right now I'm saying they're 100% done, may change that
+                //If denominator is 0 label cell N/A
                 if (v.filter(d => d.needs_verification === '1').length === 0) {
                     return {
                         raw: v,
-                        proportion: 1
+                        proportion: 'N/A'
                     };
                 } else {
                     return {
@@ -108,5 +108,6 @@ export default function processData(data, settings, level) {
         });
         flatData.push(ptObj);
     });
+    console.log(flatData);
     return flatData;
 }

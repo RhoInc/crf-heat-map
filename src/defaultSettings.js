@@ -11,7 +11,7 @@ export const webchartsSettings = {
         'has_open_query',
         'has_answered_query'
     ],
-    filter_cols: ['sitename', 'ready_for_freeze', 'status','subset1','subset2','subset3'],
+    filter_cols: ['sitename', 'ready_for_freeze', 'status', 'subset1', 'subset2', 'subset3'],
     pagination: false,
     searchable: false,
     sortable: false,
@@ -35,8 +35,6 @@ export function syncSettings(settings) {
     settings.cols = d3.merge([['id'], settings.value_cols]);
     return settings;
 }
-
-
 
 // Map values from settings to control inputs
 export function syncControlInputs(settings) {
