@@ -4,14 +4,14 @@ export const webchartsSettings = {
     id_cols: ['sitename', 'subjectnameoridentifier'],
     value_cols: [
         'is_partial_entry',
-        'is_verified',
+        'DATA_PAGE_VERIFIED',
         'is_frozen',
         'is_signed',
         'is_locked',
         'has_open_query',
         'has_answered_query'
     ],
-    filter_cols: ['sitename', 'ready_for_freeze', 'status', 'subset1', 'subset2', 'subset3'],
+    filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
     pagination: false,
     searchable: false,
     sortable: false,
@@ -46,7 +46,7 @@ export function syncControlInputs(settings) {
         },
         {
             type: 'subsetter',
-            value_col: 'ready_for_freeze',
+            value_col: 'FreezeFlg',
             label: 'Freeze Status'
         },
         {
