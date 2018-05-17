@@ -12,7 +12,7 @@ export default function drawLegend() {
     // these widths are from what's in defineStyles.js
     // might be way to pull these values from the classes setup there
     // or set them both upstream  -  for now just copy from there
-    var heatCellWidth = 150;
+    var heatCellWidth = 152.25; // had to slide this over slgihtly due to gridlines
     var idCellWidth = 90;
 
     var legendSVG = d3
