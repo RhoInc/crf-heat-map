@@ -1,6 +1,9 @@
 export default function drawLegend() {
     var chart = this;
 
+    // from https://stackoverflow.com/questions/24861073/detect-if-any-kind-of-ie-msie/24861307
+    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
+
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
 
     var legendHeight = 60;
@@ -12,8 +15,10 @@ export default function drawLegend() {
     // these widths are from what's in defineStyles.js
     // might be way to pull these values from the classes setup there
     // or set them both upstream  -  for now just copy from there
-    var heatCellWidth = 152.25; // had to slide this over slgihtly due to gridlines
+     // had to slide this over slgihtly due to gridlines
     var idCellWidth = 90;
+    var heatCellWidth;
+    isIE ? heatCellWidth = 151.25 : heatCellWidth = 152.25; // gridlines are little smaller in IE
 
     var legendSVG = d3
         .selectAll('.wc-chart')
