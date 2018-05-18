@@ -8,7 +8,7 @@ if (window.origin !== 'https://rhoinc.github.io') {
 
 
 d3.csv(
-  'rx_dataPage.csv',
+  'rx_DataPage.csv',
   function(error, data) {
     if (error)
       console.log(error);
