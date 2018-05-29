@@ -5,6 +5,8 @@ export default function drawLegend() {
     var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
 
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+    //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
+    var greencolors = ['#edf8e9', '#bae4b3','#74c476','#31a354','#006d2c']
 
     var legendHeight = 60;
     var legendWidth = 1500;
@@ -46,7 +48,7 @@ export default function drawLegend() {
         })
         .attr('y', (legendHeight - rectHeight) / 2);
 
-    var formTickLabels = ['0%', '25%', '50%', '75%', '100%'];
+    var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
 
     legendSVG
         .selectAll('g')
@@ -62,7 +64,7 @@ export default function drawLegend() {
     // Query Legend
     legendSVG
         .selectAll('.legend')
-        .data(colors)
+        .data(greencolors)
         .enter()
         .append('rect')
         .style({

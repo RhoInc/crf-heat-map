@@ -47,7 +47,7 @@ function defineStyles() {
 
     /* heat cells */
 
-    '.cell--heat {' + '    text-align: center;' + '    color: transparent;' + '    width: 150px;' + '}', '.cell--heat--level1:hover,' + '.cell--heat--level2:hover,' + '.cell--heat--level3:hover {' + '    color: black;' + '}', '.cell--heat--level4:hover,' + '.cell--heat--level6:hover,' + '.cell--heat--level5:hover {' + '    color: white;' + '}', '.cell--heat--level1 {' + '    background: #eff3ff;' + '}', '.cell--heat--level2 {' + '    background: #bdd7e7;' + '}', '.cell--heat--level3 {' + '    background: #6baed6;' + '}', '.cell--heat--level4 {' + '    background: #3182bd;' + '}', '.cell--heat--level5 {' + '    background: #08519c;' + '}', '.cell--heat--level6 {' + '    background: repeating-linear-gradient(-45deg,#08519c,#08519c 10px,black 3px,black 13px)' + '}'];
+    '.cell--heat {' + '    text-align: center;' + '    color: transparent;' + '    width: 150px;' + '}', '.cell--heat--level6:hover,' + '.cell--heat--level7:hover,' + '.cell--heat--level8:hover,' + '.cell--heat--level1:hover,' + '.cell--heat--level2:hover,' + '.cell--heat--level3:hover {' + '    color: black;' + '}', '.cell--heat--level9:hover,' + '.cell--heat--level10:hover,' + '.cell--heat--level11:hover,' + '.cell--heat--level4:hover,' + '.cell--heat--level5:hover {' + '    color: white;' + '}', '.cell--heat--level1 {' + '    background: #edf8e9;' + '}', '.cell--heat--level2 {' + '    background: #bae4b3;' + '}', '.cell--heat--level3 {' + '    background: #74c476' + '}', '.cell--heat--level4 {' + '    background: #31a354;' + '}', '.cell--heat--level5 {' + '    background: #006d2c;' + '}', '.cell--heat--level6 {' + '    background: #eff3ff;' + '}', '.cell--heat--level7 {' + '    background: #bdd7e7;' + '}', '.cell--heat--level8 {' + '    background: #6baed6' + '}', '.cell--heat--level9 {' + '    background: #3182bd;' + '}', '.cell--heat--level10 {' + '    background: #08519c;' + '}', '.cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'];
 
     //Attach styles to DOM.
     var style = document.createElement('style');
@@ -399,7 +399,7 @@ function processData(data, settings, level) {
                 };
             }
             // Proportions for is_verified using needs_verification as denominator
-        } else if (v[0].flag == 'is_verified') {
+        } else if (v[0].flag == 'DATA_PAGE_VERIFIED') {
             //If denominator is 0 label cell N/A
             if (v.filter(function (d) {
                 return d.needs_verification === '1';
@@ -535,6 +535,8 @@ function drawLegend() {
     var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
 
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+    //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
+    var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
 
     var legendHeight = 60;
     var legendWidth = 1500;
@@ -562,7 +564,7 @@ function drawLegend() {
         return rectWidth * i + idCellWidth + 5;
     }).attr('y', (legendHeight - rectHeight) / 2);
 
-    var formTickLabels = ['0%', '25%', '50%', '75%', '100%'];
+    var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
 
     legendSVG.selectAll('g').data(formTickLabels).enter().append('text').text(function (d) {
         return d;
@@ -571,7 +573,7 @@ function drawLegend() {
     }).attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
     // Query Legend
-    legendSVG.selectAll('.legend').data(colors).enter().append('rect').style({
+    legendSVG.selectAll('.legend').data(greencolors).enter().append('rect').style({
         fill: function fill(d) {
             return d;
         },
@@ -695,7 +697,7 @@ function customizeCells() {
         if (d.col === 'id') cellClass = cellClass + ' cell--id' + ' cell--id--level' + d.text.substring(0, 1);else {
             cellClass = cellClass + ' cell--heat';
             var level = void 0;
-            if (d.col.indexOf('query') > -1) level = d.text === 0 ? 5 : d.text < 9 ? 4 : d.text < 17 ? 3 : d.text < 25 ? 2 : 1;else level = d.text === 'N/A' ? 6 : d.text === 1 ? 5 : d.text > 0.75 ? 4 : d.text > 0.5 ? 3 : d.text > 0.25 ? 2 : 1;
+            if (d.col.indexOf('query') > -1) level = d.text === 0 ? 5 : d.text < 9 ? 4 : d.text < 17 ? 3 : d.text < 25 ? 2 : 1;else level = d.text === 'N/A' ? 11 : d.text === 1 ? 10 : d.text > 0.75 ? 9 : d.text > 0.5 ? 8 : d.text > 0.25 ? 7 : 6;
             cellClass = cellClass + ' cell--heat--level' + level;
         }
 
