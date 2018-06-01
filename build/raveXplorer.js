@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts')) :
-	typeof define === 'function' && define.amd ? define(['webcharts'], factory) :
-	(global.raveXplorer = factory(global.webCharts));
-}(this, (function (webcharts) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts'), require('d3')) :
+	typeof define === 'function' && define.amd ? define(['webcharts', 'd3'], factory) :
+	(global.raveXplorer = factory(global.webCharts,global.d3));
+}(this, (function (webcharts,d3$1) { 'use strict';
 
 if (typeof Object.assign != 'function') {
     // Must be writable: true, enumerable: false, configurable: true
@@ -249,7 +249,43 @@ function merge(target) {
     return target;
 }
 
-var rendererSpecificSettings = {};
+function clone(obj) {
+    var copy = void 0;
+
+    //boolean, number, string, null, undefined
+    if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj) return obj;
+
+    //date
+    if (obj instanceof Date) {
+        copy = new Date();
+        copy.setTime(obj.getTime());
+        return copy;
+    }
+
+    //array
+    if (obj instanceof Array) {
+        copy = [];
+        for (var i = 0, len = obj.length; i < len; i++) {
+            copy[i] = clone(obj[i]);
+        }
+        return copy;
+    }
+
+    //object
+    if (obj instanceof Object) {
+        copy = {};
+        for (var attr in obj) {
+            if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+        }
+        return copy;
+    }
+
+    throw new Error('Unable to copy [obj]! Its type is not supported.');
+}
+
+var rendererSpecificSettings = {
+    filterable: true
+};
 
 var webchartsSettings = {
     id_cols: ['sitename', 'subjectnameoridentifier'],
@@ -479,8 +515,82 @@ function flattenData() {
     return flatData;
 }
 
+function layout() {
+    this.filterable.wrap = this.wrap.select('.table-top').append('div').classed('hidden', !this.config.filterable);
+    this.filterable.wrap.append('div').classed('instruction', true).text('Click column headers to filter.');
+}
+
+function onClick(th, header) {
+    var context = this,
+        selection = d3$1.select(th),
+        col = this.config.cols[this.config.headers.indexOf(header)];
+
+    //Check if column is already a part of current sort order.
+    var filterItem = this.filterable.filters.filter(function (item) {
+        return item.col === col;
+    })[0];
+
+    //If it isn't, add it to filters.
+    if (!filterItem) {
+        filterItem = {
+            col: col,
+            direction: 'ascending',
+            wrap: this.filterable.wrap.append('div').datum({ key: col }).classed('wc-button filter-box', true).text(header)
+        };
+        filterItem.wrap.append('span').classed('filter-direction', true).html(' - 100%');
+        filterItem.wrap.append('span').classed('remove-filter', true).html('&#10060;');
+        filterItem.level = 1;
+        this.filterable.filters.push(filterItem);
+    } else {
+        //Otherwise move to next sort level
+        filterItem.level = filterItem.level === 1 ? 0 : filterItem.level == 0 ? 'N/A' : filterItem.level == 'N/A' ? 1 : 'null';
+        filterItem.wrap.select('span.filter-direction').html(filterItem.level === 1 ? ' - 100%' : filterItem.level == 0 ? ' - 0%' : filterItem.level == 'N/A' ? ' - N/A' : null);
+    }
+
+    //Hide sort instructions.
+    this.filterable.wrap.select('.instruction').classed('hidden', true);
+
+    //Add sort container deletion functionality.
+    this.filterable.filters.forEach(function (item, i) {
+        item.wrap.on('click', function (d) {
+            //Remove column's sort container.
+            d3$1.select(this).remove();
+
+            //Remove column from sort.
+            context.filterable.filters.splice(context.filterable.filters.map(function (d) {
+                return d.col;
+            }).indexOf(d.key), 1);
+
+            //Display sorting instruction.
+            context.filterable.wrap.select('.instruction').classed('hidden', context.filterable.filters.length);
+
+            //Redraw chart.
+            context.draw();
+        });
+    });
+
+    //Redraw chart.
+    this.draw();
+}
+
+function filterData(data) {
+    data = data.for;
+}
+
+function filterable() {
+    return {
+        layout: layout,
+        onClick: onClick,
+        filterData: filterData,
+        filters: []
+    };
+}
+
 function onInit() {
     this.data.initial = this.data.raw;
+
+    //Attach filterable object to table object.
+    this.filterable = filterable.call(this);
 
     var t0 = performance.now();
     this.data.raw = flattenData.call(this);
@@ -535,7 +645,6 @@ function drawLegend() {
     var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
 
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
-    //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
     var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
 
     var legendHeight = 60;
@@ -552,7 +661,7 @@ function drawLegend() {
     var heatCellWidth;
     isIE ? heatCellWidth = 151.25 : heatCellWidth = 152.25; // gridlines are little smaller in IE
 
-    var legendSVG = d3.selectAll('.wc-chart').insert('svg', ':first-child').classed('legend', true).attr('width', legendWidth).attr('height', legendHeight);
+    var legendSVG = d3.selectAll('.wc-chart').insert('svg', 'table').classed('legend', true).attr('width', legendWidth).attr('height', legendHeight);
 
     // Form Legend
     legendSVG.selectAll('.legend').data(colors).enter().append('rect').style({
@@ -599,40 +708,6 @@ function drawLegend() {
     .attr('y2', 60);
 }
 
-function clone(obj) {
-    var copy = void 0;
-
-    //boolean, number, string, null, undefined
-    if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj) return obj;
-
-    //date
-    if (obj instanceof Date) {
-        copy = new Date();
-        copy.setTime(obj.getTime());
-        return copy;
-    }
-
-    //array
-    if (obj instanceof Array) {
-        copy = [];
-        for (var i = 0, len = obj.length; i < len; i++) {
-            copy[i] = clone(obj[i]);
-        }
-        return copy;
-    }
-
-    //object
-    if (obj instanceof Object) {
-        copy = {};
-        for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
-        }
-        return copy;
-    }
-
-    throw new Error('Unable to copy [obj]! Its type is not supported.');
-}
-
 function applyFilters() {
     var _this = this;
 
@@ -652,6 +727,9 @@ function applyFilters() {
 function onLayout() {
     var chart = this;
     var selects = this.controls.wrap.selectAll('select');
+
+    //Attach filter container.
+    this.filterable.layout.call(this);
 
     selects.on('change', function () {
         // Get the selected levels
@@ -752,7 +830,16 @@ function addRowDisplayToggle() {
 }
 
 function onDraw() {
+
+    var chart = this;
+
     var t0 = performance.now();
+    if (this.config.filterable) {
+        this.thead.selectAll('th').on('click', function (header) {
+            chart.filterable.onClick.call(chart, this, header);
+        });
+        if (this.filterable.column) this.filterable.filterData.call(this, this.data.filtered);
+    }
     customizeRows.call(this);
     customizeCells.call(this);
     addRowDisplayToggle.call(this);
@@ -774,6 +861,7 @@ function raveXplorer(element, settings) {
         //Define controls.
     chart = webcharts.createTable(element, mergedSettings, controls); //Define chart.
 
+    chart.config = clone(mergedSettings);
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('draw', onDraw);

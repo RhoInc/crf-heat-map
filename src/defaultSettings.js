@@ -1,4 +1,8 @@
-export const rendererSpecificSettings = {};
+import clone from './util/clone';
+
+export const rendererSpecificSettings = {
+  filterable: true
+};
 
 export const webchartsSettings = {
     id_cols: ['sitename', 'subjectnameoridentifier'],

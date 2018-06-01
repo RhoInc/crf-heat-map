@@ -7,6 +7,9 @@ export default function onLayout() {
     var chart = this;
     var selects = this.controls.wrap.selectAll('select');
 
+    //Attach filter container.
+    this.filterable.layout.call(this);
+
     selects.on('change', function() {
         // Get the selected levels
         var selectedfilterLevels = [];
