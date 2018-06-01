@@ -1,14 +1,21 @@
 import { select } from 'd3';
 
 export default function onClick(th, header) {
+
+    var formColumns = this.config.value_cols.slice(1,6);
+
     const context = this,
         selection = select(th),
-        col = this.config.cols[this.config.headers.indexOf(header)];
+        col = this.config.value_cols[this.config.headers.indexOf(header)];
+
+    if (formColumns.indexOf(col) === -1) { // only want to be able to filter this on the form columns
+      null
+    } else {
 
         //Check if column is already a part of current sort order.
     let filterItem = this.filterable.filters.filter(item => item.col === col)[0];
 
-    //If it isn't, add it to filters.
+    //If it isn't, add it to filters and set to 100%.
     if (!filterItem) {
         filterItem = {
             col: col,
@@ -25,10 +32,10 @@ export default function onClick(th, header) {
         this.filterable.filters.push(filterItem);
     } else {
         //Otherwise move to next sort level
-        filterItem.level = filterItem.level === 1 ? 0 : filterItem.level == 0 ? 'N/A' : filterItem.level == 'N/A' ? 1 : 'null'
+        filterItem.level = filterItem.level === 1 ? 0 : filterItem.level === 0 ? 'N/A' : filterItem.level === 'N/A' ? 1 : 'null'
         filterItem.wrap
             .select('span.filter-direction')
-            .html(filterItem.level === 1 ? ' - 100%' : filterItem.level == 0 ? ' - 0%' : filterItem.level == 'N/A' ? ' - N/A' : null );
+            .html(' - ' + (filterItem.level === 1 ? '100%' : filterItem.level === 0 ? '0%' : filterItem.level))
     }
 
     //Hide sort instructions.
@@ -55,5 +62,5 @@ export default function onClick(th, header) {
 
     //Redraw chart.
     this.draw();
-
+}
 }
