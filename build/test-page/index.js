@@ -7,7 +7,7 @@ if (window.origin !== 'https://rhoinc.github.io') {
 }
 
 d3.csv(
-    'https://rawgit.com/RhoInc/rave-xplorer/master/build/test-page/rx_DataPage.csv',
+    'https://cdn.rawgit.com/RhoInc/rave-xplorer/master/build/test-page/rx_DataPage.csv',
     function(d) {
         return d;
     },

@@ -6,7 +6,7 @@ export default function drawLegend() {
 
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
     //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
-    var greencolors = ['#edf8e9', '#bae4b3','#74c476','#31a354','#006d2c']
+    var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
 
     var legendHeight = 60;
     var legendWidth = 1500;
