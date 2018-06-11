@@ -70,6 +70,7 @@
                 '    color: black;' +
                 '}',
             '.cell--heat--level4:hover,' +
+                '.cell--heat--level6:hover,' +
                 '.cell--heat--level5:hover {' +
                 '    color: white;' +
                 '}',
@@ -77,7 +78,10 @@
             '.cell--heat--level2 {' + '    background: #bdd7e7;' + '}',
             '.cell--heat--level3 {' + '    background: #6baed6;' + '}',
             '.cell--heat--level4 {' + '    background: #3182bd;' + '}',
-            '.cell--heat--level5 {' + '    background: #08519c;' + '}'
+            '.cell--heat--level5 {' + '    background: #08519c;' + '}',
+            '.cell--heat--level6 {' +
+                '    background: repeating-linear-gradient(-45deg,#08519c,#08519c 10px,black 3px,black 13px)' +
+                '}'
         ];
 
         //Attach styles to DOM.
@@ -294,14 +298,14 @@
         id_cols: ['sitename', 'subjectnameoridentifier'],
         value_cols: [
             'is_partial_entry',
-            'is_verified',
+            'DATA_PAGE_VERIFIED',
             'is_frozen',
             'is_signed',
             'is_locked',
             'has_open_query',
             'has_answered_query'
         ],
-        filter_cols: ['sitename', 'ready_for_freeze', 'status'],
+        filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
         pagination: false,
         searchable: false,
         sortable: false,
@@ -336,13 +340,28 @@
             },
             {
                 type: 'subsetter',
-                value_col: 'ready_for_freeze',
+                value_col: 'FreezeFlg',
                 label: 'Freeze Status'
             },
             {
                 type: 'subsetter',
                 value_col: 'status',
                 label: 'Subject Status'
+            },
+            {
+                type: 'subsetter',
+                value_col: 'subset1',
+                label: 'Subsets: 1'
+            },
+            {
+                type: 'subsetter',
+                value_col: 'subset2',
+                label: '2'
+            },
+            {
+                type: 'subsetter',
+                value_col: 'subset3',
+                label: '3'
             }
         ];
 
@@ -450,7 +469,7 @@
                     ) {
                         return {
                             raw: v,
-                            proportion: 1
+                            proportion: 'N/A'
                         };
                     } else {
                         return {
@@ -466,7 +485,7 @@
                     }
                     // Proportions for is_verified using needs_verification as denominator
                 } else if (v[0].flag == 'is_verified') {
-                    //If there's a denominator of zero we want to catch that - right now I'm saying they're 100% done, may change that
+                    //If denominator is 0 label cell N/A
                     if (
                         v.filter(function(d) {
                             return d.needs_verification === '1';
@@ -474,7 +493,7 @@
                     ) {
                         return {
                             raw: v,
-                            proportion: 1
+                            proportion: 'N/A'
                         };
                     } else {
                         return {
@@ -517,6 +536,7 @@
             });
             flatData.push(ptObj);
         });
+        console.log(flatData);
         return flatData;
     }
 
@@ -623,6 +643,8 @@
     }
 
     function drawLegend() {
+        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
+
         var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
 
         var legendHeight = 60;
@@ -634,8 +656,10 @@
         // these widths are from what's in defineStyles.js
         // might be way to pull these values from the classes setup there
         // or set them both upstream  -  for now just copy from there
-        var heatCellWidth = 150;
+        // had to slide this over slgihtly due to gridlines
         var idCellWidth = 90;
+        var heatCellWidth;
+        isIE ? (heatCellWidth = 151.25) : (heatCellWidth = 152.25); // gridlines are little smaller in IE
 
         var legendSVG = d3
             .selectAll('.wc-chart')
@@ -847,15 +871,17 @@
                                             : 1;
                     else
                         level =
-                            d.text === 1
-                                ? 5
-                                : d.text > 0.75
-                                    ? 4
-                                    : d.text > 0.5
-                                        ? 3
-                                        : d.text > 0.25
-                                            ? 2
-                                            : 1;
+                            d.text === 'N/A'
+                                ? 6
+                                : d.text === 1
+                                    ? 5
+                                    : d.text > 0.75
+                                        ? 4
+                                        : d.text > 0.5
+                                            ? 3
+                                            : d.text > 0.25
+                                                ? 2
+                                                : 1;
                     cellClass = cellClass + ' cell--heat--level' + level;
                 }
 
@@ -867,7 +893,9 @@
                         ? d.text.substring(d.text.lastIndexOf(':') + 1)
                         : d.text.substring(1)
                     : d.col.indexOf('query') < 0
-                        ? d3.format('%')(d.text)
+                        ? d.text === 'N/A'
+                            ? d.text
+                            : d3.format('%')(d.text)
                         : d.text;
             });
     }
