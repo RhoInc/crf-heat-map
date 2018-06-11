@@ -15,16 +15,16 @@ export default function customizeCells() {
                 else
                     level =
                         d.text === 'N/A'
-                            ? 6
+                            ? 11
                             : d.text === 1
-                                ? 5
+                                ? 10
                                 : d.text > 0.75
-                                    ? 4
+                                    ? 9
                                     : d.text > 0.5
-                                        ? 3
+                                        ? 8
                                         : d.text > 0.25
-                                            ? 2
-                                            : 1;
+                                            ? 7
+                                            : 6;
                 cellClass = cellClass + ' cell--heat--level' + level;
             }
 

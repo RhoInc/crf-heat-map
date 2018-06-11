@@ -63,7 +63,7 @@ export default function processData(data, settings, level) {
                     };
                 }
                 // Proportions for is_verified using needs_verification as denominator
-            } else if (v[0].flag == 'is_verified') {
+            } else if (v[0].flag == 'DATA_PAGE_VERIFIED') {
                 //If denominator is 0 label cell N/A
                 if (v.filter(d => d.needs_verification === '1').length === 0) {
                     return {

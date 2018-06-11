@@ -22,23 +22,33 @@ export default function defineStyles() {
             '    color: transparent;' +
             '    width: 150px;' +
             '}',
-        '.cell--heat--level1:hover,' +
+        '.cell--heat--level6:hover,' +
+            '.cell--heat--level7:hover,' +
+            '.cell--heat--level8:hover,' +
+            '.cell--heat--level1:hover,' +
             '.cell--heat--level2:hover,' +
             '.cell--heat--level3:hover {' +
             '    color: black;' +
             '}',
-        '.cell--heat--level4:hover,' +
-            '.cell--heat--level6:hover,' +
+        '.cell--heat--level9:hover,' +
+          '.cell--heat--level10:hover,' +
+          '.cell--heat--level11:hover,' +
+            '.cell--heat--level4:hover,' +
             '.cell--heat--level5:hover {' +
             '    color: white;' +
             '}',
-        '.cell--heat--level1 {' + '    background: #eff3ff;' + '}',
-        '.cell--heat--level2 {' + '    background: #bdd7e7;' + '}',
-        '.cell--heat--level3 {' + '    background: #6baed6;' + '}',
-        '.cell--heat--level4 {' + '    background: #3182bd;' + '}',
-        '.cell--heat--level5 {' + '    background: #08519c;' + '}',
-        '.cell--heat--level6 {' +
-            '    background: repeating-linear-gradient(-45deg,#08519c,#08519c 10px,black 3px,black 13px)' +
+        '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',
+        '.cell--heat--level2 {' + '    background: #bae4b3;' + '}',
+        '.cell--heat--level3 {' + '    background: #74c476' + '}',
+        '.cell--heat--level4 {' + '    background: #31a354;' + '}',
+        '.cell--heat--level5 {' + '    background: #006d2c;' + '}',
+        '.cell--heat--level6 {' + '    background: #eff3ff;' + '}',
+        '.cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
+        '.cell--heat--level8 {' + '    background: #6baed6' + '}',
+        '.cell--heat--level9 {' + '    background: #3182bd;' + '}',
+        '.cell--heat--level10 {' + '    background: #08519c;' + '}',
+        '.cell--heat--level11 {' +
+            '    background: #08519c;' + '    color: white;' +
             '}'
     ];
 
