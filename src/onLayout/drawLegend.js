@@ -15,10 +15,10 @@ export default function drawLegend() {
     // these widths are from what's in defineStyles.js
     // might be way to pull these values from the classes setup there
     // or set them both upstream  -  for now just copy from there
-     // had to slide this over slgihtly due to gridlines
+    // had to slide this over slgihtly due to gridlines
     var idCellWidth = 90;
     var heatCellWidth;
-    isIE ? heatCellWidth = 151.25 : heatCellWidth = 152.25; // gridlines are little smaller in IE
+    isIE ? (heatCellWidth = 151.25) : (heatCellWidth = 152.25); // gridlines are little smaller in IE
 
     var legendSVG = d3
         .selectAll('.wc-chart')
