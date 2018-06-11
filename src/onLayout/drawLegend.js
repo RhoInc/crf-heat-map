@@ -5,7 +5,9 @@ export default function drawLegend() {
     var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
 
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
-    var greencolors = ['#edf8e9', '#bae4b3','#74c476','#31a354','#006d2c']
+
+    //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
+    var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
 
     var legendHeight = 60;
     var legendWidth = 1500;
@@ -16,10 +18,10 @@ export default function drawLegend() {
     // these widths are from what's in defineStyles.js
     // might be way to pull these values from the classes setup there
     // or set them both upstream  -  for now just copy from there
-     // had to slide this over slgihtly due to gridlines
+    // had to slide this over slgihtly due to gridlines
     var idCellWidth = 90;
     var heatCellWidth;
-    isIE ? heatCellWidth = 151.25 : heatCellWidth = 152.25; // gridlines are little smaller in IE
+    isIE ? (heatCellWidth = 151.25) : (heatCellWidth = 152.25); // gridlines are little smaller in IE
 
     var legendSVG = d3
         .selectAll('.wc-chart')

@@ -1,7 +1,7 @@
 import clone from './util/clone';
 
 export const rendererSpecificSettings = {
-  filterable: true
+    filterable: true
 };
 
 export const webchartsSettings = {

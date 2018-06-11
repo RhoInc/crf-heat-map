@@ -31,8 +31,8 @@ export default function defineStyles() {
             '    color: black;' +
             '}',
         '.cell--heat--level9:hover,' +
-          '.cell--heat--level10:hover,' +
-          '.cell--heat--level11:hover,' +
+            '.cell--heat--level10:hover,' +
+            '.cell--heat--level11:hover,' +
             '.cell--heat--level4:hover,' +
             '.cell--heat--level5:hover {' +
             '    color: white;' +
@@ -47,9 +47,7 @@ export default function defineStyles() {
         '.cell--heat--level8 {' + '    background: #6baed6' + '}',
         '.cell--heat--level9 {' + '    background: #3182bd;' + '}',
         '.cell--heat--level10 {' + '    background: #08519c;' + '}',
-        '.cell--heat--level11 {' +
-            '    background: #08519c;' + '    color: white;' +
-            '}'
+        '.cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
     ];
 
     //Attach styles to DOM.

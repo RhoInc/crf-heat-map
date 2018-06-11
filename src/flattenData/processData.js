@@ -17,7 +17,7 @@ export default function processData(data, settings, level) {
                 nestKey: nestKey
             };
 
-            for (const variable of variables) newD[variable] = d[variable];
+            for (let i = 0; i < variables.length; i++) newD[variables[i]] = d[variables[i]];
             newD[flag] = d[flag];
             newD.flag = flag;
             longData.push(newD);
