@@ -1,7 +1,7 @@
 {
   "name": "rave-xplorer",
   "description": "Heatmap showing database form status at different levels",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/rave-xplorer#readme",
