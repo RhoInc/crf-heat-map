@@ -2,6 +2,49 @@ export default function defineStyles() {
     const styles = [
         '.row--hidden {' + '    display: none;' + '}',
 
+        /* range sliders */
+
+        '.range-slider-container {' +
+            '    position: relative;' +
+            '    width: 100%;' +
+            '    height: 25px;' +
+            '}',
+        '.range-slider {' +
+            '    width: 100%;' +
+            '    position: absolute;' +
+            '    height: 21px;' +
+            '    top: 2px;' +
+            '    overflow: hidden;' +
+            '    outline: none;' +
+            '}',
+        '.range-slider::-webkit-slider-thumb {' +
+            '    pointer-events: all;' +
+            '    position: relative;' +
+            '    z-index: 1;' +
+            '    outline: 0;' +
+            '}',
+        '.range-slider::-moz-range-thumb {' +
+            '    pointer-events: all;' +
+            '    position: relative;' +
+            '    z-index: 10;' +
+            '    -moz-appearance: none;' +
+            '    width: 9px;' +
+            '}',
+        '.range-slider::-moz-range-track {' +
+            '    position: relative;' +
+            '    z-index: -1;' +
+            '    background-color: rgba(0, 0, 0, 1);' +
+            '    border: 0;' +
+            '}',
+        '.range-slider::-moz-range-track {' +
+            '    -moz-appearance: none;' +
+            '    background: none transparent;' +
+            '    border: 0;' +
+            '}',
+        '.range-slider::-moz-focus-outer {' +
+            '    border: 0;' +
+            '}',
+
         /* ID cells */
 
         '.cell--id {' + '    background: white;' + '    width: 90px;' + '}',

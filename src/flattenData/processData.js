@@ -108,6 +108,6 @@ export default function processData(data, settings, level) {
         });
         flatData.push(ptObj);
     });
-    console.log(flatData);
+
     return flatData;
 }
