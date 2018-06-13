@@ -1,12 +1,11 @@
-import flattenData from './flattenData';
 import filterable from './filterable/index';
+import flattenData from './flattenData';
 
 export default function onInit() {
-    this.data.initial = this.data.raw;
-
     //Attach filterable object to table object.
-    this.filterable = filterable.call(this);
+    //this.filterable = filterable.call(this);
 
+    this.data.initial = this.data.raw;
     var t0 = performance.now();
     flattenData.call(this);
     var t1 = performance.now();

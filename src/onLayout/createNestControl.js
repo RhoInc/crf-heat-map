@@ -1,4 +1,5 @@
 import flattenData from '../flattenData';
+import resetFilters from './addColumnControls/addResetButton/resetFilters';
 
 export default function createNestControl() {
     const chart = this;
@@ -54,6 +55,7 @@ export default function createNestControl() {
         flattenData.call(chart);
         var t1 = performance.now();
         console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+        resetFilters.call(chart);
         chart.draw();
     });
 }

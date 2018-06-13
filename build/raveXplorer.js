@@ -41,12 +41,27 @@
         });
     }
 
+    var firstColumnWidth = 100;
+    var otherColumnWidth = 150;
+
+    var padding = 1;
+
     function defineStyles() {
         var styles = [
             '.row--hidden {' + '    display: none;' + '}',
+            'th,' + 'td {' + ('    padding: ' + padding + 'px !important;') + '}',
+            'th:first-child,' +
+                'td:first-child {' +
+                ('    width: ' + firstColumnWidth + 'px !important;') +
+                '}',
+            'th:nth-child(n + 2),' +
+                'td:nth-child(n + 2) {' +
+                ('    width: ' + otherColumnWidth + 'px !important;') +
+                '}',
 
             /* range sliders */
 
+            '#custom-controls th {' + '    border: 1px solid lightgray !important;' + '}',
             '.range-slider-container {' +
                 '    position: relative;' +
                 '    width: 100%;' +
@@ -98,7 +113,7 @@
 
             /* ID cells */
 
-            '.cell--id {' + '    background: white;' + '    width: 90px;' + '}',
+            '.cell--id {' + '    background: white;' + '}',
             '.row--expandable .cell--id {' +
                 '    color: blue;' +
                 '    cursor: pointer;' +
@@ -110,11 +125,7 @@
 
             /* heat cells */
 
-            '.cell--heat {' +
-                '    text-align: center;' +
-                '    color: transparent;' +
-                '    width: 150px;' +
-                '}',
+            '.cell--heat {' + '    text-align: center;' + '    color: transparent;' + '}',
             '.cell--heat--level6:hover,' +
                 '.cell--heat--level7:hover,' +
                 '.cell--heat--level8:hover,' +
@@ -647,133 +658,61 @@
         this.data.raw = this.data.flattened.slice();
     }
 
-    function layout() {
-        this.filterable.wrap = this.wrap
-            .select('.table-top')
-            .append('div')
-            .classed('hidden', !this.config.filterable);
-        this.filterable.wrap
-            .append('div')
-            .classed('instruction', true)
-            .text('Click column headers to filter.');
-    }
-
-    function onClick(th, header) {
-        var formColumns = this.config.value_cols.slice(1, 6);
-
-        var context = this,
-            selection = d3$1.select(th),
-            col = this.config.value_cols[this.config.headers.indexOf(header)];
-
-        if (formColumns.indexOf(col) === -1) {
-            // only want to be able to filter this on the form columns
-            null;
-        } else {
-            //Check if column is already a part of current sort order.
-            var filterItem = this.filterable.filters.filter(function(item) {
-                return item.col === col;
-            })[0];
-
-            //If it isn't, add it to filters and set to 100%.
-            if (!filterItem) {
-                filterItem = {
-                    col: col,
-                    direction: 'ascending',
-                    wrap: this.filterable.wrap
-                        .append('div')
-                        .datum({ key: col })
-                        .classed('wc-button filter-box', true)
-                        .text(header)
-                };
-                filterItem.wrap
-                    .append('span')
-                    .classed('filter-direction', true)
-                    .html(' - 100%');
-                filterItem.wrap
-                    .append('span')
-                    .classed('remove-filter', true)
-                    .html('&#10060;');
-                filterItem.level = 1;
-                this.filterable.filters.push(filterItem);
-            } else {
-                //Otherwise move to next sort level
-                filterItem.level =
-                    filterItem.level === 1
-                        ? 0
-                        : filterItem.level === 0
-                            ? 'N/A'
-                            : filterItem.level === 'N/A'
-                                ? 1
-                                : 'null';
-                filterItem.wrap
-                    .select('span.filter-direction')
-                    .html(
-                        ' - ' +
-                            (filterItem.level === 1
-                                ? '100%'
-                                : filterItem.level === 0
-                                    ? '0%'
-                                    : filterItem.level)
-                    );
-            }
-
-            //Hide sort instructions.
-            this.filterable.wrap.select('.instruction').classed('hidden', true);
-
-            //Add sort container deletion functionality.
-            this.filterable.filters.forEach(function(item, i) {
-                item.wrap.on('click', function(d) {
-                    //Remove column's sort container.
-                    d3$1.select(this).remove();
-
-                    //Remove column from sort.
-                    context.filterable.filters.splice(
-                        context.filterable.filters
-                            .map(function(d) {
-                                return d.col;
-                            })
-                            .indexOf(d.key),
-                        1
-                    );
-
-                    //Display sorting instruction.
-                    context.filterable.wrap
-                        .select('.instruction')
-                        .classed('hidden', context.filterable.filters.length);
-
-                    //Redraw chart.
-                    context.draw();
-                });
-            });
-
-            //Redraw chart.
-            this.draw();
-        }
-    }
-
-    function filterData(data) {
-        // going to do this in applyfilters...
-    }
-
-    function filterable() {
-        return {
-            layout: layout,
-            onClick: onClick,
-            filterData: filterData,
-            filters: []
-        };
-    }
-
     function onInit() {
-        this.data.initial = this.data.raw;
-
         //Attach filterable object to table object.
-        this.filterable = filterable.call(this);
+        //this.filterable = filterable.call(this);
 
+        this.data.initial = this.data.raw;
         var t0 = performance.now();
         flattenData.call(this);
         var t1 = performance.now();
         console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+    }
+
+    function update(filter) {
+        var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        //update lower slider and annotation
+        if (reset)
+            filter.lowerSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.lower);
+        filter.lowerAnnotation.text(
+            '' +
+                (filter.variable.indexOf('query') < 0
+                    ? Math.round(filter.lower * 100)
+                    : filter.lower) +
+                (filter.variable.indexOf('query') < 0 ? '%' : '')
+        );
+
+        //update upper slider and annotation
+        if (reset)
+            filter.upperSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.upper);
+        filter.upperAnnotation.text(
+            '' +
+                (filter.variable.indexOf('query') < 0
+                    ? Math.round(filter.upper * 100)
+                    : filter.upper) +
+                (filter.variable.indexOf('query') < 0 ? '%' : '')
+        );
+    }
+
+    function resetFilters() {
+        var _this = this;
+
+        this.columnControls.filters.forEach(function(filter) {
+            filter.lower = filter.min;
+            filter.upper = filter.max;
+            update.call(_this, filter, true);
+        });
     }
 
     function createNestControl() {
@@ -831,6 +770,7 @@
             flattenData.call(chart);
             var t1 = performance.now();
             console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+            resetFilters.call(chart);
             chart.draw();
         });
     }
@@ -853,9 +793,9 @@
         // might be way to pull these values from the classes setup there
         // or set them both upstream  -  for now just copy from there
         // had to slide this over slgihtly due to gridlines
-        var idCellWidth = 90;
-        var heatCellWidth;
-        isIE ? (heatCellWidth = 151.25) : (heatCellWidth = 152.25); // gridlines are little smaller in IE
+        var idCellWidth = firstColumnWidth + padding * 2;
+        var heatCellWidth = otherColumnWidth + padding * 2;
+        isIE ? (heatCellWidth = heatCellWidth + 1.25) : (heatCellWidth = heatCellWidth + 2.25); // gridlines are little smaller in IE
 
         var legendSVG = d3
             .selectAll('.wc-chart')
@@ -879,7 +819,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + 5;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -894,7 +834,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + 5;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -913,7 +853,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + (idCellWidth + 5 + (heatCellWidth + 10) * 5);
+                return rectWidth * i + idCellWidth + heatCellWidth * 5;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -929,95 +869,9 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + (idCellWidth + 5 + (heatCellWidth + 10) * 5);
+                return rectWidth * i + idCellWidth + heatCellWidth * 5;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
-
-        // Add dividing line next to query legend
-        legendSVG
-            .append('line') // attach a line
-            .style('stroke', 'black') // colour the line
-            .attr('x1', idCellWidth + (heatCellWidth + 10) * 5) // x position of the first end of the line
-            .attr('y1', 15) // y position of the first end of the line
-            .attr('x2', idCellWidth + (heatCellWidth + 10) * 5) // x position of the second end of the line
-            .attr('y2', 60);
-    }
-
-    function applyFilters() {
-        var _this = this;
-
-        //If there are filters, return a filtered data array of the raw data.
-        //Otherwise return the raw data.
-
-        // add filters from filterable
-        this.filterable.filters.forEach(function(filter) {
-            _this.filters.push({
-                col: filter.col,
-                val: filter.level
-            });
-        });
-
-        console.log(this.filters); //these are wrong!!
-
-        this.data.filtered_ = this.filters //need to make this unique for the if in flattenData
-            ? clone(this.data.initial).filter(function(d) {
-                  var match = true;
-                  _this.filters.forEach(function(filter) {
-                      if (match === true && filter.val !== 'All')
-                          match =
-                              filter.val instanceof Array
-                                  ? filter.val.indexOf(d[filter.col]) > -1
-                                  : filter.val === d[filter.col];
-                  });
-                  return match;
-              })
-            : clone(this.data.initial);
-    }
-
-    function update(filter) {
-        var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-        //update lower slider and annotation
-        if (reset)
-            filter.lowerSlider
-                .attr({
-                    min: filter.min,
-                    max: filter.max
-                })
-                .property('value', filter.lower);
-        filter.lowerAnnotation.text(
-            '' +
-                (filter.variable.indexOf('query') < 0
-                    ? Math.round(filter.lower * 100)
-                    : filter.lower) +
-                (filter.variable.indexOf('query') < 0 ? '%' : '')
-        );
-
-        //update upper slider and annotation
-        if (reset)
-            filter.upperSlider
-                .attr({
-                    min: filter.min,
-                    max: filter.max
-                })
-                .property('value', filter.upper);
-        filter.upperAnnotation.text(
-            '' +
-                (filter.variable.indexOf('query') < 0
-                    ? Math.round(filter.upper * 100)
-                    : filter.upper) +
-                (filter.variable.indexOf('query') < 0 ? '%' : '')
-        );
-    }
-
-    function resetFilters() {
-        var _this = this;
-
-        this.columnControls.filters.forEach(function(filter) {
-            filter.lower = filter.min;
-            filter.upper = filter.max;
-            update.call(_this, filter, true);
-        });
     }
 
     function addResetButton(th, d) {
@@ -1165,31 +1019,31 @@
 
     function onLayout() {
         var chart = this;
-        var selects = this.controls.wrap.selectAll('select');
 
         //Attach filter container.
-        this.filterable.layout.call(this);
+        //this.filterable.layout.call(this);
 
-        selects.on('change', function() {
-            // Get the selected levels
-            var selectedfilterLevels = [];
-            selects.each(function(d, i) {
-                selectedfilterLevels.push(this.value);
-            });
+        //var selects = this.controls.wrap.selectAll('select');
+        //selects.on('change', function() {
+        //    // Get the selected levels
+        //    var selectedfilterLevels = [];
+        //    selects.each(function(d, i) {
+        //        selectedfilterLevels.push(this.value);
+        //    });
 
-            // Update filters to reflect the selected levels
-            chart.filters.forEach(function(d, i) {
-                d.val = selectedfilterLevels[i];
-            });
+        //    // Update filters to reflect the selected levels
+        //    chart.filters.forEach(function(d, i) {
+        //        d.val = selectedfilterLevels[i];
+        //    });
 
-            applyFilters.call(chart);
-            var t0 = performance.now();
-            flattenData.call(chart);
-            var t1 = performance.now();
-            console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+        //    applyFilters.call(chart);
+        //    var t0 = performance.now();
+        //    flattenData.call(chart);
+        //    var t1 = performance.now();
+        //    console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
 
-            chart.draw();
-        });
+        //    chart.draw();
+        //});
 
         createNestControl.call(chart);
         drawLegend.call(chart);

@@ -1,8 +1,32 @@
+export const firstColumnWidth = 100;
+export const otherColumnWidth = 150;
+export const margin = 0;
+export const padding = 1;
+export const border = 1;
+
 export default function defineStyles() {
     const styles = [
-        '.row--hidden {' + '    display: none;' + '}',
+        '.row--hidden {' +
+            '    display: none;' +
+            '}',
+        'th,' +
+        'td {' +
+            `    padding: ${padding}px !important;` +
+            '}',
+        'th:first-child,' +
+        'td:first-child {' +
+            `    width: ${firstColumnWidth}px !important;` +
+            '}',
+        'th:nth-child(n + 2),' +
+        'td:nth-child(n + 2) {' +
+            `    width: ${otherColumnWidth}px !important;` +
+            '}',
 
         /* range sliders */
+
+        '#custom-controls th {' +
+            '    border: 1px solid lightgray !important;' +
+            '}',
 
         '.range-slider-container {' +
             '    position: relative;' +
@@ -55,7 +79,7 @@ export default function defineStyles() {
 
         /* ID cells */
 
-        '.cell--id {' + '    background: white;' + '    width: 90px;' + '}',
+        '.cell--id {' + '    background: white;' + '}',
 
         '.row--expandable .cell--id {' +
             '    color: blue;' +
@@ -71,7 +95,6 @@ export default function defineStyles() {
         '.cell--heat {' +
             '    text-align: center;' +
             '    color: transparent;' +
-            '    width: 150px;' +
             '}',
         '.cell--heat--level6:hover,' +
             '.cell--heat--level7:hover,' +
