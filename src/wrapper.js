@@ -1,12 +1,17 @@
-import './util/object-assign';
-import defineStyles from './defineStyles';
+//utility functions
+import './util/polyfills';
+import clone from './util/clone';
 import merge from './util/merge';
+
+//styles, configuration, and webcharts
+import defineStyles from './defineStyles';
 import defaultSettings, { syncSettings, syncControlInputs } from './defaultSettings';
 import { createControls, createTable } from 'webcharts';
+
+//table callbacks
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDraw from './onDraw';
-import clone from './util/clone';
 
 export default function raveXplorer(element, settings) {
     const mergedSettings = merge(defaultSettings, settings), //Merge user settings onto default settings.
