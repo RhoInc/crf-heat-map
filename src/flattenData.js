@@ -31,5 +31,7 @@ export default function flattenData() {
     flatData.forEach(function(d) {
         d.flagN = config.visitOrder.indexOf(d.flag) + 1;
     });
-    return flatData;
+
+    this.data.flattened = flatData;
+    this.data.raw = this.data.flattened.slice();
 }

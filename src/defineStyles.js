@@ -7,16 +7,26 @@ export default function defineStyles() {
         '.range-slider-container {' +
             '    position: relative;' +
             '    width: 100%;' +
-            '    height: 25px;' +
+            '    height: 30px;' +
             '}',
         '.range-slider {' +
             '    width: 100%;' +
             '    position: absolute;' +
-            '    height: 21px;' +
-            '    top: 2px;' +
+            '    height: 15px;' +
+            '    top: 1px;' +
             '    overflow: hidden;' +
             '    outline: none;' +
             '}',
+        '.range-annotation {' +
+            '    width: 100%;' +
+            '    position: absolute;' +
+            '    font-size: 12px;' +
+            '    top: 16px;' +
+            '    overflow: hidden;' +
+            '    font-weight: normal;' +
+            '}',
+        '.range-annotation--lower {' + '    text-align: left;' + '}',
+        '.range-annotation--upper {' + '    text-align: right;' + '}',
         '.range-slider::-webkit-slider-thumb {' +
             '    pointer-events: all;' +
             '    position: relative;' +
@@ -41,9 +51,7 @@ export default function defineStyles() {
             '    background: none transparent;' +
             '    border: 0;' +
             '}',
-        '.range-slider::-moz-focus-outer {' +
-            '    border: 0;' +
-            '}',
+        '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
 
         /* ID cells */
 

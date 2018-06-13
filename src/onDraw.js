@@ -1,9 +1,9 @@
-import addColumnFilters from './onDraw/addColumnFilters';
 import customizeRows from './onDraw/customizeRows';
 import customizeCells from './onDraw/customizeCells';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
 
 export default function onDraw() {
+    //console.table(this.data.raw);
     var chart = this;
 
     var t0 = performance.now();
@@ -13,7 +13,6 @@ export default function onDraw() {
     //    });
     //    if (this.filterable.column) this.filterable.filterData.call(this, this.data.filtered);
     //}
-    addColumnFilters.call(this);
     customizeRows.call(this);
     customizeCells.call(this);
     addRowDisplayToggle.call(this);
