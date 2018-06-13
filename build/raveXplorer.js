@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts', 'd3'], factory)
-            : (global.raveXplorer = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
+            ? define(['webcharts'], factory)
+            : (global.raveXplorer = factory(global.webCharts));
+})(this, function(webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -139,6 +139,22 @@
                 '.cell--heat--level11:hover,' +
                 '.cell--heat--level4:hover,' +
                 '.cell--heat--level5:hover {' +
+                '    color: white;' +
+                '}',
+            '.cell--heat {' + '    text-align: center;' + '}',
+            '.cell--heat--level6,' +
+                '.cell--heat--level7,' +
+                '.cell--heat--level8,' +
+                '.cell--heat--level1,' +
+                '.cell--heat--level2,' +
+                '.cell--heat--level3 {' +
+                '    color: black;' +
+                '}',
+            '.cell--heat--level9,' +
+                '.cell--heat--level10,' +
+                '.cell--heat--level11,' +
+                '.cell--heat--level4,' +
+                '.cell--heat--level5 {' +
                 '    color: white;' +
                 '}',
             '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',
@@ -623,6 +639,9 @@
     }
 
     function flattenData() {
+        var t0 = performance.now();
+        //begin performance test
+
         var data;
 
         if (this.data.filtered_) {
@@ -656,17 +675,15 @@
 
         this.data.flattened = flatData;
         this.data.raw = this.data.flattened.slice();
+
+        //end performance test
+        var t1 = performance.now();
+        console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
     }
 
     function onInit() {
-        //Attach filterable object to table object.
-        //this.filterable = filterable.call(this);
-
         this.data.initial = this.data.raw;
-        var t0 = performance.now();
         flattenData.call(this);
-        var t1 = performance.now();
-        console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
     }
 
     function update(filter) {
@@ -709,10 +726,40 @@
         var _this = this;
 
         this.columnControls.filters.forEach(function(filter) {
+            //Update query maximum.
+            if (filter.variable.indexOf('query') > -1)
+                filter.max = d3.max(_this.data.filtered, function(di) {
+                    return di[filter.variable];
+                });
+
+            //Reset upper and lower bounds.
             filter.lower = filter.min;
             filter.upper = filter.max;
+
+            //Reset sliders.
             update.call(_this, filter, true);
         });
+    }
+
+    function customizeFilters() {
+        var _this = this;
+
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.type === 'subsetter';
+            })
+            .on('change', function() {
+                _this.data.raw = _this.data.flattened.slice();
+                _this.data.filtered = _this.data.raw.slice();
+                _this.filters.forEach(function(filter) {
+                    _this.data.filtered = _this.data.filtered.filter(function(d) {
+                        return filter.val === 'All' || d[filter.col] === filter.val;
+                    });
+                });
+                resetFilters.call(_this);
+                _this.draw();
+            });
     }
 
     function createNestControl() {
@@ -766,10 +813,7 @@
                 });
 
             config.id_cols = uniqueLevels;
-            var t0 = performance.now();
             flattenData.call(chart);
-            var t1 = performance.now();
-            console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
             resetFilters.call(chart);
             chart.draw();
         });
@@ -859,8 +903,7 @@
 
         var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
 
-        d3
-            .select('svg.legend')
+        d3.select('svg.legend')
             .selectAll('g')
             .data(queryTickLabels)
             .enter()
@@ -894,7 +937,7 @@
         this.columnControls.resetButton = resetButton;
     }
 
-    function layout$1(filter) {
+    function layout(filter) {
         filter.div = filter.cell
             .append('div')
             .datum(filter)
@@ -905,8 +948,9 @@
             .append('input')
             .classed('range-slider filter-slider--lower', true)
             .attr({
+                type: 'range',
                 step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-                type: 'range'
+                min: 0
             });
         filter.lowerAnnotation = filter.div
             .append('span')
@@ -917,15 +961,16 @@
             .append('input')
             .classed('range-slider filter-slider--upper', true)
             .attr({
+                type: 'range',
                 step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-                type: 'range'
+                min: 0
             });
         filter.upperAnnotation = filter.div
             .append('span')
             .classed('range-annotation range-annotation--upper', true);
     }
 
-    function filterData$1() {
+    function filterData() {
         var _this = this;
 
         this.data.raw = this.data.flattened;
@@ -957,7 +1002,7 @@
             }
 
             update.call(context, d);
-            filterData$1.call(context);
+            filterData.call(context);
             context.draw();
         });
     }
@@ -970,7 +1015,7 @@
         filter.cell = d3.select(th);
 
         //Lay out, initialize, and define event listeners for column filter.
-        layout$1.call(this, filter);
+        layout.call(this, filter);
         update.call(this, filter, true);
         onInput.call(this, filter);
     }
@@ -1018,35 +1063,9 @@
     }
 
     function onLayout() {
-        var chart = this;
-
-        //Attach filter container.
-        //this.filterable.layout.call(this);
-
-        //var selects = this.controls.wrap.selectAll('select');
-        //selects.on('change', function() {
-        //    // Get the selected levels
-        //    var selectedfilterLevels = [];
-        //    selects.each(function(d, i) {
-        //        selectedfilterLevels.push(this.value);
-        //    });
-
-        //    // Update filters to reflect the selected levels
-        //    chart.filters.forEach(function(d, i) {
-        //        d.val = selectedfilterLevels[i];
-        //    });
-
-        //    applyFilters.call(chart);
-        //    var t0 = performance.now();
-        //    flattenData.call(chart);
-        //    var t1 = performance.now();
-        //    console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
-
-        //    chart.draw();
-        //});
-
-        createNestControl.call(chart);
-        drawLegend.call(chart);
+        customizeFilters.call(this);
+        createNestControl.call(this);
+        drawLegend.call(this);
         addColumnControls.call(this);
     }
 
@@ -1151,8 +1170,7 @@
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('row--collapsed');
 
-            row
-                .classed('row--collapsed', collapsed) //toggle the class
+            row.classed('row--collapsed', collapsed) //toggle the class
                 .classed('row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
@@ -1175,17 +1193,14 @@
     }
 
     function onDraw() {
-        //console.table(this.data.raw);
         var t0 = performance.now();
-        //if (this.config.filterable) {
-        //    this.thead.selectAll('th').on('click', function(header) {
-        //        chart.filterable.onClick.call(chart, this, header);
-        //    });
-        //    if (this.filterable.column) this.filterable.filterData.call(this, this.data.filtered);
-        //}
+        //begin performance test
+
         customizeRows.call(this);
         customizeCells.call(this);
         addRowDisplayToggle.call(this);
+
+        //end performance test
         var t1 = performance.now();
         console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
     }

@@ -16,8 +16,8 @@ d3.csv(
             console.log(error);
 
         //HARDCODE BELOW//
-        console.log('Thar be hardcodes here!');
-        data = data.filter((d,i) => !(i%10));
+        //console.log('Thar be hardcodes here!');
+        //data = data.filter((d,i) => !(i%10));
         //HARDCODE ABOVE//
 
         var settings = {};

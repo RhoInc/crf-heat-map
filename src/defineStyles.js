@@ -111,6 +111,24 @@ export default function defineStyles() {
             '.cell--heat--level5:hover {' +
             '    color: white;' +
             '}',
+        '.cell--heat {' +
+            '    text-align: center;' +
+            '}',
+        '.cell--heat--level6,' +
+            '.cell--heat--level7,' +
+            '.cell--heat--level8,' +
+            '.cell--heat--level1,' +
+            '.cell--heat--level2,' +
+            '.cell--heat--level3 {' +
+            '    color: black;' +
+            '}',
+        '.cell--heat--level9,' +
+            '.cell--heat--level10,' +
+            '.cell--heat--level11,' +
+            '.cell--heat--level4,' +
+            '.cell--heat--level5 {' +
+            '    color: white;' +
+            '}',
         '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',
         '.cell--heat--level2 {' + '    background: #bae4b3;' + '}',
         '.cell--heat--level3 {' + '    background: #74c476' + '}',

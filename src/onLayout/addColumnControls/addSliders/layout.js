@@ -12,8 +12,9 @@ export default function layout(filter) {
         .append('input')
         .classed('range-slider filter-slider--lower', true)
         .attr({
+            type: 'range',
             step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-            type: 'range'
+            min: 0
         });
     filter.lowerAnnotation = filter.div
         .append('span')
@@ -24,8 +25,9 @@ export default function layout(filter) {
         .append('input')
         .classed('range-slider filter-slider--upper', true)
         .attr({
+            type: 'range',
             step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-            type: 'range'
+            min: 0
         });
     filter.upperAnnotation = filter.div
         .append('span')
