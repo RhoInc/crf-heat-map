@@ -25,7 +25,8 @@ export default function addRowDisplayToggle() {
         var row = d3.select(this.parentNode);
         var collapsed = !row.classed('row--collapsed');
 
-        row.classed('row--collapsed', collapsed) //toggle the class
+        row
+            .classed('row--collapsed', collapsed) //toggle the class
             .classed('row--expanded', !collapsed); //toggle the class
 
         function iterativeCollapse(d) {

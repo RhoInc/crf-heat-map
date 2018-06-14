@@ -259,41 +259,6 @@
         };
     })();
 
-    function clone(obj) {
-        var copy = void 0;
-
-        //boolean, number, string, null, undefined
-        if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj)
-            return obj;
-
-        //date
-        if (obj instanceof Date) {
-            copy = new Date();
-            copy.setTime(obj.getTime());
-            return copy;
-        }
-
-        //array
-        if (obj instanceof Array) {
-            copy = [];
-            for (var i = 0, len = obj.length; i < len; i++) {
-                copy[i] = clone(obj[i]);
-            }
-            return copy;
-        }
-
-        //object
-        if (obj instanceof Object) {
-            copy = {};
-            for (var attr in obj) {
-                if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
-            }
-            return copy;
-        }
-
-        throw new Error('Unable to copy [obj]! Its type is not supported.');
-    }
-
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
@@ -449,22 +414,6 @@
 
             /* heat cells */
 
-            '.cell--heat {' + '    text-align: center;' + '    color: transparent;' + '}',
-            '.cell--heat--level6:hover,' +
-                '.cell--heat--level7:hover,' +
-                '.cell--heat--level8:hover,' +
-                '.cell--heat--level1:hover,' +
-                '.cell--heat--level2:hover,' +
-                '.cell--heat--level3:hover {' +
-                '    color: black;' +
-                '}',
-            '.cell--heat--level9:hover,' +
-                '.cell--heat--level10:hover,' +
-                '.cell--heat--level11:hover,' +
-                '.cell--heat--level4:hover,' +
-                '.cell--heat--level5:hover {' +
-                '    color: white;' +
-                '}',
             '.cell--heat {' + '    text-align: center;' + '}',
             '.cell--heat--level6,' +
                 '.cell--heat--level7,' +
@@ -501,49 +450,51 @@
         document.getElementsByTagName('head')[0].appendChild(style);
     }
 
-    var rendererSpecificSettings = {
-        filterable: true
-    };
+    function rendererSettings() {
+        return {
+            id_cols: ['sitename', 'subjectnameoridentifier'],
+            value_cols: [
+                'is_partial_entry',
+                'DATA_PAGE_VERIFIED',
+                'is_frozen',
+                'is_signed',
+                'is_locked',
+                'has_open_query',
+                'has_answered_query'
+            ],
+            filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
+            display_cell_annotations: true
+        };
+    }
 
-    var webchartsSettings = {
-        id_cols: ['sitename', 'subjectnameoridentifier'],
-        value_cols: [
-            'is_partial_entry',
-            'DATA_PAGE_VERIFIED',
-            'is_frozen',
-            'is_signed',
-            'is_locked',
-            'has_open_query',
-            'has_answered_query'
-        ],
-        filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
-        pagination: false,
-        searchable: false,
-        sortable: false,
-        headers: [
-            'ID',
-            'CRFs Entered',
-            'Source Data Verified',
-            'Frozen',
-            'Signed',
-            'Locked',
-            'Opened Queries',
-            'Answered Queries'
-        ],
-        cols: null
-    };
+    function webchartsSettings() {
+        return {
+            cols: null,
+            headers: [
+                'ID',
+                'CRFs Entered',
+                'Source Data Verified',
+                'Frozen',
+                'Signed',
+                'Locked',
+                'Opened Queries',
+                'Answered Queries'
+            ],
+            applyCSS: true,
+            searchable: false,
+            sortable: false,
+            pagination: false,
+            exportable: true
+        };
+    }
 
-    var defaultSettings = Object.assign({}, rendererSpecificSettings, webchartsSettings);
-
-    // Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
         settings.cols = d3.merge([['id'], settings.value_cols]);
         return settings;
     }
 
-    // Map values from settings to control inputs
-    function syncControlInputs(settings) {
-        var defaultControls = [
+    function controlInputs() {
+        return [
             {
                 type: 'subsetter',
                 value_col: 'sitename',
@@ -573,8 +524,17 @@
                 type: 'subsetter',
                 value_col: 'subset3',
                 label: '3'
+            },
+            {
+                type: 'checkbox',
+                option: 'display_cell_annotations',
+                label: 'Display Cell Annotations'
             }
         ];
+    }
+
+    function syncControlInputs(settings) {
+        var defaultControls = controlInputs();
 
         if (Array.isArray(settings.filters) && settings.filters.length > 0) {
             var otherFilters = settings.filters.map(function(filter) {
@@ -589,6 +549,14 @@
             return defaultControls.concat(otherFilters);
         } else return defaultControls;
     }
+
+    var configuration = {
+        rendererSettings: rendererSettings,
+        webchartsSettings: webchartsSettings,
+        syncSettings: syncSettings,
+        controlInputs: controlInputs,
+        syncControlInputs: syncControlInputs
+    };
 
     function processData(data, settings, level) {
         //add array item for each flag
@@ -991,7 +959,8 @@
 
         var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
 
-        d3.select('svg.legend')
+        d3
+            .select('svg.legend')
             .selectAll('g')
             .data(queryTickLabels)
             .enter()
@@ -1258,7 +1227,8 @@
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('row--collapsed');
 
-            row.classed('row--collapsed', collapsed) //toggle the class
+            row
+                .classed('row--collapsed', collapsed) //toggle the class
                 .classed('row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
@@ -1280,6 +1250,23 @@
         });
     }
 
+    function toggleCellAnnotations() {
+        if (!this.config.display_cell_annotations) {
+            this.cells
+                .filter(function(d) {
+                    return d.col !== 'id' && !d.hasOwnProperty('id');
+                })
+                .style('color', 'transparent')
+                .on('mouseover', function() {
+                    var level = +this.className.replace(/(.*)(level)(\d+)(.*)/, '$3');
+                    this.style.color = [6, 7, 8, 1, 2, 3].indexOf(level) > -1 ? 'black' : 'white';
+                })
+                .on('mouseout', function() {
+                    this.style.color = 'transparent';
+                });
+        }
+    }
+
     function onDraw() {
         var t0 = performance.now();
         //begin performance test
@@ -1287,6 +1274,7 @@
         customizeRows.call(this);
         customizeCells.call(this);
         addRowDisplayToggle.call(this);
+        toggleCellAnnotations.call(this);
 
         //end performance test
         var t1 = performance.now();
@@ -1297,27 +1285,28 @@
     //styles, configuration, and webcharts
     //table callbacks
     function raveXplorer(element, settings) {
-        var mergedSettings = merge(defaultSettings, settings),
-            //Merge user settings onto default settings.
-            syncedSettings = syncSettings(mergedSettings),
-            //Sync properties within merged settings, e.g. data mappings.
-            syncedControlInputs = syncControlInputs(syncedSettings),
-            //Sync merged settings with controls.
-            controls = webcharts.createControls(element, {
-                location: 'top',
-                inputs: syncedControlInputs
-            }),
-            //Define controls.
-            chart = webcharts.createTable(element, mergedSettings, controls); //Define chart.
+        var defaultSettings = Object.assign(
+            {},
+            configuration.rendererSettings(),
+            configuration.webchartsSettings()
+        );
+        var mergedSettings = merge(defaultSettings, settings); //Merge user settings onto default settings.
+        var syncedSettings = configuration.syncSettings(mergedSettings); //Sync properties within merged settings, e.g. data mappings.
+        var syncedControlInputs = configuration.syncControlInputs(syncedSettings); //Sync merged settings with controls.
 
-        chart.config = clone(mergedSettings);
-        chart.on('init', onInit);
-        chart.on('layout', onLayout);
-        chart.on('draw', onDraw);
+        var controls = webcharts.createControls(element, {
+            location: 'top',
+            inputs: syncedControlInputs
+        });
+        var table = webcharts.createTable(element, syncedSettings, controls);
 
-        defineStyles();
+        table.on('init', onInit);
+        table.on('layout', onLayout);
+        table.on('draw', onDraw);
 
-        return chart;
+        defineStyles.call(table);
+
+        return table;
     }
 
     return raveXplorer;

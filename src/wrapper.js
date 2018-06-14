@@ -5,7 +5,7 @@ import merge from './util/merge';
 
 //styles, configuration, and webcharts
 import defineStyles from './defineStyles';
-import defaultSettings, { syncSettings, syncControlInputs } from './defaultSettings';
+import configuration from './configuration/index';
 import { createControls, createTable } from 'webcharts';
 
 //table callbacks
@@ -14,21 +14,26 @@ import onLayout from './onLayout';
 import onDraw from './onDraw';
 
 export default function raveXplorer(element, settings) {
-    const mergedSettings = merge(defaultSettings, settings), //Merge user settings onto default settings.
-        syncedSettings = syncSettings(mergedSettings), //Sync properties within merged settings, e.g. data mappings.
-        syncedControlInputs = syncControlInputs(syncedSettings), //Sync merged settings with controls.
-        controls = createControls(element, {
-            location: 'top',
-            inputs: syncedControlInputs
-        }), //Define controls.
-        chart = createTable(element, mergedSettings, controls); //Define chart.
+    const defaultSettings = Object.assign(
+        {},
+        configuration.rendererSettings(),
+        configuration.webchartsSettings()
+    );
+    const mergedSettings = merge(defaultSettings, settings); //Merge user settings onto default settings.
+    const syncedSettings = configuration.syncSettings(mergedSettings); //Sync properties within merged settings, e.g. data mappings.
+    const syncedControlInputs = configuration.syncControlInputs(syncedSettings); //Sync merged settings with controls.
 
-    chart.config = clone(mergedSettings);
-    chart.on('init', onInit);
-    chart.on('layout', onLayout);
-    chart.on('draw', onDraw);
+    const controls = createControls(element, {
+        location: 'top',
+        inputs: syncedControlInputs
+    });
+    const table = createTable(element, syncedSettings, controls);
 
-    defineStyles();
+    table.on('init', onInit);
+    table.on('layout', onLayout);
+    table.on('draw', onDraw);
 
-    return chart;
+    defineStyles.call(table);
+
+    return table;
 }
