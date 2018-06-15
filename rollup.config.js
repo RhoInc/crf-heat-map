@@ -8,7 +8,8 @@ export default {
     format: 'umd',
     globals: {
       d3: 'd3',
-      webcharts: 'webCharts'
+      webcharts: 'webCharts',
+      xlsx: 'xlsx'
     }
   },
   external: (function() {

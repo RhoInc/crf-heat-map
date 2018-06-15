@@ -966,15 +966,26 @@ function dataExport() {
     }));
 
     //data rows
-    var cols = d3.merge([this.config.id_cols, this.filters.map(function (filter) {
+    var id_cols = this.config.id_cols.map(function (id_col, i) {
+        return 'Nest ' + (i + 1) + ': ' + id_col;
+    });
+    var cols = d3.merge([id_cols, this.filters.map(function (filter) {
         return filter.col;
-    }), this.config.cols]);
-    console.log(cols);
+    }), this.config.value_cols]);
+
     this.data.filtered.forEach(function (d, i) {
+        id_cols.forEach(function (id_col, j) {
+            var id_val = d.id.split(':')[j];
+            d[id_col] = id_val ? j < id_cols.length - 1 ? id_val.substring(1) : id_val : 'Total';
+        });
+
+        _this.filters.forEach(function (filter) {
+            d[filter.col] = filter.val;
+        });
 
         //add rows to CSV array
         var row = cols.map(function (col, i) {
-            var value = i < _this.config.id_cols.length ? _this.config.id_cols[i] : i < _this.config.id_cols.length + _this.filters.length ? _this.filters[i - _this.config.id_cols.length].val : d[col];
+            var value = _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0 ? d3.format('%')(d[col]) : d[col];
 
             if (typeof value === 'string') value = value.replace(/"/g, '""');
 

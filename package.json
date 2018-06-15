@@ -40,5 +40,8 @@
   },
   "bugs": {
     "url": "https://github.com/RhoInc/rave-xplorer/issues"
+  },
+  "optionalDependencies": {
+    "xlsx": "^0.13.0"
   }
 }
