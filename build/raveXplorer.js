@@ -364,7 +364,8 @@ function webchartsSettings() {
         searchable: false,
         sortable: false,
         pagination: false,
-        exportable: true
+        exportable: true,
+        exports: ['csv']
     };
 }
 
@@ -949,23 +950,17 @@ function toggleCellAnnotations() {
     }
 }
 
-function dataExport() {
+function deriveData() {
     var _this = this;
 
-    var CSVarray = [];
-
-    //header row
+    //Define headers.
     var headers = d3.merge([this.config.id_cols, this.filters.map(function (filter) {
         return _this.controls.config.inputs.find(function (input) {
             return input.value_col === filter.col;
         }).label;
     }), this.config.headers]);
 
-    CSVarray.push(headers.map(function (header) {
-        return '"' + header.replace(/"/g, '""') + '"';
-    }));
-
-    //data rows
+    //Define columns.
     var id_cols = this.config.id_cols.map(function (id_col, i) {
         return 'Nest ' + (i + 1) + ': ' + id_col;
     });
@@ -973,7 +968,9 @@ function dataExport() {
         return filter.col;
     }), this.config.value_cols]);
 
-    this.data.filtered.forEach(function (d, i) {
+    //Define data.
+    var data = this.data.filtered.slice();
+    data.forEach(function (d, i) {
         id_cols.forEach(function (id_col, j) {
             var id_val = d.id.split(':')[j];
             d[id_col] = id_val ? j < id_cols.length - 1 ? id_val.substring(1) : id_val : 'Total';
@@ -982,10 +979,31 @@ function dataExport() {
         _this.filters.forEach(function (filter) {
             d[filter.col] = filter.val;
         });
+    });
 
+    //Define export object.
+    this.export = {
+        headers: headers,
+        cols: cols,
+        data: data
+    };
+}
+
+function csv() {
+    var _this = this;
+
+    var CSVarray = [];
+
+    //header row
+    CSVarray.push(this.export.headers.map(function (header) {
+        return '"' + header.replace(/"/g, '""') + '"';
+    }));
+
+    //data rows
+    this.export.data.forEach(function (d) {
         //add rows to CSV array
-        var row = cols.map(function (col, i) {
-            var value = _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0 ? d3.format('%')(d[col]) : d[col];
+        var row = _this.export.cols.map(function (col, i) {
+            var value = _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0 ? Math.round(d[col] * 100) : d[col];
 
             if (typeof value === 'string') value = value.replace(/"/g, '""');
 
@@ -1018,6 +1036,89 @@ function dataExport() {
             link.node().setAttribute('download', fileName);
         }
     }
+}
+
+function xlsx() {
+    var _this = this;
+
+    var sheetName = 'Selected Data';
+    var options = {
+        bookType: 'xlsx',
+        bookSST: true,
+        type: 'binary'
+    };
+    var arrayOfArrays = this.export.data.map(function (d) {
+        return _this.export.cols.map(function (col) {
+            return _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0 ? d[col] !== 'N/A' ? Math.round(d[col] * 100) : '' : d[col];
+        });
+    }); // convert data from array of objects to array of arrays.
+    var workbook = {
+        SheetNames: [sheetName],
+        Sheets: {}
+    };
+    var cols = [];
+
+    //Convert headers and data from array of arrays to sheet.
+    workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet([this.export.headers].concat(arrayOfArrays));
+
+    //Add filters to spreadsheet.
+    workbook.Sheets[sheetName]['!autofilter'] = {
+        ref: 'A1:' + String.fromCharCode(64 + this.export.cols.length) + (this.export.data.length + 1)
+    };
+
+    //Define column widths in spreadsheet.
+    this.table.selectAll('thead tr th').each(function () {
+        cols.push({ wpx: this.offsetWidth });
+    });
+    workbook.Sheets[sheetName]['!cols'] = cols;
+
+    var xlsx = XLSX.write(workbook, options),
+        s2ab = function s2ab(s) {
+        var buffer = new ArrayBuffer(s.length),
+            view = new Uint8Array(buffer);
+
+        for (var i = 0; i !== s.length; ++i) {
+            view[i] = s.charCodeAt(i) & 0xff;
+        }return buffer;
+    }; // convert spreadsheet to binary or something, i don't know
+
+    //transform CSV array into CSV string
+    var blob = new Blob([s2ab(xlsx)], { type: 'application/octet-stream;' });
+    var fileName = 'webchartsTableExport_' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
+    var link = this.wrap.select('.export#xlsx');
+
+    if (navigator.msSaveBlob) {
+        // IE 10+
+        link.style({
+            cursor: 'pointer',
+            'text-decoration': 'underline',
+            color: 'blue'
+        });
+        link.on('click', function () {
+            navigator.msSaveBlob(blob, fileName);
+        });
+    } else {
+        // Browsers that support HTML5 download attribute
+        if (link.node().download !== undefined) {
+            var url = URL.createObjectURL(blob);
+            link.node().setAttribute('href', url);
+            link.node().setAttribute('download', fileName);
+        }
+    }
+}
+
+function dataExport() {
+    deriveData.call(this);
+
+    //Export to .csv.
+    if (this.config.exports.find(function (export_) {
+        return export_ === 'csv';
+    })) csv.call(this);
+
+    //Export to .xlsx.
+    if (this.config.exports.find(function (export_) {
+        return export_ === 'xlsx';
+    })) xlsx.call(this);
 }
 
 function onDraw() {
