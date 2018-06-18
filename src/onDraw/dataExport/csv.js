@@ -2,23 +2,21 @@ export default function csv() {
     const CSVarray = [];
 
     //header row
-    CSVarray.push(
-        this.export.headers.map(header => `"${header.replace(/"/g, '""')}"`)
-    );
+    CSVarray.push(this.export.headers.map(header => `"${header.replace(/"/g, '""')}"`));
 
     //data rows
-    this.export.data
-        .forEach(d => {
-            //add rows to CSV array
-            const row = this.export.cols.map((col,i) => {
-                let value = this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
-                    ? Math.round(d[col]*100)
+    this.export.data.forEach(d => {
+        //add rows to CSV array
+        const row = this.export.cols.map((col, i) => {
+            let value =
+                this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
+                    ? Math.round(d[col] * 100)
                     : d[col];
 
-                if (typeof value === 'string') value = value.replace(/"/g, '""');
+            if (typeof value === 'string') value = value.replace(/"/g, '""');
 
-                return `"${value}"`;
-            });
+            return `"${value}"`;
+        });
 
         CSVarray.push(row);
     });
@@ -35,9 +33,7 @@ export default function csv() {
             'text-decoration': 'underline',
             color: 'blue'
         });
-        link.on('click', () => {
-            navigator.msSaveBlob(CSV, fileName);
-        });
+        navigator.msSaveBlob(CSV, fileName);
     } else {
         // Browsers that support HTML5 download attribute
         if (link.node().download !== undefined) {

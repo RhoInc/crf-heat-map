@@ -1,46 +1,40 @@
 export default function deriveData() {
+    this.export = {
+        nests: this.config.id_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
+        filters: this.filters.map(
+            filter =>
+                this.controls.config.inputs.find(input => input.value_col === filter.col).label
+        )
+    };
+
     //Define headers.
-    const headers = d3.merge([
-        this.config.id_cols,
-        this.filters
-            .map(filter => (
-                this.controls.config.inputs
-                    .find(input => input.value_col === filter.col)
-                    .label
-            )),
-        this.config.headers
+    this.export.headers = d3.merge([
+        this.export.nests,
+        this.export.filters,
+        this.config.headers.slice(1)
     ]);
 
     //Define columns.
-    const id_cols = this.config.id_cols
-        .map((id_col,i) => `Nest ${i+1}: ${id_col}`);
-    const cols = d3.merge([
-            id_cols,
-            this.filters.map(filter => filter.col),
-            this.config.value_cols
-        ]);
+    this.export.cols = d3.merge([
+        this.export.nests,
+        this.filters.map(filter => filter.col),
+        this.config.cols.slice(1)
+    ]);
 
     //Define data.
-    const data = this.data.filtered.slice();
-    data.forEach((d,i) => {
-            id_cols.forEach((id_col,j) => {
-                const id_val = d.id.split(':')[j];
-                d[id_col] = id_val
-                    ? j < id_cols.length - 1
-                        ? id_val.substring(1)
-                        : id_val
-                    : 'Total';
-            });
-
-            this.filters.forEach(filter => {
-                d[filter.col] = filter.val;
-            });
+    this.export.data = this.data.filtered.slice();
+    this.export.data.forEach((d, i) => {
+        this.export.nests.forEach((id_col, j) => {
+            const id_val = d.id.split(':')[j];
+            d[id_col] = id_val
+                ? j < this.export.nests.length - 1
+                    ? id_val.substring(1)
+                    : id_val
+                : 'Total';
         });
 
-    //Define export object.
-    this.export = {
-        headers,
-        cols,
-        data
-    };
+        this.filters.forEach(filter => {
+            d[filter.col] = filter.val;
+        });
+    });
 }
