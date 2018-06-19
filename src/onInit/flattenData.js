@@ -1,6 +1,9 @@
 import processData from './flattenData/processData';
 
 export default function flattenData() {
+    var t0 = performance.now();
+    //begin performance test
+
     var data;
 
     if (this.data.filtered_) {
@@ -31,5 +34,11 @@ export default function flattenData() {
     flatData.forEach(function(d) {
         d.flagN = config.visitOrder.indexOf(d.flag) + 1;
     });
-    return flatData;
+
+    this.data.flattened = flatData;
+    this.data.raw = this.data.flattened.slice();
+
+    //end performance test
+    var t1 = performance.now();
+    console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
 }

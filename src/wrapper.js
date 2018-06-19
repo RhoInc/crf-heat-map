@@ -1,8 +1,14 @@
-import './util/object-assign';
-import defineStyles from './defineStyles';
+//utility functions
+import './util/polyfills';
+import clone from './util/clone';
 import merge from './util/merge';
+
+//styles, configuration, and webcharts
+import defineStyles from './defineStyles';
 import defaultSettings, { syncSettings, syncControlInputs } from './defaultSettings';
 import { createControls, createTable } from 'webcharts';
+
+//table callbacks
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDraw from './onDraw';
@@ -17,6 +23,7 @@ export default function raveXplorer(element, settings) {
         }), //Define controls.
         chart = createTable(element, mergedSettings, controls); //Define chart.
 
+    chart.config = clone(mergedSettings);
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('draw', onDraw);

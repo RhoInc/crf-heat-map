@@ -1,3 +1,5 @@
+import { firstColumnWidth, otherColumnWidth, padding } from '../defineStyles';
+
 export default function drawLegend() {
     var chart = this;
 
@@ -5,6 +7,7 @@ export default function drawLegend() {
     var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
 
     var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+
     //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
     var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
 
@@ -18,13 +21,13 @@ export default function drawLegend() {
     // might be way to pull these values from the classes setup there
     // or set them both upstream  -  for now just copy from there
     // had to slide this over slgihtly due to gridlines
-    var idCellWidth = 90;
-    var heatCellWidth;
-    isIE ? (heatCellWidth = 151.25) : (heatCellWidth = 152.25); // gridlines are little smaller in IE
+    var idCellWidth = firstColumnWidth + padding * 2;
+    var heatCellWidth = otherColumnWidth + padding * 2;
+    isIE ? (heatCellWidth = heatCellWidth + 1.25) : (heatCellWidth = heatCellWidth + 2.25); // gridlines are little smaller in IE
 
     var legendSVG = d3
         .selectAll('.wc-chart')
-        .insert('svg', ':first-child')
+        .insert('svg', 'table')
         .classed('legend', true)
         .attr('width', legendWidth)
         .attr('height', legendHeight);
@@ -44,7 +47,7 @@ export default function drawLegend() {
         .attr('width', rectWidth)
         .attr('height', rectHeight)
         .attr('x', function(d, i) {
-            return rectWidth * i + idCellWidth + 5;
+            return rectWidth * i + idCellWidth;
         })
         .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -57,7 +60,7 @@ export default function drawLegend() {
         .append('text')
         .text(d => d)
         .attr('x', function(d, i) {
-            return rectWidth * i + idCellWidth + 5;
+            return rectWidth * i + idCellWidth;
         })
         .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -76,30 +79,20 @@ export default function drawLegend() {
         .attr('width', rectWidth)
         .attr('height', rectHeight)
         .attr('x', function(d, i) {
-            return rectWidth * i + (idCellWidth + 5 + (heatCellWidth + 10) * 5);
+            return rectWidth * i + idCellWidth + heatCellWidth * 5;
         })
         .attr('y', (legendHeight - rectHeight) / 2);
 
     var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
 
-    d3
-        .select('svg.legend')
+    d3.select('svg.legend')
         .selectAll('g')
         .data(queryTickLabels)
         .enter()
         .append('text')
         .text(d => d)
         .attr('x', function(d, i) {
-            return rectWidth * i + (idCellWidth + 5 + (heatCellWidth + 10) * 5);
+            return rectWidth * i + idCellWidth + heatCellWidth * 5;
         })
         .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
-
-    // Add dividing line next to query legend
-    legendSVG
-        .append('line') // attach a line
-        .style('stroke', 'black') // colour the line
-        .attr('x1', idCellWidth + (heatCellWidth + 10) * 5) // x position of the first end of the line
-        .attr('y1', 15) // y position of the first end of the line
-        .attr('x2', idCellWidth + (heatCellWidth + 10) * 5) // x position of the second end of the line
-        .attr('y2', 60);
 }

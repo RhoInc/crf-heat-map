@@ -8,7 +8,6 @@
     'use strict';
 
     if (typeof Object.assign != 'function') {
-        // Must be writable: true, enumerable: false, configurable: true
         Object.defineProperty(Object, 'assign', {
             value: function assign(target, varArgs) {
                 // .length of function is 2
@@ -34,6 +33,7 @@
                         }
                     }
                 }
+
                 return to;
             },
             writable: true,
@@ -41,62 +41,92 @@
         });
     }
 
-    function defineStyles() {
-        var styles = [
-            '.row--hidden {' + '    display: none;' + '}',
+    if (!Array.prototype.find) {
+        Object.defineProperty(Array.prototype, 'find', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
 
-            /* ID cells */
+                var o = Object(this);
 
-            '.cell--id {' + '    background: white;' + '    width: 90px;' + '}',
-            '.row--expandable .cell--id {' +
-                '    color: blue;' +
-                '    cursor: pointer;' +
-                '    text-decoration: underline;' +
-                '}',
-            '.cell--id--level1 {' + '    padding-left: 0em !important;' + '}',
-            '.cell--id--level2 {' + '    padding-left: 1em !important;' + '}',
-            '.cell--id--level3 {' + '    padding-left: 2em !important;' + '}',
+                // 2. Let len be ? ToLength(? Get(O, 'length')).
+                var len = o.length >>> 0;
 
-            /* heat cells */
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
 
-            '.cell--heat {' +
-                '    text-align: center;' +
-                '    color: transparent;' +
-                '    width: 150px;' +
-                '}',
-            '.cell--heat--level6:hover,' +
-                '.cell--heat--level7:hover,' +
-                '.cell--heat--level8:hover,' +
-                '.cell--heat--level1:hover,' +
-                '.cell--heat--level2:hover,' +
-                '.cell--heat--level3:hover {' +
-                '    color: black;' +
-                '}',
-            '.cell--heat--level9:hover,' +
-                '.cell--heat--level10:hover,' +
-                '.cell--heat--level11:hover,' +
-                '.cell--heat--level4:hover,' +
-                '.cell--heat--level5:hover {' +
-                '    color: white;' +
-                '}',
-            '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',
-            '.cell--heat--level2 {' + '    background: #bae4b3;' + '}',
-            '.cell--heat--level3 {' + '    background: #74c476' + '}',
-            '.cell--heat--level4 {' + '    background: #31a354;' + '}',
-            '.cell--heat--level5 {' + '    background: #006d2c;' + '}',
-            '.cell--heat--level6 {' + '    background: #eff3ff;' + '}',
-            '.cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
-            '.cell--heat--level8 {' + '    background: #6baed6' + '}',
-            '.cell--heat--level9 {' + '    background: #3182bd;' + '}',
-            '.cell--heat--level10 {' + '    background: #08519c;' + '}',
-            '.cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
-        ];
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
 
-        //Attach styles to DOM.
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        style.innerHTML = styles.join('\n');
-        document.getElementsByTagName('head')[0].appendChild(style);
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return kValue.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return kValue;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return undefined.
+                return undefined;
+            }
+        });
+    }
+
+    if (!Array.prototype.findIndex) {
+        Object.defineProperty(Array.prototype, 'findIndex', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return k.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return k;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return -1.
+                return -1;
+            }
+        });
     }
 
     var _typeof =
@@ -229,6 +259,41 @@
         };
     })();
 
+    function clone(obj) {
+        var copy = void 0;
+
+        //boolean, number, string, null, undefined
+        if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj)
+            return obj;
+
+        //date
+        if (obj instanceof Date) {
+            copy = new Date();
+            copy.setTime(obj.getTime());
+            return copy;
+        }
+
+        //array
+        if (obj instanceof Array) {
+            copy = [];
+            for (var i = 0, len = obj.length; i < len; i++) {
+                copy[i] = clone(obj[i]);
+            }
+            return copy;
+        }
+
+        //object
+        if (obj instanceof Object) {
+            copy = {};
+            for (var attr in obj) {
+                if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+            }
+            return copy;
+        }
+
+        throw new Error('Unable to copy [obj]! Its type is not supported.');
+    }
+
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
@@ -300,7 +365,145 @@
         return target;
     }
 
-    var rendererSpecificSettings = {};
+    var firstColumnWidth = 100;
+    var otherColumnWidth = 150;
+
+    var padding = 1;
+
+    function defineStyles() {
+        var styles = [
+            '.row--hidden {' + '    display: none;' + '}',
+            'th,' + 'td {' + ('    padding: ' + padding + 'px !important;') + '}',
+            'th:first-child,' +
+                'td:first-child {' +
+                ('    width: ' + firstColumnWidth + 'px !important;') +
+                '}',
+            'th:nth-child(n + 2),' +
+                'td:nth-child(n + 2) {' +
+                ('    width: ' + otherColumnWidth + 'px !important;') +
+                '}',
+
+            /* range sliders */
+
+            '#custom-controls th {' + '    border: 1px solid lightgray !important;' + '}',
+            '.range-slider-container {' +
+                '    position: relative;' +
+                '    width: 100%;' +
+                '    height: 30px;' +
+                '}',
+            '.range-slider {' +
+                '    width: 100%;' +
+                '    position: absolute;' +
+                '    height: 15px;' +
+                '    top: 1px;' +
+                '    overflow: hidden;' +
+                '    outline: none;' +
+                '}',
+            '.range-annotation {' +
+                '    width: 100%;' +
+                '    position: absolute;' +
+                '    font-size: 12px;' +
+                '    top: 16px;' +
+                '    overflow: hidden;' +
+                '    font-weight: normal;' +
+                '}',
+            '.range-annotation--lower {' + '    text-align: left;' + '}',
+            '.range-annotation--upper {' + '    text-align: right;' + '}',
+            '.range-slider::-webkit-slider-thumb {' +
+                '    pointer-events: all;' +
+                '    position: relative;' +
+                '    z-index: 1;' +
+                '    outline: 0;' +
+                '}',
+            '.range-slider::-moz-range-thumb {' +
+                '    pointer-events: all;' +
+                '    position: relative;' +
+                '    z-index: 10;' +
+                '    -moz-appearance: none;' +
+                '    width: 9px;' +
+                '}',
+            '.range-slider::-moz-range-track {' +
+                '    position: relative;' +
+                '    z-index: -1;' +
+                '    background-color: rgba(0, 0, 0, 1);' +
+                '    border: 0;' +
+                '}',
+            '.range-slider::-moz-range-track {' +
+                '    -moz-appearance: none;' +
+                '    background: none transparent;' +
+                '    border: 0;' +
+                '}',
+            '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
+
+            /* ID cells */
+
+            '.cell--id {' + '    background: white;' + '}',
+            '.row--expandable .cell--id {' +
+                '    color: blue;' +
+                '    cursor: pointer;' +
+                '    text-decoration: underline;' +
+                '}',
+            '.cell--id--level1 {' + '    padding-left: 0em !important;' + '}',
+            '.cell--id--level2 {' + '    padding-left: 1em !important;' + '}',
+            '.cell--id--level3 {' + '    padding-left: 2em !important;' + '}',
+
+            /* heat cells */
+
+            '.cell--heat {' + '    text-align: center;' + '    color: transparent;' + '}',
+            '.cell--heat--level6:hover,' +
+                '.cell--heat--level7:hover,' +
+                '.cell--heat--level8:hover,' +
+                '.cell--heat--level1:hover,' +
+                '.cell--heat--level2:hover,' +
+                '.cell--heat--level3:hover {' +
+                '    color: black;' +
+                '}',
+            '.cell--heat--level9:hover,' +
+                '.cell--heat--level10:hover,' +
+                '.cell--heat--level11:hover,' +
+                '.cell--heat--level4:hover,' +
+                '.cell--heat--level5:hover {' +
+                '    color: white;' +
+                '}',
+            '.cell--heat {' + '    text-align: center;' + '}',
+            '.cell--heat--level6,' +
+                '.cell--heat--level7,' +
+                '.cell--heat--level8,' +
+                '.cell--heat--level1,' +
+                '.cell--heat--level2,' +
+                '.cell--heat--level3 {' +
+                '    color: black;' +
+                '}',
+            '.cell--heat--level9,' +
+                '.cell--heat--level10,' +
+                '.cell--heat--level11,' +
+                '.cell--heat--level4,' +
+                '.cell--heat--level5 {' +
+                '    color: white;' +
+                '}',
+            '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',
+            '.cell--heat--level2 {' + '    background: #bae4b3;' + '}',
+            '.cell--heat--level3 {' + '    background: #74c476' + '}',
+            '.cell--heat--level4 {' + '    background: #31a354;' + '}',
+            '.cell--heat--level5 {' + '    background: #006d2c;' + '}',
+            '.cell--heat--level6 {' + '    background: #eff3ff;' + '}',
+            '.cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
+            '.cell--heat--level8 {' + '    background: #6baed6' + '}',
+            '.cell--heat--level9 {' + '    background: #3182bd;' + '}',
+            '.cell--heat--level10 {' + '    background: #08519c;' + '}',
+            '.cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
+        ];
+
+        //Attach styles to DOM.
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = styles.join('\n');
+        document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    var rendererSpecificSettings = {
+        filterable: true
+    };
 
     var webchartsSettings = {
         id_cols: ['sitename', 'subjectnameoridentifier'],
@@ -519,11 +722,14 @@
             });
             flatData.push(ptObj);
         });
-        console.log(flatData);
+
         return flatData;
     }
 
     function flattenData() {
+        var t0 = performance.now();
+        //begin performance test
+
         var data;
 
         if (this.data.filtered_) {
@@ -554,16 +760,94 @@
         flatData.forEach(function(d) {
             d.flagN = config.visitOrder.indexOf(d.flag) + 1;
         });
-        return flatData;
+
+        this.data.flattened = flatData;
+        this.data.raw = this.data.flattened.slice();
+
+        //end performance test
+        var t1 = performance.now();
+        console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
     }
 
     function onInit() {
         this.data.initial = this.data.raw;
+        flattenData.call(this);
+    }
 
-        var t0 = performance.now();
-        this.data.raw = flattenData.call(this);
-        var t1 = performance.now();
-        console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+    function update(filter) {
+        var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        //update lower slider and annotation
+        if (reset)
+            filter.lowerSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.lower);
+        filter.lowerAnnotation.text(
+            '' +
+                (filter.variable.indexOf('query') < 0
+                    ? Math.round(filter.lower * 100)
+                    : filter.lower) +
+                (filter.variable.indexOf('query') < 0 ? '%' : '')
+        );
+
+        //update upper slider and annotation
+        if (reset)
+            filter.upperSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.upper);
+        filter.upperAnnotation.text(
+            '' +
+                (filter.variable.indexOf('query') < 0
+                    ? Math.round(filter.upper * 100)
+                    : filter.upper) +
+                (filter.variable.indexOf('query') < 0 ? '%' : '')
+        );
+    }
+
+    function resetFilters() {
+        var _this = this;
+
+        this.columnControls.filters.forEach(function(filter) {
+            //Update query maximum.
+            if (filter.variable.indexOf('query') > -1)
+                filter.max = d3.max(_this.data.filtered, function(di) {
+                    return di[filter.variable];
+                });
+
+            //Reset upper and lower bounds.
+            filter.lower = filter.min;
+            filter.upper = filter.max;
+
+            //Reset sliders.
+            update.call(_this, filter, true);
+        });
+    }
+
+    function customizeFilters() {
+        var _this = this;
+
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.type === 'subsetter';
+            })
+            .on('change', function() {
+                _this.data.raw = _this.data.flattened.slice();
+                _this.data.filtered = _this.data.raw.slice();
+                _this.filters.forEach(function(filter) {
+                    _this.data.filtered = _this.data.filtered.filter(function(d) {
+                        return filter.val === 'All' || d[filter.col] === filter.val;
+                    });
+                });
+                resetFilters.call(_this);
+                _this.draw();
+            });
     }
 
     function createNestControl() {
@@ -617,10 +901,8 @@
                 });
 
             config.id_cols = uniqueLevels;
-            var t0 = performance.now();
-            chart.data.raw = flattenData.call(chart);
-            var t1 = performance.now();
-            console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+            flattenData.call(chart);
+            resetFilters.call(chart);
             chart.draw();
         });
     }
@@ -629,6 +911,7 @@
         var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
 
         var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+
         //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
         var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
 
@@ -642,13 +925,13 @@
         // might be way to pull these values from the classes setup there
         // or set them both upstream  -  for now just copy from there
         // had to slide this over slgihtly due to gridlines
-        var idCellWidth = 90;
-        var heatCellWidth;
-        isIE ? (heatCellWidth = 151.25) : (heatCellWidth = 152.25); // gridlines are little smaller in IE
+        var idCellWidth = firstColumnWidth + padding * 2;
+        var heatCellWidth = otherColumnWidth + padding * 2;
+        isIE ? (heatCellWidth = heatCellWidth + 1.25) : (heatCellWidth = heatCellWidth + 2.25); // gridlines are little smaller in IE
 
         var legendSVG = d3
             .selectAll('.wc-chart')
-            .insert('svg', ':first-child')
+            .insert('svg', 'table')
             .classed('legend', true)
             .attr('width', legendWidth)
             .attr('height', legendHeight);
@@ -668,7 +951,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + 5;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -683,7 +966,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + 5;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -702,14 +985,13 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + (idCellWidth + 5 + (heatCellWidth + 10) * 5);
+                return rectWidth * i + idCellWidth + heatCellWidth * 5;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
         var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
 
-        d3
-            .select('svg.legend')
+        d3.select('svg.legend')
             .selectAll('g')
             .data(queryTickLabels)
             .enter()
@@ -718,103 +1000,161 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + (idCellWidth + 5 + (heatCellWidth + 10) * 5);
+                return rectWidth * i + idCellWidth + heatCellWidth * 5;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
-
-        // Add dividing line next to query legend
-        legendSVG
-            .append('line') // attach a line
-            .style('stroke', 'black') // colour the line
-            .attr('x1', idCellWidth + (heatCellWidth + 10) * 5) // x position of the first end of the line
-            .attr('y1', 15) // y position of the first end of the line
-            .attr('x2', idCellWidth + (heatCellWidth + 10) * 5) // x position of the second end of the line
-            .attr('y2', 60);
     }
 
-    function clone(obj) {
-        var copy = void 0;
-
-        //boolean, number, string, null, undefined
-        if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj)
-            return obj;
-
-        //date
-        if (obj instanceof Date) {
-            copy = new Date();
-            copy.setTime(obj.getTime());
-            return copy;
-        }
-
-        //array
-        if (obj instanceof Array) {
-            copy = [];
-            for (var i = 0, len = obj.length; i < len; i++) {
-                copy[i] = clone(obj[i]);
-            }
-            return copy;
-        }
-
-        //object
-        if (obj instanceof Object) {
-            copy = {};
-            for (var attr in obj) {
-                if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
-            }
-            return copy;
-        }
-
-        throw new Error('Unable to copy [obj]! Its type is not supported.');
-    }
-
-    function applyFilters() {
+    function addResetButton(th, d) {
         var _this = this;
 
-        //If there are filters, return a filtered data array of the raw data.
-        //Otherwise return the raw data.
+        var resetButton = {};
+        resetButton.container = d3
+            .select(th)
+            .append('div')
+            .classed('reset-button-container', true);
+        resetButton.button = resetButton.container
+            .append('button')
+            .classed('reset-button', true)
+            .text('Reset sliders')
+            .on('click', function() {
+                resetFilters.call(_this);
+                _this.data.raw = _this.data.flattened;
+                _this.draw();
+            });
+        this.columnControls.resetButton = resetButton;
+    }
 
-        this.data.filtered_ = this.filters //need to make this unique for the if in flattenData
-            ? clone(this.data.initial).filter(function(d) {
-                  var match = true;
-                  _this.filters.forEach(function(filter) {
-                      if (match === true && filter.val !== 'All')
-                          match =
-                              filter.val instanceof Array
-                                  ? filter.val.indexOf(d[filter.col]) > -1
-                                  : filter.val === d[filter.col];
-                  });
-                  return match;
-              })
-            : clone(this.data.initial);
+    function layout(filter) {
+        filter.div = filter.cell
+            .append('div')
+            .datum(filter)
+            .classed('range-slider-container', true);
+
+        //lower slider
+        filter.lowerSlider = filter.div
+            .append('input')
+            .classed('range-slider filter-slider--lower', true)
+            .attr({
+                type: 'range',
+                step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                min: 0
+            });
+        filter.lowerAnnotation = filter.div
+            .append('span')
+            .classed('range-annotation range-annotation--lower', true);
+
+        //upper slider
+        filter.upperSlider = filter.div
+            .append('input')
+            .classed('range-slider filter-slider--upper', true)
+            .attr({
+                type: 'range',
+                step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                min: 0
+            });
+        filter.upperAnnotation = filter.div
+            .append('span')
+            .classed('range-annotation range-annotation--upper', true);
+    }
+
+    function filterData() {
+        var _this = this;
+
+        this.data.raw = this.data.flattened;
+        this.columnControls.filters.forEach(function(filter) {
+            _this.data.raw = _this.data.raw.filter(function(d) {
+                return (
+                    (filter.lower <= d[filter.variable] && d[filter.variable] <= filter.upper) ||
+                    (filter.lower === 0 && d[filter.variable] === 'N/A')
+                );
+            });
+        });
+    }
+
+    function onInput(filter) {
+        var context = this;
+
+        //Attach an event listener to sliders.
+        filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+            var sliders = this.parentNode.getElementsByTagName('input');
+            var slider1 = parseFloat(sliders[0].value);
+            var slider2 = parseFloat(sliders[1].value);
+
+            if (slider1 <= slider2) {
+                d.lower = slider1;
+                d.upper = slider2;
+            } else {
+                d.lower = slider2;
+                d.upper = slider1;
+            }
+
+            update.call(context, d);
+            filterData.call(context);
+            context.draw();
+        });
+    }
+
+    function addSliders(th, d) {
+        //Define layout of header cells.
+        var filter = this.columnControls.filters.find(function(filter) {
+            return filter.variable === d;
+        });
+        filter.cell = d3.select(th);
+
+        //Lay out, initialize, and define event listeners for column filter.
+        layout.call(this, filter);
+        update.call(this, filter, true);
+        onInput.call(this, filter);
+    }
+
+    function addColumnControls() {
+        var _this = this;
+
+        var context = this;
+
+        //Define custom column controls object.
+        this.columnControls = {
+            header: this.thead.append('tr').attr('id', 'column-controls'),
+            filters: this.config.cols
+                .filter(function(d) {
+                    return d !== 'id';
+                })
+                .map(function(variable) {
+                    var filter = {
+                        variable: variable,
+                        min: 0,
+                        lower: 0,
+                        max:
+                            variable.indexOf('query') < 0
+                                ? 1
+                                : d3.max(_this.data.raw, function(di) {
+                                      return di[variable];
+                                  })
+                    };
+                    filter.upper = filter.max;
+
+                    return filter;
+                })
+        };
+
+        //Add cells to header.
+        this.columnControls.cells = this.columnControls.header
+            .selectAll('th')
+            .data(this.config.cols)
+            .enter()
+            .append('th')
+            .each(function(d) {
+                if (d === 'id') addResetButton.call(context, this);
+                else addSliders.call(context, this, d);
+            });
     }
 
     function onLayout() {
-        var chart = this;
-        var selects = this.controls.wrap.selectAll('select');
-
-        selects.on('change', function() {
-            // Get the selected levels
-            var selectedfilterLevels = [];
-            selects.each(function(d, i) {
-                selectedfilterLevels.push(this.value);
-            });
-
-            // Update filters to reflect the selected levels
-            chart.filters.forEach(function(d, i) {
-                d.val = selectedfilterLevels[i];
-            });
-
-            applyFilters.call(chart);
-            var t0 = performance.now();
-            chart.data.raw = flattenData.call(chart);
-            var t1 = performance.now();
-            console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
-
-            chart.draw();
-        });
-
-        createNestControl.call(chart);
-        drawLegend.call(chart);
+        customizeFilters.call(this);
+        createNestControl.call(this);
+        drawLegend.call(this);
+        addColumnControls.call(this);
     }
 
     function customizeRows() {
@@ -918,8 +1258,7 @@
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('row--collapsed');
 
-            row
-                .classed('row--collapsed', collapsed) //toggle the class
+            row.classed('row--collapsed', collapsed) //toggle the class
                 .classed('row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
@@ -943,13 +1282,20 @@
 
     function onDraw() {
         var t0 = performance.now();
+        //begin performance test
+
         customizeRows.call(this);
         customizeCells.call(this);
         addRowDisplayToggle.call(this);
+
+        //end performance test
         var t1 = performance.now();
         console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
     }
 
+    //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function raveXplorer(element, settings) {
         var mergedSettings = merge(defaultSettings, settings),
             //Merge user settings onto default settings.
@@ -964,6 +1310,7 @@
             //Define controls.
             chart = webcharts.createTable(element, mergedSettings, controls); //Define chart.
 
+        chart.config = clone(mergedSettings);
         chart.on('init', onInit);
         chart.on('layout', onLayout);
         chart.on('draw', onDraw);

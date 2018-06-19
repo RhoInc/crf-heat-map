@@ -1,10 +1,85 @@
+export const firstColumnWidth = 100;
+export const otherColumnWidth = 150;
+export const margin = 0;
+export const padding = 1;
+export const border = 1;
+
 export default function defineStyles() {
     const styles = [
-        '.row--hidden {' + '    display: none;' + '}',
+        '.row--hidden {' +
+            '    display: none;' +
+            '}',
+        'th,' +
+        'td {' +
+            `    padding: ${padding}px !important;` +
+            '}',
+        'th:first-child,' +
+        'td:first-child {' +
+            `    width: ${firstColumnWidth}px !important;` +
+            '}',
+        'th:nth-child(n + 2),' +
+        'td:nth-child(n + 2) {' +
+            `    width: ${otherColumnWidth}px !important;` +
+            '}',
+
+        /* range sliders */
+
+        '#custom-controls th {' +
+            '    border: 1px solid lightgray !important;' +
+            '}',
+
+        '.range-slider-container {' +
+            '    position: relative;' +
+            '    width: 100%;' +
+            '    height: 30px;' +
+            '}',
+        '.range-slider {' +
+            '    width: 100%;' +
+            '    position: absolute;' +
+            '    height: 15px;' +
+            '    top: 1px;' +
+            '    overflow: hidden;' +
+            '    outline: none;' +
+            '}',
+        '.range-annotation {' +
+            '    width: 100%;' +
+            '    position: absolute;' +
+            '    font-size: 12px;' +
+            '    top: 16px;' +
+            '    overflow: hidden;' +
+            '    font-weight: normal;' +
+            '}',
+        '.range-annotation--lower {' + '    text-align: left;' + '}',
+        '.range-annotation--upper {' + '    text-align: right;' + '}',
+        '.range-slider::-webkit-slider-thumb {' +
+            '    pointer-events: all;' +
+            '    position: relative;' +
+            '    z-index: 1;' +
+            '    outline: 0;' +
+            '}',
+        '.range-slider::-moz-range-thumb {' +
+            '    pointer-events: all;' +
+            '    position: relative;' +
+            '    z-index: 10;' +
+            '    -moz-appearance: none;' +
+            '    width: 9px;' +
+            '}',
+        '.range-slider::-moz-range-track {' +
+            '    position: relative;' +
+            '    z-index: -1;' +
+            '    background-color: rgba(0, 0, 0, 1);' +
+            '    border: 0;' +
+            '}',
+        '.range-slider::-moz-range-track {' +
+            '    -moz-appearance: none;' +
+            '    background: none transparent;' +
+            '    border: 0;' +
+            '}',
+        '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
 
         /* ID cells */
 
-        '.cell--id {' + '    background: white;' + '    width: 90px;' + '}',
+        '.cell--id {' + '    background: white;' + '}',
 
         '.row--expandable .cell--id {' +
             '    color: blue;' +
@@ -20,7 +95,6 @@ export default function defineStyles() {
         '.cell--heat {' +
             '    text-align: center;' +
             '    color: transparent;' +
-            '    width: 150px;' +
             '}',
         '.cell--heat--level6:hover,' +
             '.cell--heat--level7:hover,' +
@@ -35,6 +109,24 @@ export default function defineStyles() {
             '.cell--heat--level11:hover,' +
             '.cell--heat--level4:hover,' +
             '.cell--heat--level5:hover {' +
+            '    color: white;' +
+            '}',
+        '.cell--heat {' +
+            '    text-align: center;' +
+            '}',
+        '.cell--heat--level6,' +
+            '.cell--heat--level7,' +
+            '.cell--heat--level8,' +
+            '.cell--heat--level1,' +
+            '.cell--heat--level2,' +
+            '.cell--heat--level3 {' +
+            '    color: black;' +
+            '}',
+        '.cell--heat--level9,' +
+            '.cell--heat--level10,' +
+            '.cell--heat--level11,' +
+            '.cell--heat--level4,' +
+            '.cell--heat--level5 {' +
             '    color: white;' +
             '}',
         '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',

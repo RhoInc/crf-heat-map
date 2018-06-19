@@ -15,6 +15,11 @@ d3.csv(
         if (error)
             console.log(error);
 
+        //HARDCODE BELOW//
+        //console.log('Thar be hardcodes here!');
+        //data = data.filter((d,i) => !(i%10));
+        //HARDCODE ABOVE//
+
         var settings = {};
         var instance = raveXplorer(
             '#container',
