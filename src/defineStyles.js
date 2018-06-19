@@ -1,7 +1,8 @@
-export const firstColumnWidth = 100;
+export const firstColumnWidth = 200;
 export const otherColumnWidth = 150;
 export const margin = 0;
-export const padding = 1;
+export const paddingRight = 6;
+export const paddingLeft = 6;
 export const border = 1;
 
 export default function defineStyles() {
@@ -9,25 +10,35 @@ export default function defineStyles() {
         '.row--hidden {' +
             '    display: none;' +
             '}',
-        'th,' +
-        'td {' +
-            `    padding: ${padding}px !important;` +
+        '.wc-table table thead tr th,' +
+        '.wc-table table tbody tr td {' +
+            `    padding-right: ${paddingRight}px;` +
+            `    padding-left: ${paddingLeft}px;` +
             '}',
-        'th:first-child,' +
-        'td:first-child {' +
+        '.wc-table table thead tr th:first-child,' +
+        '.wc-table table tbody tr td:first-child {' +
             `    width: ${firstColumnWidth}px !important;` +
+            '    text-align: left;' +
             '}',
-        'th:nth-child(n + 2),' +
-        'td:nth-child(n + 2) {' +
+        '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
+        '.wc-table table tbody tr td:nth-child(n + 2) {' +
             `    width: ${otherColumnWidth}px !important;` +
+            '    text-align: right;' +
+            '}',
+        '.wc-table table tbody tr:hover td {' +
+            '    border-bottom: 1px solid black;' +
+            '}',
+        '.wc-table table tbody tr:hover td:first-child {' +
+            '    border-left: 1px solid black;' +
             '}',
 
         /* range sliders */
 
-        '#custom-controls th {' +
-            '    border: 1px solid lightgray !important;' +
+        '#column-controls th {' +
             '}',
-
+        '.reset-button {' +
+            '    width: 100%;' +
+            '}',
         '.range-slider-container {' +
             '    position: relative;' +
             '    width: 100%;' +
@@ -86,14 +97,14 @@ export default function defineStyles() {
             '    cursor: pointer;' +
             '    text-decoration: underline;' +
             '}',
-        '.cell--id--level1 {' + '    padding-left: 0em !important;' + '}',
-        '.cell--id--level2 {' + '    padding-left: 1em !important;' + '}',
-        '.cell--id--level3 {' + '    padding-left: 2em !important;' + '}',
+        '.cell--id--level2 {' + '    text-indent: 1em;' + '}',
+        '.cell--id--level3 {' + '    text-indent: 2em;' + '}',
 
         /* heat cells */
 
         '.cell--heat {' +
-            '    text-align: center;' +
+            '    text-align: right;' +
+            '    font-size: 12px;' +
             '}',
         '.cell--heat--level6,' +
             '.cell--heat--level7,' +

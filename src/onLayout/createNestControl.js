@@ -1,11 +1,10 @@
-import flattenData from '../onInit/flattenData';
-import resetFilters from './addColumnControls/addResetButton/resetFilters';
+import redraw from './customizeFilters/redraw';
 
 export default function createNestControl() {
-    const chart = this;
+    const context = this;
     const config = this.config;
 
-    var idControlWrap = chart.controls.wrap.append('div').attr('class', 'control-group');
+    var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
     idControlWrap
         .append('div')
         .attr('class', 'wc-control-label')
@@ -51,8 +50,9 @@ export default function createNestControl() {
             });
 
         config.id_cols = uniqueLevels;
-        flattenData.call(chart);
-        resetFilters.call(chart);
-        chart.draw();
+        console.log(uniqueLevels);
+
+        //Summarize filtered data and redraw table.
+        redraw.call(context);
     });
 }

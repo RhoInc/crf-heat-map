@@ -1,4 +1,4 @@
-import { firstColumnWidth, otherColumnWidth, padding } from '../defineStyles';
+import { firstColumnWidth, otherColumnWidth, paddingRight, paddingLeft } from '../defineStyles';
 
 export default function drawLegend() {
     var chart = this;
@@ -21,8 +21,8 @@ export default function drawLegend() {
     // might be way to pull these values from the classes setup there
     // or set them both upstream  -  for now just copy from there
     // had to slide this over slgihtly due to gridlines
-    var idCellWidth = firstColumnWidth + padding * 2;
-    var heatCellWidth = otherColumnWidth + padding * 2;
+    var idCellWidth = firstColumnWidth + paddingRight + paddingLeft;
+    var heatCellWidth = otherColumnWidth + paddingRight + paddingLeft;
     isIE ? (heatCellWidth = heatCellWidth + 1.25) : (heatCellWidth = heatCellWidth + 2.25); // gridlines are little smaller in IE
 
     var legendSVG = d3
