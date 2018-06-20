@@ -12,7 +12,7 @@ export default function addResetButton(th, d) {
         .text('Reset sliders')
         .on('click', () => {
             resetFilters.call(this);
-            this.data.raw = this.data.flattened;
+            this.data.raw = this.data.summarized;
             this.draw();
         });
     this.columnControls.resetButton = resetButton;

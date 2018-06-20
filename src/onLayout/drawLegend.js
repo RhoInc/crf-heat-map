@@ -85,8 +85,7 @@ export default function drawLegend() {
 
     var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
 
-    d3
-        .select('svg.legend')
+    d3.select('svg.legend')
         .selectAll('g')
         .data(queryTickLabels)
         .enter()

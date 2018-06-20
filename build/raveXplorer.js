@@ -917,8 +917,7 @@
 
         var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
 
-        d3
-            .select('svg.legend')
+        d3.select('svg.legend')
             .selectAll('g')
             .data(queryTickLabels)
             .enter()
@@ -946,7 +945,7 @@
             .text('Reset sliders')
             .on('click', function() {
                 resetFilters.call(_this);
-                _this.data.raw = _this.data.flattened;
+                _this.data.raw = _this.data.summarized;
                 _this.draw();
             });
         this.columnControls.resetButton = resetButton;
@@ -988,12 +987,12 @@
     function filterData() {
         var _this = this;
 
-        this.data.raw = this.data.flattened;
+        this.data.raw = this.data.summarized;
         this.columnControls.filters.forEach(function(filter) {
             _this.data.raw = _this.data.raw.filter(function(d) {
                 return (
                     (filter.lower <= d[filter.variable] && d[filter.variable] <= filter.upper) ||
-                    (filter.lower === 0 && d[filter.variable] === 'N/A')
+                    (filter.upper === 1 && d[filter.variable] === 'N/A')
                 );
             });
         });
@@ -1088,13 +1087,19 @@
         var _this = this;
 
         this.rows = this.tbody.selectAll('tr');
+        var alteredSliders = this.columnControls.filters.some(function(di) {
+            return di.min < di.lower || di.upper < di.max;
+        });
         this.rows
             .classed('row', true)
-            .classed('row--expandable row--collapsed', function(d) {
+            .classed('row--expandable', function(d) {
                 return d.id.split('|').length < _this.config.id_cols.length;
             })
+            .classed('row--collapsed', function(d) {
+                return d.id.split('|').length < _this.config.id_cols.length && !alteredSliders;
+            })
             .classed('row--hidden', function(d) {
-                return d.id.indexOf('|') > -1;
+                return d.id.indexOf('|') > -1 && !alteredSliders;
             });
     }
 
@@ -1174,8 +1179,7 @@
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('row--collapsed');
 
-            row
-                .classed('row--collapsed', collapsed) //toggle the class
+            row.classed('row--collapsed', collapsed) //toggle the class
                 .classed('row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
