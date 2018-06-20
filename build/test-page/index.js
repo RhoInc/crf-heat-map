@@ -21,6 +21,7 @@ d3.csv(
         //HARDCODE ABOVE//
 
         var settings = {
+            exports: ['csv', 'xlsx'],
         };
         var instance = raveXplorer(
             '#container',

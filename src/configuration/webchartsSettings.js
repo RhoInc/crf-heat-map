@@ -15,6 +15,7 @@ export default function webchartsSettings() {
         searchable: false,
         sortable: false,
         pagination: false,
-        exportable: true
+        exportable: true,
+        exports: ['csv']
     };
 }

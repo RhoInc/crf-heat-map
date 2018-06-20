@@ -68,5 +68,5 @@ displays cell annotations always or only on hover
 The object below contains each Webcharts setting as of version 1.0.0.
 
 ```
-{    return {        cols: null,        headers: [            'ID',            'CRFs Entered',            'Source Data Verified',            'Frozen',            'Signed',            'Locked',            'Opened Queries',            'Answered Queries'        ],        applyCSS: true,        searchable: false,        sortable: false,        pagination: false,        exportable: true    };}}
+{    return {        cols: null,        headers: [            'ID',            'CRFs Entered',            'Source Data Verified',            'Frozen',            'Signed',            'Locked',            'Opened Queries',            'Answered Queries'        ],        applyCSS: true,        searchable: false,        sortable: false,        pagination: false,        exportable: true,        exports: ['csv']    };}}
 ```

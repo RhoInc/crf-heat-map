@@ -1,35 +1,41 @@
 import babel from 'rollup-plugin-babel';
 
-export default {
-  input: './src/wrapper.js',
-  output: {
-    name: 'raveXplorer',
-    file: './build/raveXplorer.js',
-    format: 'umd',
-    globals: {
-      d3: 'd3',
-      webcharts: 'webCharts'
-    }
-  },
-  external: (function() {
-    var dependencies = require('./package.json').dependencies;
+var pkg = require('./package.json');
 
-    return Object.keys(dependencies);
-  }()),
-  plugins: [
-    babel({
-      exclude: 'node_modules/**',
-      presets: [
-        ['env',
-          {
-            'modules': false
-          }
-        ]
-      ],
-      plugins: [
-        'external-helpers'
-      ],
-      babelrc: false
-    })
-  ]
-}
+module.exports = {
+    input: pkg.module,
+    output: {
+        name: pkg.name
+            .split('-')
+            .map((str,i) =>
+                i === 0 ?
+                    str :
+                    (str.substring(0,1).toUpperCase() + str.substring(1))
+            )
+            .join(''),
+        file: pkg.main,
+        format: 'umd',
+        globals: {
+            d3: 'd3',
+            webcharts: 'webCharts',
+			XLSX: 'XLSX'
+        },
+    },
+    external: (function() {
+        var dependencies = Object.assign(pkg.dependencies);
+
+        return Object.keys(dependencies);
+    }()),
+    plugins: [
+        babel({
+            exclude: 'node_modules/**',
+            presets: [
+                [ 'env', {modules: false} ]
+            ],
+            plugins: [
+                'external-helpers'
+            ],
+            babelrc: false
+        })
+    ]
+};

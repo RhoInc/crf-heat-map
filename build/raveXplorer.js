@@ -484,7 +484,8 @@
             searchable: false,
             sortable: false,
             pagination: false,
-            exportable: true
+            exportable: true,
+            exports: ['csv']
         };
     }
 
@@ -1267,6 +1268,250 @@
         }
     }
 
+    function deriveData() {
+        var _this = this;
+
+        this.export = {
+            nests: this.config.id_cols.map(function(id_col, i) {
+                return 'Nest ' + (i + 1) + ': ' + id_col;
+            }),
+            filters: this.filters.map(function(filter) {
+                return _this.controls.config.inputs.find(function(input) {
+                    return input.value_col === filter.col;
+                }).label;
+            })
+        };
+
+        //Define headers.
+        this.export.headers = d3.merge([
+            this.export.nests,
+            this.export.filters,
+            this.config.headers.slice(1)
+        ]);
+
+        //Define columns.
+        this.export.cols = d3.merge([
+            this.export.nests,
+            this.filters.map(function(filter) {
+                return filter.col;
+            }),
+            this.config.cols.slice(1)
+        ]);
+
+        //Define data.
+        this.export.data = this.data.filtered.slice();
+        this.export.data.forEach(function(d, i) {
+            _this.export.nests.forEach(function(id_col, j) {
+                var id_val = d.id.split(':')[j];
+                d[id_col] = id_val
+                    ? j < _this.export.nests.length - 1
+                        ? id_val.substring(1)
+                        : id_val
+                    : 'Total';
+            });
+
+            _this.filters.forEach(function(filter) {
+                d[filter.col] = filter.val;
+            });
+        });
+    }
+
+    function csv() {
+        var _this = this;
+
+        var CSVarray = [];
+
+        //header row
+        CSVarray.push(
+            this.export.headers.map(function(header) {
+                return '"' + header.replace(/"/g, '""') + '"';
+            })
+        );
+
+        //data rows
+        this.export.data.forEach(function(d) {
+            //add rows to CSV array
+            var row = _this.export.cols.map(function(col, i) {
+                var value =
+                    _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
+                        ? Math.round(d[col] * 100)
+                        : d[col];
+
+                if (typeof value === 'string') value = value.replace(/"/g, '""');
+
+                return '"' + value + '"';
+            });
+
+            CSVarray.push(row);
+        });
+
+        //transform CSV array into CSV string
+        var CSV = new Blob([CSVarray.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        var fileName = 'CRF-Heat-Map-' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.csv';
+        var link = this.wrap.select('.export#csv');
+
+        if (navigator.msSaveBlob) {
+            // IE 10+
+            link.style({
+                cursor: 'pointer',
+                'text-decoration': 'underline',
+                color: 'blue'
+            });
+            navigator.msSaveBlob(CSV, fileName);
+        } else {
+            // Browsers that support HTML5 download attribute
+            if (link.node().download !== undefined) {
+                var url = URL.createObjectURL(CSV);
+                link.node().setAttribute('href', url);
+                link.node().setAttribute('download', fileName);
+            }
+        }
+    }
+
+    function xlsx() {
+        var _this = this;
+
+        console.log(this.export);
+        var sheetName = 'CRF Summary';
+        var options = {
+            bookType: 'xlsx',
+            bookSST: true,
+            type: 'binary'
+        };
+        var arrayOfArrays = this.export.data.map(function(d) {
+            return _this.export.cols.map(function(col) {
+                return _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
+                    ? d[col] !== 'N/A'
+                        ? d[col] //Math.round(d[col]*100)
+                        : ''
+                    : d[col];
+            });
+        }); // convert data from array of objects to array of arrays.
+        var workbook = {
+            SheetNames: [sheetName, 'Current Filters'],
+            Sheets: {}
+        };
+
+        //Convert headers and data from array of arrays to sheet.
+        workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet(
+            [this.export.headers].concat(arrayOfArrays)
+        );
+        var sheet = workbook.Sheets[sheetName];
+
+        //Format percentages.
+        var cols = this.export.cols.map(function(col, i) {
+            return {
+                name: col,
+                column: String.fromCharCode(i + 65)
+            };
+        });
+        var pctCols = cols.filter(function(col) {
+            return _this.config.value_cols.indexOf(col.name) > -1 && col.name.indexOf('query') < 0;
+        });
+        var pctCells = Object.keys(sheet).filter(function(key) {
+            return (
+                pctCols
+                    .map(function(col) {
+                        return col.column;
+                    })
+                    .indexOf(key.replace(/\d+/, '')) > -1
+            );
+        });
+        pctCells.forEach(function(pctCell) {
+            sheet[pctCell].z = '0%';
+        });
+
+        //Add filters to spreadsheet.
+        workbook.Sheets[sheetName]['!autofilter'] = {
+            ref:
+                'A1:' +
+                String.fromCharCode(64 + this.export.cols.length) +
+                (this.export.data.length + 1)
+        };
+
+        //Define column widths in spreadsheet.
+        workbook.Sheets[sheetName]['!cols'] = this.export.cols.map(function(col, i) {
+            return {
+                wpx:
+                    _this.config.value_cols.indexOf(col) > -1
+                        ? 75
+                        : i < _this.config.id_cols.length
+                            ? 125
+                            : 100
+            };
+        });
+
+        //Write current filters to second sheet.
+        workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
+            [['Filter', 'Value']].concat(
+                this.filters.map(function(filter) {
+                    return [filter.col, filter.val];
+                })
+            )
+        );
+
+        var xlsx = XLSX.write(workbook, options),
+            s2ab = function s2ab(s) {
+                var buffer = new ArrayBuffer(s.length),
+                    view = new Uint8Array(buffer);
+
+                for (var i = 0; i !== s.length; ++i) {
+                    view[i] = s.charCodeAt(i) & 0xff;
+                }
+                return buffer;
+            }; // convert spreadsheet to binary or something, i don't know
+
+        //transform CSV array into CSV string
+        var blob = new Blob([s2ab(xlsx)], { type: 'application/octet-stream;' });
+        var fileName = 'CRF-Summary-' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
+        var link = this.wrap.select('.export#xlsx');
+
+        if (navigator.msSaveBlob) {
+            // IE 10+
+            link.style({
+                cursor: 'pointer',
+                'text-decoration': 'underline',
+                color: 'blue'
+            });
+            navigator.msSaveBlob(blob, fileName);
+        } else {
+            // Browsers that support HTML5 download attribute
+            if (link.node().download !== undefined) {
+                var url = URL.createObjectURL(blob);
+                link.node().setAttribute('href', url);
+                link.node().setAttribute('download', fileName);
+            }
+        }
+    }
+
+    function dataExport() {
+        var _this = this;
+
+        //Export to .csv.
+        if (
+            this.config.exports.find(function(export_) {
+                return export_ === 'csv';
+            })
+        ) {
+            deriveData.call(this);
+            this.wrap.select('.export#csv').on('click', function() {
+                csv.call(_this);
+            });
+        }
+
+        //Export to .xlsx.
+        if (
+            this.config.exports.find(function(export_) {
+                return export_ === 'xlsx';
+            })
+        ) {
+            deriveData.call(this);
+            this.wrap.select('.export#xlsx').on('click', function() {
+                xlsx.call(_this);
+            });
+        }
+    }
+
     function onDraw() {
         var t0 = performance.now();
         //begin performance test
@@ -1275,6 +1520,7 @@
         customizeCells.call(this);
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);
+        dataExport.call(this);
 
         //end performance test
         var t1 = performance.now();
