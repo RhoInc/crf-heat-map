@@ -917,7 +917,8 @@
 
         var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
 
-        d3.select('svg.legend')
+        d3
+            .select('svg.legend')
             .selectAll('g')
             .data(queryTickLabels)
             .enter()
@@ -1179,7 +1180,8 @@
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('row--collapsed');
 
-            row.classed('row--collapsed', collapsed) //toggle the class
+            row
+                .classed('row--collapsed', collapsed) //toggle the class
                 .classed('row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
@@ -1251,15 +1253,13 @@
         //Define data.
         this.export.data = this.data.filtered.slice();
         this.export.data.forEach(function(d, i) {
+            //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
-                var id_val = d.id.split(':')[j];
-                d[id_col] = id_val
-                    ? j < _this.export.nests.length - 1
-                        ? id_val.substring(1)
-                        : id_val
-                    : 'Total';
+                var id_val = d.id.split('|')[j];
+                d[id_col] = id_val || 'Total';
             });
 
+            //Add filters to export.
             _this.filters.forEach(function(filter) {
                 d[filter.col] = filter.val;
             });

@@ -24,15 +24,13 @@ export default function deriveData() {
     //Define data.
     this.export.data = this.data.filtered.slice();
     this.export.data.forEach((d, i) => {
+        //Split ID variable into as many columns as nests currently in place.
         this.export.nests.forEach((id_col, j) => {
-            const id_val = d.id.split(':')[j];
-            d[id_col] = id_val
-                ? j < this.export.nests.length - 1
-                    ? id_val.substring(1)
-                    : id_val
-                : 'Total';
+            const id_val = d.id.split('|')[j];
+            d[id_col] = id_val || 'Total';
         });
 
+        //Add filters to export.
         this.filters.forEach(filter => {
             d[filter.col] = filter.val;
         });

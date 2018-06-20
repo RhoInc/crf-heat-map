@@ -15,11 +15,6 @@ d3.csv(
         if (error)
             console.log(error);
 
-        //HARDCODE BELOW//
-        //console.log('Thar be hardcodes here!');
-        //data = data.filter(function(d,i) { return !(i%10); });
-        //HARDCODE ABOVE//
-
         var settings = {
             exports: ['csv', 'xlsx'],
         };
