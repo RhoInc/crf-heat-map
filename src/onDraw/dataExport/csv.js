@@ -1,8 +1,27 @@
 export default function csv() {
     const CSVarray = [];
 
+    var table = this;
+
+    //add filters info after last column - similar second tab of xlsx
+    this.export.headers.push('Filter', 'Value')
+    this.export.cols.push('Filter', 'Value')
+
     //header row
     CSVarray.push(this.export.headers.map(header => `"${header.replace(/"/g, '""')}"`));
+
+
+    this.export.data.forEach((d,i) => {
+      d['Filter'] = ''
+      d['Value'] = ''
+    })
+
+
+    this.filters.forEach((d,i) => {
+      table.export.data[i]['Filter'] = d.col ;
+      table.export.data[i]['Value'] = d.val;
+    })
+
 
     //data rows
     this.export.data.forEach(d => {
@@ -42,4 +61,7 @@ export default function csv() {
             link.node().setAttribute('download', fileName);
         }
     }
+
+    // delete export so that xlsx doesn't have filter cols in tab 1
+    delete this.export
 }

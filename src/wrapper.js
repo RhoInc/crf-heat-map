@@ -13,7 +13,7 @@ import onInit from './onInit';
 import onLayout from './onLayout';
 import onDraw from './onDraw';
 
-export default function raveXplorer(element, settings) {
+export default function crfHeatMap(element, settings) {
     const defaultSettings = Object.assign(
         {},
         configuration.rendererSettings(),

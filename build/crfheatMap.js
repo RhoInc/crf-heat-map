@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts')) :
 	typeof define === 'function' && define.amd ? define(['webcharts'], factory) :
-	(global.raveXplorer = factory(global.webCharts));
+	(global.crfHeatMap = factory(global.webCharts));
 }(this, (function (webcharts) { 'use strict';
 
 if (typeof Object.assign != 'function') {
