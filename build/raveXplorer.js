@@ -353,7 +353,8 @@ function rendererSettings() {
         id_cols: ['sitename', 'subjectnameoridentifier'],
         value_cols: ['is_partial_entry', 'DATA_PAGE_VERIFIED', 'is_frozen', 'is_signed', 'is_locked', 'open_query_cnt', 'answer_query_cnt'],
         filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
-        display_cell_annotations: true
+        display_cell_annotations: true,
+        expand_all: false
     };
 }
 
@@ -404,6 +405,10 @@ function controlInputs() {
         type: 'checkbox',
         option: 'display_cell_annotations',
         label: 'Display Cell Annotations'
+    }, {
+        type: 'checkbox',
+        option: 'expand_all',
+        label: 'Expand All'
     }];
 }
 
@@ -538,6 +543,12 @@ function update(filter) {
 
 function resetFilters() {
     var _this = this;
+
+    //collapse rows and uncheck 'Expand All' Box
+    this.config.expand_all = false;
+    this.controls.wrap.selectAll('.control-group').filter(function (f) {
+        return f.option === 'expand_all';
+    }).select('input').property('checked', false);
 
     this.columnControls.filters.forEach(function (filter) {
         //Update query maximum.
@@ -739,6 +750,12 @@ function onInput(filter) {
 
     //Attach an event listener to sliders.
     filter.sliders = filter.div.selectAll('.range-slider').on('input', function (d) {
+        //expand rows and check 'Expand All' Box
+        context.config.expand_all = true;
+        context.controls.wrap.selectAll('.control-group').filter(function (f) {
+            return f.option === 'expand_all';
+        }).select('input').property('checked', true);
+
         var sliders = this.parentNode.getElementsByTagName('input');
         var slider1 = parseFloat(sliders[0].value);
         var slider2 = parseFloat(sliders[1].value);
@@ -812,15 +829,12 @@ function customizeRows() {
     var _this = this;
 
     this.rows = this.tbody.selectAll('tr');
-    var alteredSliders = this.columnControls.filters.some(function (di) {
-        return di.min < di.lower || di.upper < di.max;
-    });
     this.rows.classed('row', true).classed('row--expandable', function (d) {
         return d.id.split('|').length < _this.config.id_cols.length;
     }).classed('row--collapsed', function (d) {
-        return d.id.split('|').length < _this.config.id_cols.length && !alteredSliders;
+        return d.id.split('|').length < _this.config.id_cols.length;
     }).classed('row--hidden', function (d) {
-        return d.id.indexOf('|') > -1 && !alteredSliders;
+        return d.id.indexOf('|') > -1;
     });
 }
 
@@ -845,6 +859,10 @@ function customizeCells() {
 function addRowDisplayToggle() {
     var chart = this;
     var config = this.config;
+
+    if (this.config.expand_all) {
+        this.rows.classed('row--hidden', false);
+    }
 
     var expandable_rows = this.rows.filter(function (d) {
         return d.id.split('|').length < config.id_cols.length;
@@ -894,7 +912,7 @@ function toggleCellAnnotations() {
     }
 }
 
-function deriveData(type) {
+function deriveData() {
     var _this = this;
 
     this.export = {
@@ -936,11 +954,6 @@ function csv() {
     this.export.headers.push('Filter', 'Value');
     this.export.cols.push('Filter', 'Value');
 
-    //header row
-    CSVarray.push(this.export.headers.map(function (header) {
-        return '"' + header.replace(/"/g, '""') + '"';
-    }));
-
     this.export.data.forEach(function (d, i) {
         d['Filter'] = '';
         d['Value'] = '';
@@ -950,6 +963,11 @@ function csv() {
         table.export.data[i]['Filter'] = d.col;
         table.export.data[i]['Value'] = d.val;
     });
+
+    //header row
+    CSVarray.push(this.export.headers.map(function (header) {
+        return '"' + header.replace(/"/g, '""') + '"';
+    }));
 
     //data rows
     this.export.data.forEach(function (d) {
@@ -994,7 +1012,6 @@ function csv() {
 function xlsx() {
     var _this = this;
 
-    console.log(this.export);
     var sheetName = 'CRF Summary';
     var options = {
         bookType: 'xlsx',
@@ -1092,8 +1109,8 @@ function dataExport() {
     if (this.config.exports.find(function (export_) {
         return export_ === 'csv';
     })) {
-        deriveData.call(this);
         this.wrap.select('.export#csv').on('click', function () {
+            deriveData.call(_this);
             csv.call(_this);
         });
     }
@@ -1102,8 +1119,8 @@ function dataExport() {
     if (this.config.exports.find(function (export_) {
         return export_ === 'xlsx';
     })) {
-        deriveData.call(this);
         this.wrap.select('.export#xlsx').on('click', function () {
+            deriveData.call(_this);
             xlsx.call(_this);
         });
     }

@@ -1,6 +1,5 @@
-export default function deriveData(type) {
-
-  var table = this;
+export default function deriveData() {
+    var table = this;
 
     this.export = {
         nests: this.config.id_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
@@ -11,10 +10,7 @@ export default function deriveData(type) {
     };
 
     //Define headers.
-    this.export.headers = d3.merge([
-        this.export.nests,
-        this.config.headers.slice(1),
-    ]);
+    this.export.headers = d3.merge([this.export.nests, this.config.headers.slice(1)]);
 
     //Define columns.
     this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);

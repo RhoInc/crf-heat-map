@@ -4,24 +4,21 @@ export default function csv() {
     var table = this;
 
     //add filters info after last column - similar second tab of xlsx
-    this.export.headers.push('Filter', 'Value')
-    this.export.cols.push('Filter', 'Value')
+    this.export.headers.push('Filter', 'Value');
+    this.export.cols.push('Filter', 'Value');
+
+    this.export.data.forEach((d, i) => {
+        d['Filter'] = '';
+        d['Value'] = '';
+    });
+
+    this.filters.forEach((d, i) => {
+        table.export.data[i]['Filter'] = d.col;
+        table.export.data[i]['Value'] = d.val;
+    });
 
     //header row
     CSVarray.push(this.export.headers.map(header => `"${header.replace(/"/g, '""')}"`));
-
-
-    this.export.data.forEach((d,i) => {
-      d['Filter'] = ''
-      d['Value'] = ''
-    })
-
-
-    this.filters.forEach((d,i) => {
-      table.export.data[i]['Filter'] = d.col ;
-      table.export.data[i]['Value'] = d.val;
-    })
-
 
     //data rows
     this.export.data.forEach(d => {
@@ -63,5 +60,5 @@ export default function csv() {
     }
 
     // delete export so that xlsx doesn't have filter cols in tab 1
-    delete this.export
+    delete this.export;
 }

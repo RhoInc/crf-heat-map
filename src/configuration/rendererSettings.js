@@ -11,6 +11,7 @@ export default function rendererSettings() {
             'answer_query_cnt'
         ],
         filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
-        display_cell_annotations: true
+        display_cell_annotations: true,
+        expand_all: false
     };
 }

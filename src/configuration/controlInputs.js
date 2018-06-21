@@ -34,6 +34,11 @@ export default function controlInputs() {
             type: 'checkbox',
             option: 'display_cell_annotations',
             label: 'Display Cell Annotations'
+        },
+        {
+            type: 'checkbox',
+            option: 'expand_all',
+            label: 'Expand All'
         }
     ];
 }
