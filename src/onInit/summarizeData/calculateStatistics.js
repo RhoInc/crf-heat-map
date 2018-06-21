@@ -27,7 +27,7 @@ export default function calculateStatistics() {
                                 ? summary.nNeedsSignature
                                     ? count / summary.nNeedsSignature
                                     : 'N/A'
-                                : ['has_open_query', 'has_answered_query'].indexOf(value_col) > -1
+                                : ['open_query_cnt', 'answer_query_cnt'].indexOf(value_col) > -1
                                     ? count
                                     : console.log(`Missed one: ${value_col}`);
             });
