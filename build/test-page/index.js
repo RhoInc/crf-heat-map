@@ -7,18 +7,13 @@ if (window.origin !== 'https://rhoinc.github.io') {
 }
 
 d3.csv(
-    'https://cdn.rawgit.com/RhoInc/rave-xplorer/master/build/test-page/rx_DataPage.csv',
+    './rx_DataPage.csv',
     function(d) {
         return d;
     },
     function(error, data) {
         if (error)
             console.log(error);
-
-        //HARDCODE BELOW//
-        console.log('Thar be hardcodes here!');
-        data = data.filter(function(d,i) { return !(i%10); });
-        //HARDCODE ABOVE//
 
         var settings = {
             exports: ['csv', 'xlsx'],

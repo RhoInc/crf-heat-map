@@ -330,27 +330,39 @@
         return target;
     }
 
-    var firstColumnWidth = 100;
+    var firstColumnWidth = 200;
     var otherColumnWidth = 150;
 
-    var padding = 1;
+    var paddingRight = 6;
+    var paddingLeft = 6;
 
     function defineStyles() {
         var styles = [
             '.row--hidden {' + '    display: none;' + '}',
-            'th,' + 'td {' + ('    padding: ' + padding + 'px !important;') + '}',
-            'th:first-child,' +
-                'td:first-child {' +
-                ('    width: ' + firstColumnWidth + 'px !important;') +
+            '.wc-table table thead tr th,' +
+                '.wc-table table tbody tr td {' +
+                ('    padding-right: ' + paddingRight + 'px;') +
+                ('    padding-left: ' + paddingLeft + 'px;') +
                 '}',
-            'th:nth-child(n + 2),' +
-                'td:nth-child(n + 2) {' +
+            '.wc-table table thead tr th:first-child,' +
+                '.wc-table table tbody tr td:first-child {' +
+                ('    width: ' + firstColumnWidth + 'px !important;') +
+                '    text-align: left;' +
+                '}',
+            '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
+                '.wc-table table tbody tr td:nth-child(n + 2) {' +
                 ('    width: ' + otherColumnWidth + 'px !important;') +
+                '    text-align: right;' +
+                '}',
+            '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}',
+            '.wc-table table tbody tr:hover td:first-child {' +
+                '    border-left: 1px solid black;' +
                 '}',
 
             /* range sliders */
 
-            '#custom-controls th {' + '    border: 1px solid lightgray !important;' + '}',
+            '#column-controls th {' + '}',
+            '.reset-button {' + '    width: 100%;' + '}',
             '.range-slider-container {' +
                 '    position: relative;' +
                 '    width: 100%;' +
@@ -408,13 +420,12 @@
                 '    cursor: pointer;' +
                 '    text-decoration: underline;' +
                 '}',
-            '.cell--id--level1 {' + '    padding-left: 0em !important;' + '}',
-            '.cell--id--level2 {' + '    padding-left: 1em !important;' + '}',
-            '.cell--id--level3 {' + '    padding-left: 2em !important;' + '}',
+            '.cell--id--level2 {' + '    text-indent: 1em;' + '}',
+            '.cell--id--level3 {' + '    text-indent: 2em;' + '}',
 
             /* heat cells */
 
-            '.cell--heat {' + '    text-align: center;' + '}',
+            '.cell--heat {' + '    text-align: right;' + '    font-size: 12px;' + '}',
             '.cell--heat--level6,' +
                 '.cell--heat--level7,' +
                 '.cell--heat--level8,' +
@@ -559,188 +570,113 @@
         syncControlInputs: syncControlInputs
     };
 
-    function processData(data, settings, level) {
-        //add array item for each flag
-        var longData = [];
-        var variables = Object.keys(data[0]).filter(function(key) {
-            return settings.value_cols.indexOf(key) < 0;
-        });
-        data.forEach(function(d) {
-            //make key variable for specified levels
-            var nestKey =
-                '' +
-                level +
-                settings.id_cols
-                    .filter(function(id_col, i) {
-                        return i < level;
-                    })
-                    .map(function(id_col) {
-                        return d[id_col];
-                    })
-                    .join(':');
+    function calculateStatistics() {
+        var _this = this;
 
-            settings.value_cols.forEach(function(flag) {
-                var newD = {
-                    nestKey: nestKey
-                };
-
-                for (var i = 0; i < variables.length; i++) {
-                    newD[variables[i]] = d[variables[i]];
-                }
-                newD[flag] = d[flag];
-                newD.flag = flag;
-                longData.push(newD);
-            });
-        });
-
-        //Nest data and calculate values for cells
-        var ptCols = d3.merge([settings.id_cols, settings.filter_cols]);
-
-        var nested = d3
+        //Nest data by the ID variable defined above and calculate statistics for each summary variable.
+        var nest = d3
             .nest()
             .key(function(d) {
-                return d.nestKey;
+                return d.id;
             })
-            .key(function(d) {
-                return d['flag'];
+            .rollup(function(d) {
+                //Define denominators.
+                var summary = {
+                    nForms: d.length,
+                    nNeedsVerification: d.filter(function(di) {
+                        return di.needs_verification === '1';
+                    }).length,
+                    nNeedsSignature: d.filter(function(di) {
+                        return di.needs_signature === '1';
+                    }).length
+                };
+
+                //Define summarized values, either rates or counts.
+                _this.config.value_cols.forEach(function(value_col) {
+                    var count = d3.sum(d, function(di) {
+                        return di[value_col];
+                    });
+                    summary[value_col] =
+                        ['is_partial_entry', 'is_frozen', 'is_locked'].indexOf(value_col) > -1
+                            ? summary.nForms
+                                ? count / summary.nForms
+                                : 'N/A'
+                            : ['DATA_PAGE_VERIFIED'].indexOf(value_col) > -1
+                                ? summary.nNeedsVerification
+                                    ? count / summary.nNeedsVerification
+                                    : 'N/A'
+                                : ['is_signed'].indexOf(value_col) > -1
+                                    ? summary.nNeedsSignature
+                                        ? count / summary.nNeedsSignature
+                                        : 'N/A'
+                                    : ['has_open_query', 'has_answered_query'].indexOf(value_col) >
+                                      -1
+                                        ? count
+                                        : console.log('Missed one: ' + value_col);
+                });
+
+                return summary;
             })
-            .rollup(function(v) {
-                // Sums for Query variables
-                if (v[0].flag == 'has_open_query' || v[0].flag == 'has_answered_query') {
-                    return {
-                        raw: v,
-                        proportion: d3.sum(v, function(d) {
-                            return d[d.flag];
-                        })
-                    };
+            .entries(this.data.initial_filtered);
 
-                    // Proportions for is_signed using needs_signature as denominator
-                } else if (v[0].flag == 'is_signed') {
-                    //If there's a denominator of zero we want to catch that - right now I'm saying they're 100% done, may change that
-                    if (
-                        v.filter(function(d) {
-                            return d.needs_signature === '1';
-                        }).length === 0
-                    ) {
-                        return {
-                            raw: v,
-                            proportion: 'N/A'
-                        };
-                    } else {
-                        return {
-                            raw: v,
-                            proportion:
-                                d3.sum(v, function(d) {
-                                    return d[d.flag];
-                                }) /
-                                v.filter(function(d) {
-                                    return d.needs_signature === '1';
-                                }).length
-                        };
-                    }
-                    // Proportions for is_verified using needs_verification as denominator
-                } else if (v[0].flag == 'DATA_PAGE_VERIFIED') {
-                    //If denominator is 0 label cell N/A
-                    if (
-                        v.filter(function(d) {
-                            return d.needs_verification === '1';
-                        }).length === 0
-                    ) {
-                        return {
-                            raw: v,
-                            proportion: 'N/A'
-                        };
-                    } else {
-                        return {
-                            raw: v,
-                            proportion:
-                                d3.sum(v, function(d) {
-                                    return d[d.flag];
-                                }) /
-                                v.filter(function(d) {
-                                    return d.needs_verification === '1';
-                                }).length
-                        };
-                    }
-                } else {
-                    return {
-                        //Proportions for everybody else - using full count for denominator
-                        raw: v,
-                        proportion:
-                            d3.sum(v, function(d) {
-                                return d[d.flag];
-                            }) / v.length
-                    };
-                }
-            })
-            .entries(longData);
-
-        //Flatten the nested data
-        var flatData = [];
-
-        nested.forEach(function(d) {
-            var ptObj = {};
-            ptObj.id = d.key;
-            ptObj.level = level;
-            var ptCols = d3.merge([settings.id_cols, settings.filter_cols]);
-            ptCols.forEach(function(col) {
-                ptObj[col] = d.values[0].values.raw[0][col];
+        //Convert the nested data array to a flat data array.
+        nest.forEach(function(d) {
+            d.id = d.key;
+            delete d.key;
+            _this.config.value_cols.forEach(function(value_col) {
+                d[value_col] = d.values[value_col];
             });
-            d.values.forEach(function(v) {
-                ptObj[v.key] = v.values.proportion;
-            });
-            flatData.push(ptObj);
+            delete d.values;
         });
 
-        return flatData;
+        //Add summarized data to array of summaries.
+        this.data.summaries.push(nest);
     }
 
-    function flattenData() {
+    function summarizeData() {
+        var _this = this;
+
         var t0 = performance.now();
         //begin performance test
 
-        var data;
+        this.data.summaries = [];
 
-        if (this.data.filtered_) {
-            data = this.data.filtered_;
-        } else {
-            data = this.data.initial;
-        }
+        //Summarize data by each ID variable.
+        this.config.id_cols.forEach(function(id_col, i) {
+            //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
+            _this.data.initial_filtered.forEach(function(d) {
+                d.id = _this.config.id_cols
+                    .slice(0, i + 1)
+                    .map(function(id_col1) {
+                        return d[id_col1];
+                    })
+                    .join('|');
+            });
 
-        var config = this.config;
-
-        var flatData = [];
-        config.id_cols.forEach(function(d, i) {
-            flatData = d3.merge([flatData, processData(data, config, i + 1)]);
+            calculateStatistics.call(_this);
         });
 
-        var flatData = flatData.sort(function(a, b) {
-            return a.id.slice(1) > b.id.slice(1) ? 1 : a.id.slice(1) < b.id.slice(1) ? -1 : 0;
+        //Collapse array of arrays to array of objects.
+        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
+            return a.id < b.id ? -1 : 1;
         });
-
-        config.visitOrder = d3
-            .set(
-                flatData.map(function(d) {
-                    return d.flag;
-                })
-            )
-            .values();
-
-        flatData.forEach(function(d) {
-            d.flagN = config.visitOrder.indexOf(d.flag) + 1;
-        });
-
-        this.data.flattened = flatData;
-        this.data.raw = this.data.flattened.slice();
+        this.data.raw = this.data.summarized;
 
         //end performance test
         var t1 = performance.now();
-        console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+        console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
     }
 
     function onInit() {
         this.data.initial = this.data.raw;
-        flattenData.call(this);
+        this.data.initial_filtered = this.data.initial;
+
+        //Summarize raw data.
+        summarizeData.call(this);
+
+        //Manually set controls' data to raw data.
+        this.controls.data = this.data.initial;
+        this.controls.ready = true;
     }
 
     function update(filter) {
@@ -798,32 +734,52 @@
         });
     }
 
-    function customizeFilters() {
-        var _this = this;
+    function redraw() {
+        summarizeData.call(this);
+        resetFilters.call(this);
+        this.draw(this.data.summarized);
+    }
 
+    function customizeFilters() {
+        var context = this;
+
+        //Redefine change event listener of filters.
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
                 return d.type === 'subsetter';
             })
-            .on('change', function() {
-                _this.data.raw = _this.data.flattened.slice();
-                _this.data.filtered = _this.data.raw.slice();
-                _this.filters.forEach(function(filter) {
-                    _this.data.filtered = _this.data.filtered.filter(function(d) {
-                        return filter.val === 'All' || d[filter.col] === filter.val;
-                    });
+            .each(function(d) {
+                var dropdown = d3.select(this).select('.changer');
+                dropdown.on('change', function(di) {
+                    context.filters.find(function(filter) {
+                        return filter.col === di.value_col;
+                    }).val = dropdown.select('option:checked').text();
+                    context.data.initial_filtered = context.data.initial;
+                    context.filters
+                        .filter(function(filter) {
+                            return filter.val !== 'All';
+                        })
+                        .forEach(function(filter) {
+                            if (filter.val !== 'All')
+                                context.data.initial_filtered = context.data.initial_filtered.filter(
+                                    function(dii) {
+                                        return dii[filter.col] === filter.val;
+                                    }
+                                );
+                        });
+
+                    //Summarize filtered data and redraw table.
+                    redraw.call(context);
                 });
-                resetFilters.call(_this);
-                _this.draw();
             });
     }
 
     function createNestControl() {
-        var chart = this;
+        var context = this;
         var config = this.config;
 
-        var idControlWrap = chart.controls.wrap.append('div').attr('class', 'control-group');
+        var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
         idControlWrap
             .append('div')
             .attr('class', 'wc-control-label')
@@ -870,9 +826,10 @@
                 });
 
             config.id_cols = uniqueLevels;
-            flattenData.call(chart);
-            resetFilters.call(chart);
-            chart.draw();
+            console.log(uniqueLevels);
+
+            //Summarize filtered data and redraw table.
+            redraw.call(context);
         });
     }
 
@@ -894,8 +851,8 @@
         // might be way to pull these values from the classes setup there
         // or set them both upstream  -  for now just copy from there
         // had to slide this over slgihtly due to gridlines
-        var idCellWidth = firstColumnWidth + padding * 2;
-        var heatCellWidth = otherColumnWidth + padding * 2;
+        var idCellWidth = firstColumnWidth + paddingRight + paddingLeft;
+        var heatCellWidth = otherColumnWidth + paddingRight + paddingLeft;
         isIE ? (heatCellWidth = heatCellWidth + 1.25) : (heatCellWidth = heatCellWidth + 2.25); // gridlines are little smaller in IE
 
         var legendSVG = d3
@@ -989,7 +946,7 @@
             .text('Reset sliders')
             .on('click', function() {
                 resetFilters.call(_this);
-                _this.data.raw = _this.data.flattened;
+                _this.data.raw = _this.data.summarized;
                 _this.draw();
             });
         this.columnControls.resetButton = resetButton;
@@ -1031,12 +988,12 @@
     function filterData() {
         var _this = this;
 
-        this.data.raw = this.data.flattened;
+        this.data.raw = this.data.summarized;
         this.columnControls.filters.forEach(function(filter) {
             _this.data.raw = _this.data.raw.filter(function(d) {
                 return (
                     (filter.lower <= d[filter.variable] && d[filter.variable] <= filter.upper) ||
-                    (filter.lower === 0 && d[filter.variable] === 'N/A')
+                    (filter.upper === 1 && d[filter.variable] === 'N/A')
                 );
             });
         });
@@ -1131,13 +1088,19 @@
         var _this = this;
 
         this.rows = this.tbody.selectAll('tr');
+        var alteredSliders = this.columnControls.filters.some(function(di) {
+            return di.min < di.lower || di.upper < di.max;
+        });
         this.rows
             .classed('row', true)
-            .classed('row--expandable row--collapsed', function(d) {
-                return d.level < _this.config.id_cols.length;
+            .classed('row--expandable', function(d) {
+                return d.id.split('|').length < _this.config.id_cols.length;
+            })
+            .classed('row--collapsed', function(d) {
+                return d.id.split('|').length < _this.config.id_cols.length && !alteredSliders;
             })
             .classed('row--hidden', function(d) {
-                return d.level > 1;
+                return d.id.indexOf('|') > -1 && !alteredSliders;
             });
     }
 
@@ -1149,7 +1112,7 @@
 
                 if (d.col === 'id')
                     cellClass =
-                        cellClass + ' cell--id' + ' cell--id--level' + d.text.substring(0, 1);
+                        cellClass + ' cell--id' + ' cell--id--level' + d.text.split('|').length;
                 else {
                     cellClass = cellClass + ' cell--heat';
                     var level = void 0;
@@ -1184,9 +1147,7 @@
             })
             .text(function(d) {
                 return d.col === 'id'
-                    ? d.text.indexOf(':') > -1
-                        ? d.text.substring(d.text.lastIndexOf(':') + 1)
-                        : d.text.substring(1)
+                    ? d.text.split('|')[d.text.split('|').length - 1]
                     : d.col.indexOf('query') < 0
                         ? d.text === 'N/A'
                             ? d.text
@@ -1201,26 +1162,17 @@
 
         var expandable_rows = this.rows
             .filter(function(d) {
-                return d.level < config.id_cols.length;
+                return d.id.split('|').length < config.id_cols.length;
             })
             .select('td');
 
         //get children for each row
         expandable_rows.each(function(d) {
-            var child_id =
-                d.level +
-                1 +
-                config.id_cols
-                    .filter(function(id_col, i) {
-                        return i <= d.level - 1;
-                    })
-                    .map(function(matchVar) {
-                        return d[matchVar];
-                    })
-                    .join(':') +
-                ':';
-            d.children = chart.rows.filter(function(d) {
-                return d.id.indexOf(child_id) > -1;
+            d.children = chart.rows.filter(function(di) {
+                return (
+                    di.id.indexOf(d.id + '|') > -1 &&
+                    d.id.split('|').length === di.id.split('|').length - 1
+                );
             });
         });
 
@@ -1301,15 +1253,13 @@
         //Define data.
         this.export.data = this.data.filtered.slice();
         this.export.data.forEach(function(d, i) {
+            //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
-                var id_val = d.id.split(':')[j];
-                d[id_col] = id_val
-                    ? j < _this.export.nests.length - 1
-                        ? id_val.substring(1)
-                        : id_val
-                    : 'Total';
+                var id_val = d.id.split('|')[j];
+                d[id_col] = id_val || 'Total';
             });
 
+            //Add filters to export.
             _this.filters.forEach(function(filter) {
                 d[filter.col] = filter.val;
             });

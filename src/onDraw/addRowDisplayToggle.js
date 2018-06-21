@@ -4,21 +4,17 @@ export default function addRowDisplayToggle() {
 
     var expandable_rows = this.rows
         .filter(function(d) {
-            return d.level < config.id_cols.length;
+            return d.id.split('|').length < config.id_cols.length;
         })
         .select('td');
 
     //get children for each row
     expandable_rows.each(function(d) {
-        var child_id =
-            d.level +
-            1 +
-            config.id_cols
-                .filter((id_col, i) => i <= d.level - 1)
-                .map(matchVar => d[matchVar])
-                .join(':') +
-            ':';
-        d.children = chart.rows.filter(d => d.id.indexOf(child_id) > -1);
+        d.children = chart.rows.filter(
+            di =>
+                di.id.indexOf(d.id + '|') > -1 &&
+                d.id.split('|').length === di.id.split('|').length - 1
+        );
     });
 
     expandable_rows.on('click', function(d) {
