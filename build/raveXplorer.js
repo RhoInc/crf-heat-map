@@ -349,13 +349,30 @@ function defineStyles() {
 }
 
 function rendererSettings() {
-    return {
-        id_cols: ['sitename', 'subjectnameoridentifier'],
-        value_cols: ['is_partial_entry', 'DATA_PAGE_VERIFIED', 'is_frozen', 'is_signed', 'is_locked', 'open_query_cnt', 'answer_query_cnt'],
-        filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
-        display_cell_annotations: true,
-        expand_all: false
-    };
+  return {
+    id_cols: ['sitename', 'subjectnameoridentifier'],
+    id_colls: [{
+      value_col: 'sitename',
+      label: 'Site',
+      default: true
+    }, {
+      value_col: 'subjectnameoridentifier',
+      label: 'Subject ID',
+      default: true
+    }, {
+      value_col: 'foldername',
+      label: 'Folder',
+      default: false
+    }, {
+      value_col: 'formoid',
+      label: 'Form',
+      default: false
+    }],
+    value_cols: ['is_partial_entry', 'DATA_PAGE_VERIFIED', 'is_frozen', 'is_signed', 'is_locked', 'open_query_cnt', 'answer_query_cnt'],
+    filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
+    display_cell_annotations: true,
+    expand_all: false
+  };
 }
 
 function webchartsSettings() {
@@ -602,19 +619,21 @@ function createNestControl() {
     var context = this;
     var config = this.config;
 
+    var idList = context.initial_config.id_colls;
+    idList.push({ value_col: "none", label: "None" });
+
     var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
     idControlWrap.append('div').attr('class', 'wc-control-label').text('Show Status for:');
     var idNote = idControlWrap.append('div').attr('class', 'span-description');
-    var idList = ['None', 'sitename', 'subjectnameoridentifier', 'foldername', 'formoid'];
     var idSelects = idControlWrap.selectAll('select').data([0, 1, 2]).enter().append('select');
 
     idSelects.selectAll('option').data(function (d) {
         return d === 0 // first dropdown shouldn't have "None" option
         ? idList.filter(function (n) {
-            return n !== 'None';
+            return n.value_col !== 'none';
         }) : idList;
     }).enter().append('option').text(function (d) {
-        return d;
+        return d.label;
     }).property('selected', function (d) {
         var levelNum = d3.select(this.parentNode).datum();
         return d == config.id_cols[levelNum];
@@ -1153,6 +1172,8 @@ function crfHeatMap(element, settings) {
         inputs: syncedControlInputs
     });
     var table = webcharts.createTable(element, syncedSettings, controls);
+
+    table.initial_config = syncedSettings;
 
     table.on('init', onInit);
     table.on('layout', onLayout);
