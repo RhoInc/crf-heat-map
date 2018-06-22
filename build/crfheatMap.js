@@ -1507,6 +1507,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         var defaultSettings = Object.assign(
             {},
