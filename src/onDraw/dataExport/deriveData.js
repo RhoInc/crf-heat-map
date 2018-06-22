@@ -24,4 +24,7 @@ export default function deriveData() {
             d[id_col] = id_val || 'Total';
         });
     });
+
+    
+
 }

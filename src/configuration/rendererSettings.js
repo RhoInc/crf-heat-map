@@ -1,7 +1,6 @@
 export default function rendererSettings() {
     return {
-        id_cols: ['sitename', 'subjectnameoridentifier'],
-        id_colls: [
+        nestings: [
           {
             value_col: 'sitename',
             label: 'Site',

@@ -4,8 +4,8 @@ export default function createNestControl() {
     const context = this;
     const config = this.config;
 
-    var idList = context.initial_config.id_colls;
-    idList.push({value_col: "none", label: "None"})
+    var idList = context.initial_config.nestings;
+    idList.push({value_col: undefined, label: "None"})
 
     var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
     idControlWrap
@@ -24,7 +24,7 @@ export default function createNestControl() {
         .data(
             d =>
                 d === 0 // first dropdown shouldn't have "None" option
-                    ? idList.filter(n => n.value_col !== 'none')
+                    ? idList.filter(n => n.value_col !== undefined)
                     : idList
         )
         .enter()
@@ -34,25 +34,24 @@ export default function createNestControl() {
         })
         .property('selected', function(d) {
             var levelNum = d3.select(this.parentNode).datum();
-            return d == config.id_cols[levelNum];
+            return d.value_col == config.id_cols[levelNum];
         });
 
     idSelects.on('change', function() {
         var selectedLevels = [];
         idSelects.each(function(d, i) {
-            selectedLevels.push(this.value);
+            selectedLevels.push(idList.filter(n => n.label === this.value)[0].value_col);
         });
 
         var uniqueLevels = selectedLevels
             .filter(function(f) {
-                return f != 'None';
+                return f != undefined;
             })
             .filter(function(item, pos) {
                 return selectedLevels.indexOf(item) == pos;
             });
 
         config.id_cols = uniqueLevels;
-        console.log(uniqueLevels);
 
         //Summarize filtered data and redraw table.
         redraw.call(context);

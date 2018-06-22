@@ -350,8 +350,7 @@ function defineStyles() {
 
 function rendererSettings() {
   return {
-    id_cols: ['sitename', 'subjectnameoridentifier'],
-    id_colls: [{
+    nestings: [{
       value_col: 'sitename',
       label: 'Site',
       default: true
@@ -389,6 +388,11 @@ function webchartsSettings() {
 }
 
 function syncSettings(settings) {
+    settings.id_cols = settings.nestings.filter(function (d) {
+        return d.default === true;
+    }).map(function (f) {
+        return f.value_col;
+    });
     settings.cols = d3.merge([['id'], settings.value_cols]);
     return settings;
 }
@@ -550,19 +554,12 @@ function update(filter) {
     }).property('value', filter.lower);
     filter.lowerAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.lower * 100) : filter.lower) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
 
-    // //update upper slider and annotation
-    // if (reset)
-    //     filter.upperSlider
-    //         .attr({
-    //             min: filter.min,
-    //             max: filter.max
-    //         })
-    //         .property('value', filter.upper);
-    // filter.upperAnnotation.text(
-    //     `${filter.variable.indexOf('query') < 0 ? Math.round(filter.upper * 100) : filter.upper}${
-    //         filter.variable.indexOf('query') < 0 ? '%' : ''
-    //     }`
-    // );
+    //update upper slider and annotation
+    if (reset) filter.upperSlider.attr({
+        min: filter.min,
+        max: filter.max
+    }).property('value', filter.upper);
+    filter.upperAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.upper * 100) : filter.upper) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
 }
 
 function resetFilters() {
@@ -626,8 +623,8 @@ function createNestControl() {
     var context = this;
     var config = this.config;
 
-    var idList = context.initial_config.id_colls;
-    idList.push({ value_col: "none", label: "None" });
+    var idList = context.initial_config.nestings;
+    idList.push({ value_col: undefined, label: "None" });
 
     var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
     idControlWrap.append('div').attr('class', 'wc-control-label').text('Show Status for:');
@@ -637,29 +634,32 @@ function createNestControl() {
     idSelects.selectAll('option').data(function (d) {
         return d === 0 // first dropdown shouldn't have "None" option
         ? idList.filter(function (n) {
-            return n.value_col !== 'none';
+            return n.value_col !== undefined;
         }) : idList;
     }).enter().append('option').text(function (d) {
         return d.label;
     }).property('selected', function (d) {
         var levelNum = d3.select(this.parentNode).datum();
-        return d == config.id_cols[levelNum];
+        return d.value_col == config.id_cols[levelNum];
     });
 
     idSelects.on('change', function () {
         var selectedLevels = [];
         idSelects.each(function (d, i) {
-            selectedLevels.push(this.value);
+            var _this = this;
+
+            selectedLevels.push(idList.filter(function (n) {
+                return n.label === _this.value;
+            })[0].value_col);
         });
 
         var uniqueLevels = selectedLevels.filter(function (f) {
-            return f != 'None';
+            return f != undefined;
         }).filter(function (item, pos) {
             return selectedLevels.indexOf(item) == pos;
         });
 
         config.id_cols = uniqueLevels;
-        console.log(uniqueLevels);
 
         //Summarize filtered data and redraw table.
         redraw.call(context);
@@ -741,46 +741,35 @@ function addResetButton(th, d) {
 }
 
 function layout(filter) {
-      filter.div = filter.cell.append('div').datum(filter).classed('range-slider-container', true);
+    filter.div = filter.cell.append('div').datum(filter).classed('range-slider-container', true);
 
-      //lower slider
-      filter.lowerSlider = filter.div.append('div').classed('range-slider filter-slider--lower', true).attr("id", "lower");
+    //lower slider
+    filter.lowerSlider = filter.div.append('input').classed('range-slider filter-slider--lower', true).attr({
+        type: 'range',
+        step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+        min: 0
+    });
 
-      $(".range-slider").slider({
+    // var html5Slider = document.getElementsByI(".range-slider");
+    //
+    //         noUiSlider.create(html5Slider, {
+    //         	start: [ 10, 30 ],
+    //         	connect: true,
+    //         	range: {
+    //         		'min': -20,
+    //         		'max': 40
+    //         	}
+    //         });
 
-            range: true,
+    filter.lowerAnnotation = filter.div.append('span').classed('range-annotation range-annotation--lower', true);
 
-            min: 0,
-
-            max: 100,
-
-            values: [0, 100],
-
-            slide: function slide(event, ui) {
-
-                  $(".range-annotation").val(ui.values[0] + "% - " + ui.values[1] + "%");
-            }
-
-      });
-
-      $(".range-annotation").val($(".range-slider").slider("values", 0) + "% - " + $(".range-slider").slider("values", 1) + "%");
-
-      
-
-      filter.lowerAnnotation = filter.div.append('span').classed('range-annotation range-annotation--lower', true).append("p").append("input").attr({ "type": "text", "readonly": true });
-
-      // //upper slider
-      // filter.upperSlider = filter.div
-      //     .append('input')
-      //     .classed('range-slider filter-slider--upper', true)
-      //     .attr({
-      //         type: 'range',
-      //         step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-      //         min: 0
-      //     });
-      // filter.upperAnnotation = filter.div
-      //     .append('span')
-      //     .classed('range-annotation range-annotation--upper', true);
+    //upper slider
+    filter.upperSlider = filter.div.append('input').classed('range-slider filter-slider--upper', true).attr({
+        type: 'range',
+        step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+        min: 0
+    });
+    filter.upperAnnotation = filter.div.append('span').classed('range-annotation range-annotation--upper', true);
 }
 
 function filterData() {
@@ -800,18 +789,23 @@ function onInput(filter) {
     //Attach an event listener to sliders.
     filter.sliders = filter.div.selectAll('.range-slider').on('input', function (d) {
 
-        //expand rows and check 'Expand All' Box
+        //expand rows and check 'Expand All'
         context.config.expand_all = true;
         context.controls.wrap.selectAll('.control-group').filter(function (f) {
             return f.option === 'expand_all';
         }).select('input').property('checked', true);
 
         var sliders = this.parentNode.getElementsByTagName('input');
-        var slider1 = parseFloat($(".range-annotation").val(ui.values[0]));
-        var slider2 = parseFloat($(".range-annotation").val(ui.values[1]));
+        var slider1 = parseFloat(sliders[0].value);
+        var slider2 = parseFloat(sliders[1].value);
 
-        d.lower = slider1;
-        d.upper = slider2;
+        if (slider1 <= slider2) {
+            d.lower = slider1;
+            d.upper = slider2;
+        } else {
+            d.lower = slider2;
+            d.upper = slider1;
+        }
 
         update.call(context, d);
         filterData.call(context);
@@ -864,10 +858,11 @@ function addColumnControls() {
 }
 
 function onLayout() {
-    customizeFilters.call(this);
-    createNestControl.call(this);
-    drawLegend.call(this);
-    addColumnControls.call(this);
+  console.log(this.config.id_cols);
+  customizeFilters.call(this);
+  createNestControl.call(this);
+  drawLegend.call(this);
+  addColumnControls.call(this);
 }
 
 function customizeRows() {

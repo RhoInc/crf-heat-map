@@ -9,50 +9,39 @@ export default function layout(filter) {
 
     //lower slider
     filter.lowerSlider = filter.div
-        .append('div')
-        .classed('range-slider filter-slider--lower', true).attr("id", "lower")
+        .append('input')
+        .classed('range-slider filter-slider--lower', true)
+        .attr({
+            type: 'range',
+            step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+            min: 0
+        });
 
-        $(".range-slider").slider({
-
-      range: true,
-
-      min: 0,
-
-      max: 100,
-
-      values: [ 0, 100 ],
-
-      slide: function( event, ui ) {
-
-        $( ".range-annotation" ).val(ui.values[ 0 ] + "% - " + ui.values[ 1 ] + "%" );
-
-      }
-
-    });
-
-    $( ".range-annotation" ).val($( ".range-slider" ).slider( "values", 0 ) +
-
-      "% - " + $( ".range-slider" ).slider( "values", 1 ) + "%" );
-
-  ;
-
-
+// var html5Slider = document.getElementsByI(".range-slider");
+//
+//         noUiSlider.create(html5Slider, {
+//         	start: [ 10, 30 ],
+//         	connect: true,
+//         	range: {
+//         		'min': -20,
+//         		'max': 40
+//         	}
+//         });
 
     filter.lowerAnnotation = filter.div
         .append('span')
-        .classed('range-annotation range-annotation--lower', true).append("p").append("input").attr({"type":"text", "readonly": true}
-  )
+        .classed('range-annotation range-annotation--lower', true);
 
-    // //upper slider
-    // filter.upperSlider = filter.div
-    //     .append('input')
-    //     .classed('range-slider filter-slider--upper', true)
-    //     .attr({
-    //         type: 'range',
-    //         step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-    //         min: 0
-    //     });
-    // filter.upperAnnotation = filter.div
-    //     .append('span')
-    //     .classed('range-annotation range-annotation--upper', true);
+    //upper slider
+    filter.upperSlider = filter.div
+        .append('input')
+        .classed('range-slider filter-slider--upper', true)
+        .attr({
+            type: 'range',
+            step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+            min: 0
+        });
+    filter.upperAnnotation = filter.div
+        .append('span')
+        .classed('range-annotation range-annotation--upper', true);
 }
