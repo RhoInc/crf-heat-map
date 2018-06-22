@@ -2,6 +2,10 @@ export default function addRowDisplayToggle() {
     var chart = this;
     var config = this.config;
 
+    if (this.config.expand_all) {
+        this.rows.classed('row--hidden', false);
+    }
+
     var expandable_rows = this.rows
         .filter(function(d) {
             return d.id.split('|').length < config.id_cols.length;

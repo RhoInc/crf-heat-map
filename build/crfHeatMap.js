@@ -3,7 +3,7 @@
         ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
             ? define(['webcharts'], factory)
-            : (global.raveXplorer = factory(global.webCharts));
+            : (global.crfHeatMap = factory(global.webCharts));
 })(this, function(webcharts) {
     'use strict';
 
@@ -470,11 +470,12 @@
                 'is_frozen',
                 'is_signed',
                 'is_locked',
-                'has_open_query',
-                'has_answered_query'
+                'open_query_cnt',
+                'answer_query_cnt'
             ],
             filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
-            display_cell_annotations: true
+            display_cell_annotations: true,
+            expand_all: false
         };
     }
 
@@ -541,6 +542,11 @@
                 type: 'checkbox',
                 option: 'display_cell_annotations',
                 label: 'Display Cell Annotations'
+            },
+            {
+                type: 'checkbox',
+                option: 'expand_all',
+                label: 'Expand All'
             }
         ];
     }
@@ -609,8 +615,7 @@
                                     ? summary.nNeedsSignature
                                         ? count / summary.nNeedsSignature
                                         : 'N/A'
-                                    : ['has_open_query', 'has_answered_query'].indexOf(value_col) >
-                                      -1
+                                    : ['open_query_cnt', 'answer_query_cnt'].indexOf(value_col) > -1
                                         ? count
                                         : console.log('Missed one: ' + value_col);
                 });
@@ -717,6 +722,16 @@
 
     function resetFilters() {
         var _this = this;
+
+        //collapse rows and uncheck 'Expand All' Box
+        this.config.expand_all = false;
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(f) {
+                return f.option === 'expand_all';
+            })
+            .select('input')
+            .property('checked', false);
 
         this.columnControls.filters.forEach(function(filter) {
             //Update query maximum.
@@ -1004,6 +1019,16 @@
 
         //Attach an event listener to sliders.
         filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+            //expand rows and check 'Expand All' Box
+            context.config.expand_all = true;
+            context.controls.wrap
+                .selectAll('.control-group')
+                .filter(function(f) {
+                    return f.option === 'expand_all';
+                })
+                .select('input')
+                .property('checked', true);
+
             var sliders = this.parentNode.getElementsByTagName('input');
             var slider1 = parseFloat(sliders[0].value);
             var slider2 = parseFloat(sliders[1].value);
@@ -1088,19 +1113,16 @@
         var _this = this;
 
         this.rows = this.tbody.selectAll('tr');
-        var alteredSliders = this.columnControls.filters.some(function(di) {
-            return di.min < di.lower || di.upper < di.max;
-        });
         this.rows
             .classed('row', true)
             .classed('row--expandable', function(d) {
                 return d.id.split('|').length < _this.config.id_cols.length;
             })
             .classed('row--collapsed', function(d) {
-                return d.id.split('|').length < _this.config.id_cols.length && !alteredSliders;
+                return d.id.split('|').length < _this.config.id_cols.length;
             })
             .classed('row--hidden', function(d) {
-                return d.id.indexOf('|') > -1 && !alteredSliders;
+                return d.id.indexOf('|') > -1;
             });
     }
 
@@ -1159,6 +1181,10 @@
     function addRowDisplayToggle() {
         var chart = this;
         var config = this.config;
+
+        if (this.config.expand_all) {
+            this.rows.classed('row--hidden', false);
+        }
 
         var expandable_rows = this.rows
             .filter(function(d) {
@@ -1235,20 +1261,10 @@
         };
 
         //Define headers.
-        this.export.headers = d3.merge([
-            this.export.nests,
-            this.export.filters,
-            this.config.headers.slice(1)
-        ]);
+        this.export.headers = d3.merge([this.export.nests, this.config.headers.slice(1)]);
 
         //Define columns.
-        this.export.cols = d3.merge([
-            this.export.nests,
-            this.filters.map(function(filter) {
-                return filter.col;
-            }),
-            this.config.cols.slice(1)
-        ]);
+        this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
         //Define data.
         this.export.data = this.data.filtered.slice();
@@ -1258,11 +1274,6 @@
                 var id_val = d.id.split('|')[j];
                 d[id_col] = id_val || 'Total';
             });
-
-            //Add filters to export.
-            _this.filters.forEach(function(filter) {
-                d[filter.col] = filter.val;
-            });
         });
     }
 
@@ -1270,6 +1281,22 @@
         var _this = this;
 
         var CSVarray = [];
+
+        var table = this;
+
+        //add filters info after last column - similar second tab of xlsx
+        this.export.headers.push('Filter', 'Value');
+        this.export.cols.push('Filter', 'Value');
+
+        this.export.data.forEach(function(d, i) {
+            d['Filter'] = '';
+            d['Value'] = '';
+        });
+
+        this.filters.forEach(function(d, i) {
+            table.export.data[i]['Filter'] = d.col;
+            table.export.data[i]['Value'] = d.val;
+        });
 
         //header row
         CSVarray.push(
@@ -1316,12 +1343,14 @@
                 link.node().setAttribute('download', fileName);
             }
         }
+
+        // delete export so that xlsx doesn't have filter cols in tab 1
+        delete this.export;
     }
 
     function xlsx() {
         var _this = this;
 
-        console.log(this.export);
         var sheetName = 'CRF Summary';
         var options = {
             bookType: 'xlsx',
@@ -1443,8 +1472,8 @@
                 return export_ === 'csv';
             })
         ) {
-            deriveData.call(this);
             this.wrap.select('.export#csv').on('click', function() {
+                deriveData.call(_this);
                 csv.call(_this);
             });
         }
@@ -1455,8 +1484,8 @@
                 return export_ === 'xlsx';
             })
         ) {
-            deriveData.call(this);
             this.wrap.select('.export#xlsx').on('click', function() {
+                deriveData.call(_this);
                 xlsx.call(_this);
             });
         }
@@ -1480,7 +1509,7 @@
     //utility functions
     //styles, configuration, and webcharts
     //table callbacks
-    function raveXplorer(element, settings) {
+    function crfHeatMap(element, settings) {
         var defaultSettings = Object.assign(
             {},
             configuration.rendererSettings(),
@@ -1505,5 +1534,5 @@
         return table;
     }
 
-    return raveXplorer;
+    return crfHeatMap;
 });

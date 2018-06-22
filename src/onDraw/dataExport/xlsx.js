@@ -1,5 +1,4 @@
 export default function xlsx() {
-    console.log(this.export);
     const sheetName = 'CRF Summary';
     const options = {
         bookType: 'xlsx',

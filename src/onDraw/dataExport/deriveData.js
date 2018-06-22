@@ -1,4 +1,6 @@
 export default function deriveData() {
+    var table = this;
+
     this.export = {
         nests: this.config.id_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
         filters: this.filters.map(
@@ -8,18 +10,10 @@ export default function deriveData() {
     };
 
     //Define headers.
-    this.export.headers = d3.merge([
-        this.export.nests,
-        this.export.filters,
-        this.config.headers.slice(1)
-    ]);
+    this.export.headers = d3.merge([this.export.nests, this.config.headers.slice(1)]);
 
     //Define columns.
-    this.export.cols = d3.merge([
-        this.export.nests,
-        this.filters.map(filter => filter.col),
-        this.config.cols.slice(1)
-    ]);
+    this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
     //Define data.
     this.export.data = this.data.filtered.slice();
@@ -28,11 +22,6 @@ export default function deriveData() {
         this.export.nests.forEach((id_col, j) => {
             const id_val = d.id.split('|')[j];
             d[id_col] = id_val || 'Total';
-        });
-
-        //Add filters to export.
-        this.filters.forEach(filter => {
-            d[filter.col] = filter.val;
         });
     });
 }

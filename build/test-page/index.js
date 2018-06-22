@@ -2,7 +2,7 @@ if (window.origin !== 'https://rhoinc.github.io') {
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = '../raveXplorer.js';
+    script.src = '../crfHeatMap.js';
     head.appendChild(script);
 }
 
@@ -18,7 +18,7 @@ d3.csv(
         var settings = {
             exports: ['csv', 'xlsx'],
         };
-        var instance = raveXplorer(
+        var instance = crfHeatMap(
             '#container',
             settings
         );

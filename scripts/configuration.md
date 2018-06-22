@@ -1,7 +1,7 @@
-Currently Rave-Xplorer does not have any renderer specific settings. Since Rave-Xplorer is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/rave-Xplorer/blob/master/src/defaultSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings. 
+Currently CRF-Heat-Map does not have any renderer specific settings. Since CRF-Heat-Map is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/CRF-Heat-Map/blob/master/src/defaultSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings. 
 
 # Renderer-specific settings
-The sections below describe each rave-xplorer setting as of version 1.0.0.
+The sections below describe each crf-heat-map setting as of version 1.0.0.
 
 ## settings.id_cols
 `array`
@@ -31,8 +31,8 @@ binary flag variables that capture some status related to the case report form (
   "is_frozen",
   "is_signed",
   "is_locked",
-  "has_open_query",
-  "has_answered_query"
+  "open_query_cnt",
+  "answer_query"
 ]
 ```
 
