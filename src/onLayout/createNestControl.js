@@ -5,7 +5,7 @@ export default function createNestControl() {
     const config = this.config;
 
     var idList = context.initial_config.nestings;
-    idList.push({value_col: undefined, label: "None"})
+    idList.push({ value_col: undefined, label: 'None' });
 
     var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
     idControlWrap

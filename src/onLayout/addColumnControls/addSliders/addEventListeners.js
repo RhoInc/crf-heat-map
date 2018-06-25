@@ -6,14 +6,13 @@ export default function onInput(filter) {
 
     //Attach an event listener to sliders.
     filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-
         //expand rows and check 'Expand All'
-        context.config.expand_all = true
+        context.config.expand_all = true;
         context.controls.wrap
-              .selectAll('.control-group')
-              .filter(f => f.option === 'expand_all')
-              .select('input')
-              .property('checked', true);
+            .selectAll('.control-group')
+            .filter(f => f.option === 'expand_all')
+            .select('input')
+            .property('checked', true);
 
         const sliders = this.parentNode.getElementsByTagName('input');
         const slider1 = parseFloat(sliders[0].value);

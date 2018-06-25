@@ -349,29 +349,29 @@ function defineStyles() {
 }
 
 function rendererSettings() {
-  return {
-    nestings: [{
-      value_col: 'sitename',
-      label: 'Site',
-      default: true
-    }, {
-      value_col: 'subjectnameoridentifier',
-      label: 'Subject ID',
-      default: true
-    }, {
-      value_col: 'foldername',
-      label: 'Folder',
-      default: false
-    }, {
-      value_col: 'formoid',
-      label: 'Form',
-      default: false
-    }],
-    value_cols: ['is_partial_entry', 'DATA_PAGE_VERIFIED', 'is_frozen', 'is_signed', 'is_locked', 'open_query_cnt', 'answer_query_cnt'],
-    filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
-    display_cell_annotations: true,
-    expand_all: false
-  };
+    return {
+        nestings: [{
+            value_col: 'sitename',
+            label: 'Site',
+            default: true
+        }, {
+            value_col: 'subjectnameoridentifier',
+            label: 'Subject ID',
+            default: true
+        }, {
+            value_col: 'foldername',
+            label: 'Folder',
+            default: false
+        }, {
+            value_col: 'formoid',
+            label: 'Form',
+            default: false
+        }],
+        value_cols: ['is_partial_entry', 'DATA_PAGE_VERIFIED', 'is_frozen', 'is_signed', 'is_locked', 'open_query_cnt', 'answer_query_cnt'],
+        filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
+        display_cell_annotations: true,
+        expand_all: false
+    };
 }
 
 function webchartsSettings() {
@@ -624,7 +624,7 @@ function createNestControl() {
     var config = this.config;
 
     var idList = context.initial_config.nestings;
-    idList.push({ value_col: undefined, label: "None" });
+    idList.push({ value_col: undefined, label: 'None' });
 
     var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
     idControlWrap.append('div').attr('class', 'wc-control-label').text('Show Status for:');
@@ -788,7 +788,6 @@ function onInput(filter) {
 
     //Attach an event listener to sliders.
     filter.sliders = filter.div.selectAll('.range-slider').on('input', function (d) {
-
         //expand rows and check 'Expand All'
         context.config.expand_all = true;
         context.controls.wrap.selectAll('.control-group').filter(function (f) {
@@ -858,11 +857,10 @@ function addColumnControls() {
 }
 
 function onLayout() {
-  console.log(this.config.id_cols);
-  customizeFilters.call(this);
-  createNestControl.call(this);
-  drawLegend.call(this);
-  addColumnControls.call(this);
+    customizeFilters.call(this);
+    createNestControl.call(this);
+    drawLegend.call(this);
+    addColumnControls.call(this);
 }
 
 function customizeRows() {
@@ -955,6 +953,7 @@ function toggleCellAnnotations() {
 function deriveData() {
     var _this = this;
 
+    var table = this;
     this.export = {
         nests: this.config.id_cols.map(function (id_col, i) {
             return 'Nest ' + (i + 1) + ': ' + id_col;
@@ -981,6 +980,69 @@ function deriveData() {
             d[id_col] = id_val || 'Total';
         });
     });
+
+    //conditionally add subject level data if subjectID is the lowest id level
+    if (table.config.id_cols[table.config.id_cols.length - 1] === 'subjectnameoridentifier') {
+        //Add headers.
+        this.export.headers.push('Site', 'Subject Status', 'Freeze Status');
+
+        //Add columns.
+        this.export.cols.push('site', 'status', 'freeze');
+
+        // build look up for subject
+        var subjectmap = {};
+        table.data.initial.forEach(function (row) {
+            subjectmap[row.subjectnameoridentifier] = {
+                site: row['sitename'],
+                status: row['status'],
+                freeze: row['SubjFreezeFlg']
+            };
+        });
+
+        // Now "join" subject level information to export data
+
+        // case 1: Subject is only nest
+        if (table.config.id_cols.length == 1) {
+            this.export.data.forEach(function (subject, index, objects) {
+                subject['site'] = subjectmap[Object.values(subject)[Object.values(subject).length - 1]]['site'];
+                subject['status'] = subjectmap[Object.values(subject)[Object.values(subject).length - 2]]['status']; // have to move to -2 to get subject since site was added to array
+                subject['freeze'] = subjectmap[Object.values(subject)[Object.values(subject).length - 3]]['freeze'];
+            });
+        }
+
+        // case 2: Subject is lowest of two nests
+        else if (table.config.id_cols.length == 2) {
+                this.export.data.forEach(function (levelTwo, index, object) {
+                    Object.values(levelTwo)[Object.values(levelTwo).length - 1] === 'Total' ? object.splice(index, 1) : null; // remove Total rows
+                    if (typeof levelTwo.children != 'undefined') {
+                        levelTwo.children[0].forEach(function (d) {
+                            d.__data__['site'] = subjectmap[Object.values(d.__data__)[Object.values(d.__data__).length - 1]]['site'];
+                            d.__data__['status'] = subjectmap[Object.values(d.__data__)[Object.values(d.__data__).length - 2]]['status'];
+                            d.__data__['freeze'] = subjectmap[Object.values(d.__data__)[Object.values(d.__data__).length - 3]]['freeze'];
+                        });
+                    }
+                });
+            }
+
+            // case 3: Subject is lowest of three nests
+            else if (table.config.id_cols.length == 3) {
+                    this.export.data.forEach(function (levelThree, index, object) {
+                        Object.values(levelThree)[Object.values(levelThree).length - 1] === 'Total' ? object.splice(index, 1) : null; // remove Total rows
+                        Object.values(levelThree)[Object.values(levelThree).length - 2] === 'Total' ? object.splice(index, 1) : null; // remove Total rows
+                        if (typeof levelThree.children != 'undefined') {
+                            levelThree.children[0].forEach(function (levelTwo) {
+                                if (typeof levelTwo.__data__.children != 'undefined') {
+                                    levelTwo.__data__.children[0].forEach(function (d) {
+                                        d.__data__['site'] = subjectmap[Object.values(d.__data__)[Object.values(d.__data__).length - 1]]['site'];
+                                        d.__data__['status'] = subjectmap[Object.values(d.__data__)[Object.values(d.__data__).length - 2]]['status'];
+                                        d.__data__['freeze'] = subjectmap[Object.values(d.__data__)[Object.values(d.__data__).length - 3]]['freeze'];
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+    }
 }
 
 function csv() {
@@ -1140,6 +1202,7 @@ function xlsx() {
             link.node().setAttribute('download', fileName);
         }
     }
+    delete this.export;
 }
 
 function dataExport() {

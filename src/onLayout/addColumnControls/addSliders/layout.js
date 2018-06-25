@@ -17,16 +17,16 @@ export default function layout(filter) {
             min: 0
         });
 
-// var html5Slider = document.getElementsByI(".range-slider");
-//
-//         noUiSlider.create(html5Slider, {
-//         	start: [ 10, 30 ],
-//         	connect: true,
-//         	range: {
-//         		'min': -20,
-//         		'max': 40
-//         	}
-//         });
+    // var html5Slider = document.getElementsByI(".range-slider");
+    //
+    //         noUiSlider.create(html5Slider, {
+    //         	start: [ 10, 30 ],
+    //         	connect: true,
+    //         	range: {
+    //         		'min': -20,
+    //         		'max': 40
+    //         	}
+    //         });
 
     filter.lowerAnnotation = filter.div
         .append('span')
