@@ -1,22 +1,53 @@
 {
     "title": "settings",
     "description": "JSON schema for the configuration of CRF-Heat-Map",
-    "overview": "Currently CRF-Heat-Map does not have any renderer specific settings. Since CRF-Heat-Map is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/CRF-Heat-Map/blob/master/src/defaultSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings. ",
+    "overview": "The most straightforward way to customize the CRF Heat Map is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the CRF Heat Map is a Webcharts `table` object, many default Webcharts settings are set in the [webchartsSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/webchartsSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality. These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js). All defaults can be overwritten by users.",
+
     "version": "1.0.0",
     "type": "object",
     "properties": {
-        "id_cols": {
+        "nestings": {
             "title": "Data Nesting",
-            "description": "the data will be summarized by each variable in this list",
+            "description": "an array of objects specifying the variables to nest the data by for calculations",
             "type": "array",
             "items": {
-                "title": "Variable Name",
-                "description": "the name of the variable by which to nest the data",
-                "type": "string"
+                "type": "object",
+                "properties":{
+                   "value_col":{
+                   "title":"Value Column",
+                   "type":"string"
+               },
+               "label":{
+                  "title":"Label",
+                  "type":"string"
+               },
+               "default":{
+                  "title":"Default",
+                  "type":"boolean"
+               },
+              }
             },
             "defaultObject": [
-                "sitename",
-                "subjectnameoridentifier"
+                {
+                    "value_col": "sitename",
+                    "label": "Site",
+                    "default": true
+                },
+                {
+                    "value_col": "subjectnameoridentifier",
+                    "label": "Subject ID",
+                    "default": true
+                },
+                {
+                    "value_col": "foldername",
+                    "label": "Folder",
+                    "default": false
+                },
+                {
+                    "value_col": "formoid",
+                    "label": "Form",
+                    "default": false
+                }
             ]
         },
         "value_cols": {
@@ -61,6 +92,12 @@
             "description": "displays cell annotations always or only on hover",
             "type": "boolean",
             "default": true
+        },
+        "expand_all": {
+            "title": "Expand All Rows",
+            "description": "expands all nests so that no rows are hidden",
+            "type": "boolean",
+            "default": false
         }
     }
 }
