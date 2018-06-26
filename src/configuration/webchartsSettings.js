@@ -3,13 +3,13 @@ export default function webchartsSettings() {
         cols: null,
         headers: [
             'ID',
-            'CRFs Entered',
+            'Entered',
             'Source Data Verified',
             'Frozen',
             'Signed',
             'Locked',
-            'Opened Queries',
-            'Answered Queries'
+            'Open',
+            'Answered'
         ],
         applyCSS: true,
         searchable: false,
