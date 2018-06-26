@@ -14,6 +14,7 @@ export default function deriveData() {
     //Define columns.
     this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
+
     //Define data.
     this.export.data = this.data.filtered.slice();
     this.export.data.forEach((d, i) => {
@@ -48,34 +49,28 @@ export default function deriveData() {
         if (table.config.id_cols.length == 1) {
             this.export.data.forEach(function(subject, index, objects) {
                 subject['site'] =
-                    subjectmap[Object.values(subject)[Object.values(subject).length - 1]]['site'];
+                    subjectmap[subject['Nest 1: subjectnameoridentifier']]['site'];
                 subject['status'] =
-                    subjectmap[Object.values(subject)[Object.values(subject).length - 2]]['status']; // have to move to -2 to get subject since site was added to array
+                    subjectmap[subject['Nest 1: subjectnameoridentifier']]['status'];
                 subject['freeze'] =
-                    subjectmap[Object.values(subject)[Object.values(subject).length - 3]]['freeze'];
+                    subjectmap[subject['Nest 1: subjectnameoridentifier']]['freeze'];
             });
         }
 
         // case 2: Subject is lowest of two nests
         else if (table.config.id_cols.length == 2) {
             this.export.data.forEach(function(levelTwo, index, object) {
-                Object.values(levelTwo)[Object.values(levelTwo).length - 1] === 'Total'
+                levelTwo['Nest 2: subjectnameoridentifier'] === 'Total' // remove Total rows
                     ? object.splice(index, 1)
-                    : null; // remove Total rows
+                    : null;
                 if (typeof levelTwo.children != 'undefined') {
                     levelTwo.children[0].forEach(function(d) {
                         d.__data__['site'] =
-                            subjectmap[
-                                Object.values(d.__data__)[Object.values(d.__data__).length - 1]
-                            ]['site'];
+                            subjectmap[d.__data__['Nest 2: subjectnameoridentifier']]['site'];
                         d.__data__['status'] =
-                            subjectmap[
-                                Object.values(d.__data__)[Object.values(d.__data__).length - 2]
-                            ]['status'];
+                            subjectmap[d.__data__['Nest 2: subjectnameoridentifier']]['status'];
                         d.__data__['freeze'] =
-                            subjectmap[
-                                Object.values(d.__data__)[Object.values(d.__data__).length - 3]
-                            ]['freeze'];
+                            subjectmap[d.__data__['Nest 2: subjectnameoridentifier']]['freeze'];
                     });
                 }
             });
@@ -84,34 +79,22 @@ export default function deriveData() {
         // case 3: Subject is lowest of three nests
         else if (table.config.id_cols.length == 3) {
             this.export.data.forEach(function(levelThree, index, object) {
-                Object.values(levelThree)[Object.values(levelThree).length - 1] === 'Total'
+                levelThree['Nest 3: subjectnameoridentifier'] === 'Total' // remove Total rows
                     ? object.splice(index, 1)
-                    : null; // remove Total rows
-                Object.values(levelThree)[Object.values(levelThree).length - 2] === 'Total'
+                    : null;
+                Object.values(levelThree)[Object.values(levelThree).length - 2] === 'Total' // want to remove totals from nest 2 too
                     ? object.splice(index, 1)
-                    : null; // remove Total rows
+                    : null;
                 if (typeof levelThree.children != 'undefined') {
                     levelThree.children[0].forEach(function(levelTwo) {
                         if (typeof levelTwo.__data__.children != 'undefined') {
                             levelTwo.__data__.children[0].forEach(function(d) {
                                 d.__data__['site'] =
-                                    subjectmap[
-                                        Object.values(d.__data__)[
-                                            Object.values(d.__data__).length - 1
-                                        ]
-                                    ]['site'];
+                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']]['site'];
                                 d.__data__['status'] =
-                                    subjectmap[
-                                        Object.values(d.__data__)[
-                                            Object.values(d.__data__).length - 2
-                                        ]
-                                    ]['status'];
+                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']]['status'];
                                 d.__data__['freeze'] =
-                                    subjectmap[
-                                        Object.values(d.__data__)[
-                                            Object.values(d.__data__).length - 3
-                                        ]
-                                    ]['freeze'];
+                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']]['freeze'];
                             });
                         }
                     });
