@@ -81,8 +81,6 @@ export default function deriveData() {
             });
         }
 
-
-
         // case 3: Subject is lowest of three nests
         else if (table.config.id_cols.length == 3) {
             this.export.data.forEach(function(levelThree, index, object) {
@@ -121,5 +119,4 @@ export default function deriveData() {
             });
         }
     }
-
 }

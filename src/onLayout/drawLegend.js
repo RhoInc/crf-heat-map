@@ -52,14 +52,16 @@ export default function drawLegend() {
         .attr('y', (legendHeight - rectHeight) / 2);
 
     // Add Title
-        d3
-               .select('svg.legend')
-               .append('text')
-               .text("CRFs")
-               .style({"font-weight": 'bold',
-               "font-size" : "17px"})
-               .attr('x', idCellWidth)
-               .attr('y' , legendHeight - rectHeight - 25)
+    d3
+        .select('svg.legend')
+        .append('text')
+        .text('CRFs')
+        .style({
+            'font-weight': 'bold',
+            'font-size': '17px'
+        })
+        .attr('x', idCellWidth)
+        .attr('y', legendHeight - rectHeight - 25);
 
     var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
 
@@ -107,14 +109,15 @@ export default function drawLegend() {
         })
         .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
-  // Add Title
-   d3
-           .select('svg.legend')
-           .append('text')
-           .text("Queries")
-           .style({"font-weight": 'bold',
-           "font-size" : "17px"})
-           .attr('x', idCellWidth + heatCellWidth * 5)
-           .attr('y' , legendHeight - rectHeight - 25)
-
+    // Add Title
+    d3
+        .select('svg.legend')
+        .append('text')
+        .text('Queries')
+        .style({
+            'font-weight': 'bold',
+            'font-size': '17px'
+        })
+        .attr('x', idCellWidth + heatCellWidth * 5)
+        .attr('y', legendHeight - rectHeight - 25);
 }

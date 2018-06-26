@@ -46,6 +46,7 @@ export default function defineStyles() {
             '}',
         '.range-slider {' +
             '    width: 100%;' +
+            '    pointer-events: none;' +
             '    position: absolute;' +
             '    height: 15px;' +
             '    top: 1px;' +

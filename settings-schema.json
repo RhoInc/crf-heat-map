@@ -24,7 +24,7 @@
                "default":{
                   "title":"Default",
                   "type":"boolean"
-               },
+               }
               }
             },
             "defaultObject": [
