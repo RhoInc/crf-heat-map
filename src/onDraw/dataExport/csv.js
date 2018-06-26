@@ -58,7 +58,4 @@ export default function csv() {
             link.node().setAttribute('download', fileName);
         }
     }
-
-    // delete export so that xlsx doesn't have filter cols in tab 1
-    delete this.export;
 }

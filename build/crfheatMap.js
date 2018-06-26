@@ -1106,9 +1106,6 @@ function csv() {
             link.node().setAttribute('download', fileName);
         }
     }
-
-    // delete export so that xlsx doesn't have filter cols in tab 1
-    delete this.export;
 }
 
 function xlsx() {
@@ -1202,7 +1199,6 @@ function xlsx() {
             link.node().setAttribute('download', fileName);
         }
     }
-    delete this.export;
 }
 
 function dataExport() {

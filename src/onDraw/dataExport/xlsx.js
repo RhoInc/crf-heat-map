@@ -100,5 +100,4 @@ export default function xlsx() {
             link.node().setAttribute('download', fileName);
         }
     }
-    delete this.export;
 }
