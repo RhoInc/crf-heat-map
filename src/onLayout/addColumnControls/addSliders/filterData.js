@@ -5,6 +5,7 @@ export default function filterData() {
             d =>
                 (filter.lower <= d[filter.variable] && d[filter.variable] <= filter.upper) ||
                 (filter.upper === 1 && d[filter.variable] === 'N/A')
+
         );
     });
 }

@@ -327,12 +327,21 @@ var paddingLeft = 6;
 
 
 function defineStyles() {
-    var styles = ['.row--hidden {' + '    display: none;' + '}', '.wc-table table thead tr th,' + '.wc-table table tbody tr td {' + ('    padding-right: ' + paddingRight + 'px;') + ('    padding-left: ' + paddingLeft + 'px;') + '}', '.wc-table table thead tr th:first-child,' + '.wc-table table tbody tr td:first-child {' + ('    width: ' + firstColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' + '.wc-table table tbody tr td:nth-child(n + 2) {' + ('    width: ' + otherColumnWidth + 'px !important;') + '    text-align: right;' + '}', '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}', '.wc-table table tbody tr:hover td:first-child {' + '    border-left: 1px solid black;' + '}',
+    var styles = ['.row--hidden {' + '    display: none;' + '}', '.wc-table table thead tr th,' + '.wc-table table tbody tr td {' + ('    padding-right: ' + paddingRight + 'px;') + ('    padding-left: ' + paddingLeft + 'px;') + '}', '.wc-table table thead tr th:first-child,' + '.wc-table table tbody tr td:first-child {' + ('    width: ' + firstColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' + '.wc-table table tbody tr td:nth-child(n + 2) {' + ('    width: ' + otherColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}', '.wc-table table tbody tr:hover td:first-child {' + '    border-left: 1px solid black;' + '}',
 
     /* range sliders */
 
-    '#column-controls th {' + '}', '.reset-button {' + '    width: 100%;' + '}', '.range-slider-container {' + '    position: relative;' + '    width: 100%;' + '    height: 30px;' + '}', '.range-slider {' + '    width: 100%;' + '    pointer-events: none;' + '    position: absolute;' + '    height: 15px;' + '    top: 1px;' + '    overflow: hidden;' + '    outline: none;' + '}', '.range-annotation {' + '    width: 100%;' + '    position: absolute;' + '    font-size: 12px;' + '    top: 16px;' + '    overflow: hidden;' + '    font-weight: normal;' + '}', '.range-annotation--lower {' + '    text-align: left;' + '}', '.range-annotation--upper {' + '    text-align: right;' + '}', '.range-slider::-webkit-slider-thumb {' + '    pointer-events: all;' + '    position: relative;' + '    z-index: 1;' + '    outline: 0;' + '}', '.range-slider::-moz-range-thumb {' + '    pointer-events: all;' + '    position: relative;' + '    z-index: 10;' + '    -moz-appearance: none;' + '    width: 9px;' + '}', '.range-slider::-moz-range-track {' + '    position: relative;' + '    z-index: -1;' + '    background-color: rgba(0, 0, 0, 1);' + '    border: 0;' + '}', '.range-slider::-moz-range-track {' + '    -moz-appearance: none;' + '    background: none transparent;' + '    border: 0;' + '}', '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-
+    '#column-controls th {' + '}', '.reset-button {' + '    width: 100%;' + '}', '.range-slider-container {' + '    position: relative;' + '    width: 100%;' + '    height: 30px;' + '}', '.range-slider {' + '    width: 100%;' + '    pointer-events: none;' + '    position: absolute;' + '    height: 15px;' + '    top: 1px;' + '    overflow: hidden;' + '    outline: none;' + '}', '.range-annotation {' + '    width: 100%;' + '    position: absolute;' + '    font-size: 12px;' + '    top: 16px;' + '    overflow: hidden;' + '    font-weight: normal;' + '}', '.range-annotation--lower {' + '    text-align: left;' + '}', '.range-annotation--upper {' + '    text-align: right;' + '}', '.range-slider::-webkit-slider-thumb {' + '    pointer-events: all;' + '    position: relative;' + '    z-index: 1;' + '    outline: 0;' + '}', '.range-slider::-moz-range-thumb {' + '    pointer-events: all;' + '    position: relative;' + '    z-index: 10;' + '    -moz-appearance: none;' + '    width: 9px;' + '}', '.range-slider::-moz-range-track {' + '    position: relative;' + '    z-index: -1;' + '    background-color: rgba(0, 0, 0, 1);' + '    border: 0;' + '}', '.range-slider::-moz-range-track {' + '    -moz-appearance: none;' + '    background: none transparent;' + '    border: 0;' + '}', '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}', '.filter-value--lower {' + '    width: 40px' +
+    //        'margin: 5 px' +
+    // '    align: left' +
+    // '.text {' +
+    //   '    width: 10px' +
+    //        'margin: 5 px' +
+    // '    align: left' +
+    '}', '.filter-value--upper {' + '    width: 40px' +
+    //        'margin: 5 px' +
+    // '    align: right' +
+    '}',
     /* ID cells */
 
     '.cell--id {' + '    background: white;' + '}', '.row--expandable .cell--id {' + '    color: blue;' + '    cursor: pointer;' + '    text-decoration: underline;' + '}', '.cell--id--level2 {' + '    text-indent: 1em;' + '}', '.cell--id--level3 {' + '    text-indent: 2em;' + '}',
@@ -547,19 +556,52 @@ function onInit() {
 function update(filter) {
     var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-    //update lower slider and annotation
-    if (reset) filter.lowerSlider.attr({
-        min: filter.min,
-        max: filter.max
-    }).property('value', filter.lower);
-    filter.lowerAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.lower * 100) : filter.lower) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
+    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+    if (isIE) {
 
-    //update upper slider and annotation
-    if (reset) filter.upperSlider.attr({
-        min: filter.min,
-        max: filter.max
-    }).property('value', filter.upper);
-    filter.upperAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.upper * 100) : filter.upper) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
+        //update lower slider and annotation
+        if (reset) filter.lowerSlider.attr({
+            min: filter.min,
+            max: function max(d) {
+                if (d.variable.indexOf('query') < 0) {
+
+                    return filter.max * 100;
+                } else {
+                    return filter.upper;
+                }
+            }
+        }).property('value', filter.lower);
+
+        //update upper slider and annotation
+        if (reset) filter.upperSlider.attr({
+            min: filter.min,
+            max: function max(d) {
+                if (d.variable.indexOf('query') < 0) {
+
+                    return filter.max * 100;
+                } else {
+                    return filter.upper;
+                }
+            }
+        }).property('value', function (d) {
+            return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
+        });
+    } else {
+
+        //update lower slider and annotation
+        if (reset) filter.lowerSlider.attr({
+            min: filter.min,
+            max: filter.max
+        }).property('value', filter.lower);
+        filter.lowerAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.lower * 100) : filter.lower) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
+
+        //update upper slider and annotation
+        if (reset) filter.upperSlider.attr({
+            min: filter.min,
+            max: filter.max
+        }).property('value', filter.upper);
+        filter.upperAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.upper * 100) : filter.upper) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
+    }
 }
 
 function resetFilters() {
@@ -753,24 +795,56 @@ function addResetButton(th, d) {
 }
 
 function layout(filter) {
-    filter.div = filter.cell.append('div').datum(filter).classed('range-slider-container', true);
+    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+    if (isIE) {
+        //add containing div to header cell
+        filter.div = filter.cell.append('div').datum(filter).classed('range-slider-container', true);
 
-    //lower slider
-    filter.lowerSlider = filter.div.append('input').classed('range-slider filter-slider--lower', true).attr({
-        type: 'range',
-        step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-        min: 0
-    });
+        //lower slider
+        filter.lowerSlider = filter.div.append('input').classed('range-value filter-value--lower', true).attr({
+            type: 'number',
+            min: 0,
+            step: 1,
+            value: 0
+        });
 
-    filter.lowerAnnotation = filter.div.append('span').classed('range-annotation range-annotation--lower', true);
+        filter.div.append('text').classed('text', true).text(function (d) {
+            return d.variable.indexOf('query') < 0 ? '% - ' : ' - ';
+        });
 
-    //upper slider
-    filter.upperSlider = filter.div.append('input').classed('range-slider filter-slider--upper', true).attr({
-        type: 'range',
-        step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-        min: 0
-    });
-    filter.upperAnnotation = filter.div.append('span').classed('range-annotation range-annotation--upper', true);
+        //upper slider
+        filter.upperSlider = filter.div.append('input').classed('range-value filter-value--upper', true).attr({
+            type: 'number',
+            min: 0,
+            step: 1,
+            value: 100
+        });
+
+        filter.div.append('text').classed('text', true).text(function (d) {
+            return d.variable.indexOf('query') < 0 ? '%' : '';
+        });
+    } else {
+
+        //add containing div to header cell
+        filter.div = filter.cell.append('div').datum(filter).classed('range-slider-container', true);
+
+        //lower slider
+        filter.lowerSlider = filter.div.append('input').classed('range-slider filter-slider--lower', true).attr({
+            type: 'range',
+            step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+            min: 0
+        });
+
+        filter.lowerAnnotation = filter.div.append('span').classed('range-annotation range-annotation--lower', true);
+
+        //upper slider
+        filter.upperSlider = filter.div.append('input').classed('range-slider filter-slider--upper', true).attr({
+            type: 'range',
+            step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+            min: 0
+        });
+        filter.upperAnnotation = filter.div.append('span').classed('range-annotation range-annotation--upper', true);
+    }
 }
 
 function filterData() {
@@ -787,30 +861,70 @@ function filterData() {
 function onInput(filter) {
     var context = this;
 
-    //Attach an event listener to sliders.
-    filter.sliders = filter.div.selectAll('.range-slider').on('input', function (d) {
-        //expand rows and check 'Expand All'
-        context.config.expand_all = true;
-        context.controls.wrap.selectAll('.control-group').filter(function (f) {
-            return f.option === 'expand_all';
-        }).select('input').property('checked', true);
+    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
 
-        var sliders = this.parentNode.getElementsByTagName('input');
-        var slider1 = parseFloat(sliders[0].value);
-        var slider2 = parseFloat(sliders[1].value);
+    if (isIE) {
 
-        if (slider1 <= slider2) {
-            d.lower = slider1;
-            d.upper = slider2;
-        } else {
-            d.lower = slider2;
-            d.upper = slider1;
-        }
+        //Attach an event listener to sliders.
+        filter.sliders = filter.div.selectAll('.range-value').on('input', function (d) {
+            //expand rows and check 'Expand All'
+            context.config.expand_all = true;
+            context.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.option === 'expand_all';
+            }).select('input').property('checked', true);
 
-        update.call(context, d);
-        filterData.call(context);
-        context.draw();
-    });
+            var sliders = this.parentNode.getElementsByTagName('input');
+            var slider1 = parseFloat(sliders[0].value);
+            var slider2 = parseFloat(sliders[1].value);
+
+            if (slider1 <= slider2) {
+                if (d.variable.indexOf('query') < 0) {
+
+                    d.lower = slider1 / 100;
+                    d.upper = slider2 / 100;
+                } else {
+                    d.lower = slider1;
+                    d.upper = slider2;
+                }
+            } else {
+                if (d.variable.indexOf('query') < 0) {
+                    d.lower = slider2 / 100;
+                    d.upper = slider1 / 100;
+                } else {
+                    d.lower = slider2;
+                    d.upper = slider1;
+                }
+            }
+            update.call(context, d);
+            filterData.call(context);
+            context.draw();
+        });
+    } else {
+
+        filter.sliders = filter.div.selectAll('.range-slider').on('input', function (d) {
+            //expand rows and check 'Expand All'
+            context.config.expand_all = true;
+            context.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.option === 'expand_all';
+            }).select('input').property('checked', true);
+
+            var sliders = this.parentNode.getElementsByTagName('input');
+            var slider1 = parseFloat(sliders[0].value);
+            var slider2 = parseFloat(sliders[1].value);
+
+            if (slider1 <= slider2) {
+                d.lower = slider1;
+                d.upper = slider2;
+            } else {
+                d.lower = slider2;
+                d.upper = slider1;
+            }
+
+            update.call(context, d);
+            filterData.call(context);
+            context.draw();
+        });
+    }
 }
 
 function addSliders(th, d) {
@@ -861,10 +975,7 @@ function onLayout() {
     customizeFilters.call(this);
     createNestControl.call(this);
     drawLegend.call(this);
-    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
-    if (!isIE) {
-        addColumnControls.call(this);
-    }
+    addColumnControls.call(this);
 }
 
 function customizeRows() {
