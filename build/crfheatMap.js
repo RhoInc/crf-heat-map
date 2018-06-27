@@ -615,10 +615,11 @@ function resetFilters() {
 
     this.columnControls.filters.forEach(function (filter) {
         //Update query maximum.
-        if (filter.variable.indexOf('query') > -1) filter.max = d3.max(_this.data.filtered, function (di) {
-            return di[filter.variable];
-        });
-
+        if (filter.variable.indexOf('query') > -1) {
+            filter.max = d3.max(_this.data.summarized, function (di) {
+                return di[filter.variable];
+            });
+        }
         //Reset upper and lower bounds.
         filter.lower = filter.min;
         filter.upper = filter.max;
@@ -784,13 +785,27 @@ function drawLegend() {
 function addResetButton(th, d) {
     var _this = this;
 
+    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
     var resetButton = {};
     resetButton.container = d3.select(th).append('div').classed('reset-button-container', true);
-    resetButton.button = resetButton.container.append('button').classed('reset-button', true).text('Reset sliders').on('click', function () {
-        resetFilters.call(_this);
-        _this.data.raw = _this.data.summarized;
-        _this.draw();
-    });
+
+    if (isIE) {
+        resetButton.button = resetButton.container.append('button').classed('reset-button', true).text('Reset Ranges') // changed the name for IE
+        .on('click', function () {
+
+            _this.data.raw = _this.data.summarized;
+            resetFilters.call(_this);
+            _this.draw();
+        });
+    } else {
+
+        resetButton.button = resetButton.container.append('button').classed('reset-button', true).text('Reset sliders').on('click', function () {
+
+            _this.data.raw = _this.data.summarized;
+            resetFilters.call(_this);
+            _this.draw();
+        });
+    }
     this.columnControls.resetButton = resetButton;
 }
 
@@ -868,6 +883,8 @@ function onInput(filter) {
         //Attach an event listener to sliders.
         filter.sliders = filter.div.selectAll('.range-value').on('input', function (d) {
             //expand rows and check 'Expand All'
+
+
             context.config.expand_all = true;
             context.controls.wrap.selectAll('.control-group').filter(function (f) {
                 return f.option === 'expand_all';
@@ -907,7 +924,6 @@ function onInput(filter) {
             context.controls.wrap.selectAll('.control-group').filter(function (f) {
                 return f.option === 'expand_all';
             }).select('input').property('checked', true);
-
             var sliders = this.parentNode.getElementsByTagName('input');
             var slider1 = parseFloat(sliders[0].value);
             var slider2 = parseFloat(sliders[1].value);
@@ -982,7 +998,9 @@ function customizeRows() {
     var _this = this;
 
     this.rows = this.tbody.selectAll('tr');
-    this.rows.classed('row', true).classed('row--expandable', function (d) {
+    this.rows.classed('row', true).classed('poo', function (d) {
+        console.log(d);
+    }).classed('row--expandable', function (d) {
         return d.id.split('|').length < _this.config.id_cols.length;
     }).classed('row--collapsed', function (d) {
         return d.id.split('|').length < _this.config.id_cols.length;
@@ -1356,6 +1374,7 @@ function onDraw() {
     //end performance test
     var t1 = performance.now();
     console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
+    console.log(this.data);
 }
 
 //utility functions
