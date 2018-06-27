@@ -29,6 +29,8 @@ export default function crfHeatMap(element, settings) {
     });
     const table = createTable(element, syncedSettings, controls);
 
+    table.initial_config = syncedSettings;
+
     table.on('init', onInit);
     table.on('layout', onLayout);
     table.on('draw', onDraw);

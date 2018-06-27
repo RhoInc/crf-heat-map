@@ -6,7 +6,7 @@ export default function onInput(filter) {
 
     //Attach an event listener to sliders.
     filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-        //expand rows and check 'Expand All' Box
+        //expand rows and check 'Expand All'
         context.config.expand_all = true;
         context.controls.wrap
             .selectAll('.control-group')

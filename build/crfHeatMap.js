@@ -463,7 +463,28 @@
 
     function rendererSettings() {
         return {
-            id_cols: ['sitename', 'subjectnameoridentifier'],
+            nestings: [
+                {
+                    value_col: 'sitename',
+                    label: 'Site',
+                    default: true
+                },
+                {
+                    value_col: 'subjectnameoridentifier',
+                    label: 'Subject ID',
+                    default: true
+                },
+                {
+                    value_col: 'foldername',
+                    label: 'Folder',
+                    default: false
+                },
+                {
+                    value_col: 'formoid',
+                    label: 'Form',
+                    default: false
+                }
+            ],
             value_cols: [
                 'is_partial_entry',
                 'DATA_PAGE_VERIFIED',
@@ -502,6 +523,14 @@
     }
 
     function syncSettings(settings) {
+        settings.id_cols = settings.nestings
+            .filter(function(d) {
+                return d.default === true;
+            })
+            .map(function(f) {
+                return f.value_col;
+            })
+            .slice(0, 3);
         settings.cols = d3.merge([['id'], settings.value_cols]);
         return settings;
     }
@@ -794,13 +823,15 @@
         var context = this;
         var config = this.config;
 
+        var idList = context.initial_config.nestings;
+        idList.push({ value_col: undefined, label: 'None' });
+
         var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
         idControlWrap
             .append('div')
             .attr('class', 'wc-control-label')
             .text('Show Status for:');
         var idNote = idControlWrap.append('div').attr('class', 'span-description');
-        var idList = ['None', 'sitename', 'subjectnameoridentifier', 'foldername', 'formoid'];
         var idSelects = idControlWrap
             .selectAll('select')
             .data([0, 1, 2])
@@ -812,36 +843,41 @@
             .data(function(d) {
                 return d === 0 // first dropdown shouldn't have "None" option
                     ? idList.filter(function(n) {
-                          return n !== 'None';
+                          return n.value_col !== undefined;
                       })
                     : idList;
             })
             .enter()
             .append('option')
             .text(function(d) {
-                return d;
+                return d.label;
             })
             .property('selected', function(d) {
                 var levelNum = d3.select(this.parentNode).datum();
-                return d == config.id_cols[levelNum];
+                return d.value_col == config.id_cols[levelNum];
             });
 
         idSelects.on('change', function() {
             var selectedLevels = [];
             idSelects.each(function(d, i) {
-                selectedLevels.push(this.value);
+                var _this = this;
+
+                selectedLevels.push(
+                    idList.filter(function(n) {
+                        return n.label === _this.value;
+                    })[0].value_col
+                );
             });
 
             var uniqueLevels = selectedLevels
                 .filter(function(f) {
-                    return f != 'None';
+                    return f != undefined;
                 })
                 .filter(function(item, pos) {
                     return selectedLevels.indexOf(item) == pos;
                 });
 
             config.id_cols = uniqueLevels;
-            console.log(uniqueLevels);
 
             //Summarize filtered data and redraw table.
             redraw.call(context);
@@ -982,6 +1018,18 @@
                 step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
                 min: 0
             });
+
+        // var html5Slider = document.getElementsByI(".range-slider");
+        //
+        //         noUiSlider.create(html5Slider, {
+        //         	start: [ 10, 30 ],
+        //         	connect: true,
+        //         	range: {
+        //         		'min': -20,
+        //         		'max': 40
+        //         	}
+        //         });
+
         filter.lowerAnnotation = filter.div
             .append('span')
             .classed('range-annotation range-annotation--lower', true);
@@ -1019,7 +1067,7 @@
 
         //Attach an event listener to sliders.
         filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-            //expand rows and check 'Expand All' Box
+            //expand rows and check 'Expand All'
             context.config.expand_all = true;
             context.controls.wrap
                 .selectAll('.control-group')
@@ -1249,6 +1297,7 @@
     function deriveData() {
         var _this = this;
 
+        var table = this;
         this.export = {
             nests: this.config.id_cols.map(function(id_col, i) {
                 return 'Nest ' + (i + 1) + ': ' + id_col;
@@ -1266,13 +1315,59 @@
         //Define columns.
         this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
+        var subject_id_col_index = this.config.id_cols.indexOf('subjectnameoridentifier');
+        var subject_id_col = subject_id_col_index > -1;
+
+        //Capture subject-level information.
+        if (subject_id_col) {
+            //Add headers.
+            this.export.headers.push('Site', 'Subject Status', 'Freeze Status');
+
+            //Add columns.
+            this.export.cols.push('site', 'status', 'freeze');
+
+            // build look up for subject
+            var subjects = d3
+                .set(
+                    table.data.initial.map(function(d) {
+                        return d['subjectnameoridentifier'];
+                    })
+                )
+                .values();
+            var subjectMap = subjects.reduce(function(acc, cur) {
+                var subjectDatum = _this.data.initial.find(function(d) {
+                    return d['subjectnameoridentifier'] === cur;
+                });
+                acc[cur] = {
+                    site: subjectDatum.sitename,
+                    status: subjectDatum.status,
+                    freeze: subjectDatum.SubjFreezeFlg
+                };
+                return acc;
+            }, {});
+        }
+
         //Define data.
         this.export.data = this.data.filtered.slice();
-        this.export.data.forEach(function(d, i) {
+        this.export.data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
                 var id_val = d.id.split('|')[j];
                 d[id_col] = id_val || 'Total';
+            });
+
+            // Now "join" subject level information to export data
+            if (subject_id_col) {
+                var subjectID =
+                    d['Nest ' + (subject_id_col_index + 1) + ': subjectnameoridentifier'];
+                Object.assign(d, subjectMap[subjectID]);
+            }
+        });
+
+        //Remove total rows.
+        this.export.data = this.export.data.filter(function(d) {
+            return !_this.export.nests.some(function(nest) {
+                return d[nest] === 'Total';
             });
         });
     }
@@ -1343,9 +1438,6 @@
                 link.node().setAttribute('download', fileName);
             }
         }
-
-        // delete export so that xlsx doesn't have filter cols in tab 1
-        delete this.export;
     }
 
     function xlsx() {
@@ -1524,6 +1616,8 @@
             inputs: syncedControlInputs
         });
         var table = webcharts.createTable(element, syncedSettings, controls);
+
+        table.initial_config = syncedSettings;
 
         table.on('init', onInit);
         table.on('layout', onLayout);

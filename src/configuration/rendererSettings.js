@@ -1,6 +1,27 @@
 export default function rendererSettings() {
     return {
-        id_cols: ['sitename', 'subjectnameoridentifier'],
+        nestings: [
+            {
+                value_col: 'sitename',
+                label: 'Site',
+                default: true
+            },
+            {
+                value_col: 'subjectnameoridentifier',
+                label: 'Subject ID',
+                default: true
+            },
+            {
+                value_col: 'foldername',
+                label: 'Folder',
+                default: false
+            },
+            {
+                value_col: 'formoid',
+                label: 'Form',
+                default: false
+            }
+        ],
         value_cols: [
             'is_partial_entry',
             'DATA_PAGE_VERIFIED',
