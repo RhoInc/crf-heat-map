@@ -8,11 +8,13 @@ export default function onDraw() {
     var t0 = performance.now();
     //begin performance test
 
-    customizeRows.call(this);
-    customizeCells.call(this);
-    addRowDisplayToggle.call(this);
-    toggleCellAnnotations.call(this);
-    dataExport.call(this);
+    if (this.data.summarized.length) {
+        customizeRows.call(this);
+        customizeCells.call(this);
+        addRowDisplayToggle.call(this);
+        toggleCellAnnotations.call(this);
+        dataExport.call(this);
+    }
 
     //end performance test
     var t1 = performance.now();

@@ -23,7 +23,7 @@ export default function defineStyles() {
         '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
         '.wc-table table tbody tr td:nth-child(n + 2) {' +
             `    width: ${otherColumnWidth}px !important;` +
-            '    text-align: right;' +
+            '    text-align: left;' +
             '}',
         '.wc-table table tbody tr:hover td {' +
             '    border-bottom: 1px solid black;' +
@@ -46,6 +46,7 @@ export default function defineStyles() {
             '}',
         '.range-slider {' +
             '    width: 100%;' +
+            '    pointer-events: none;' +
             '    position: absolute;' +
             '    height: 15px;' +
             '    top: 1px;' +
@@ -87,7 +88,20 @@ export default function defineStyles() {
             '    border: 0;' +
             '}',
         '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-
+        '.filter-value--lower {' +
+          '    width: 40px' +
+  //        'margin: 5 px' +
+          // '    align: left' +
+          // '.text {' +
+          //   '    width: 10px' +
+    //        'margin: 5 px' +
+            // '    align: left' +
+        '}',
+        '.filter-value--upper {' +
+          '    width: 40px' +
+  //        'margin: 5 px' +
+          // '    align: right' +
+        '}',
         /* ID cells */
 
         '.cell--id {' + '    background: white;' + '}',
