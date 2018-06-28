@@ -4,128 +4,6 @@
 	(global.crfHeatMap = factory(global.webCharts));
 }(this, (function (webcharts) { 'use strict';
 
-if (typeof Object.assign != 'function') {
-    Object.defineProperty(Object, 'assign', {
-        value: function assign(target, varArgs) {
-            // .length of function is 2
-            'use strict';
-
-            if (target == null) {
-                // TypeError if undefined or null
-                throw new TypeError('Cannot convert undefined or null to object');
-            }
-
-            var to = Object(target);
-
-            for (var index = 1; index < arguments.length; index++) {
-                var nextSource = arguments[index];
-
-                if (nextSource != null) {
-                    // Skip over if undefined or null
-                    for (var nextKey in nextSource) {
-                        // Avoid bugs when hasOwnProperty is shadowed
-                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-                            to[nextKey] = nextSource[nextKey];
-                        }
-                    }
-                }
-            }
-
-            return to;
-        },
-        writable: true,
-        configurable: true
-    });
-}
-
-if (!Array.prototype.find) {
-    Object.defineProperty(Array.prototype, 'find', {
-        value: function value(predicate) {
-            // 1. Let O be ? ToObject(this value).
-            if (this == null) {
-                throw new TypeError('"this" is null or not defined');
-            }
-
-            var o = Object(this);
-
-            // 2. Let len be ? ToLength(? Get(O, 'length')).
-            var len = o.length >>> 0;
-
-            // 3. If IsCallable(predicate) is false, throw a TypeError exception.
-            if (typeof predicate !== 'function') {
-                throw new TypeError('predicate must be a function');
-            }
-
-            // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-            var thisArg = arguments[1];
-
-            // 5. Let k be 0.
-            var k = 0;
-
-            // 6. Repeat, while k < len
-            while (k < len) {
-                // a. Let Pk be ! ToString(k).
-                // b. Let kValue be ? Get(O, Pk).
-                // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
-                // d. If testResult is true, return kValue.
-                var kValue = o[k];
-                if (predicate.call(thisArg, kValue, k, o)) {
-                    return kValue;
-                }
-                // e. Increase k by 1.
-                k++;
-            }
-
-            // 7. Return undefined.
-            return undefined;
-        }
-    });
-}
-
-if (!Array.prototype.findIndex) {
-    Object.defineProperty(Array.prototype, 'findIndex', {
-        value: function value(predicate) {
-            // 1. Let O be ? ToObject(this value).
-            if (this == null) {
-                throw new TypeError('"this" is null or not defined');
-            }
-
-            var o = Object(this);
-
-            // 2. Let len be ? ToLength(? Get(O, "length")).
-            var len = o.length >>> 0;
-
-            // 3. If IsCallable(predicate) is false, throw a TypeError exception.
-            if (typeof predicate !== 'function') {
-                throw new TypeError('predicate must be a function');
-            }
-
-            // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-            var thisArg = arguments[1];
-
-            // 5. Let k be 0.
-            var k = 0;
-
-            // 6. Repeat, while k < len
-            while (k < len) {
-                // a. Let Pk be ! ToString(k).
-                // b. Let kValue be ? Get(O, Pk).
-                // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
-                // d. If testResult is true, return k.
-                var kValue = o[k];
-                if (predicate.call(thisArg, kValue, k, o)) {
-                    return k;
-                }
-                // e. Increase k by 1.
-                k++;
-            }
-
-            // 7. Return -1.
-            return -1;
-        }
-    });
-}
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
@@ -319,6 +197,233 @@ function merge(target) {
     return target;
 }
 
+function calculateStatistics() {
+    var _this = this;
+
+    //Nest data by the ID variable defined above and calculate statistics for each summary variable.
+    var nest = d3.nest().key(function (d) {
+        return d.id;
+    }).rollup(function (d) {
+        //Define denominators.
+        var summary = {
+            nForms: d.length,
+            nNeedsVerification: d.filter(function (di) {
+                return di.needs_verification === '1';
+            }).length,
+            nNeedsSignature: d.filter(function (di) {
+                return di.needs_signature === '1';
+            }).length
+        };
+
+        //Define summarized values, either rates or counts.
+        _this.config.value_cols.forEach(function (value_col) {
+            var count = d3.sum(d, function (di) {
+                return di[value_col];
+            });
+            summary[value_col] = ['is_partial_entry', 'Ready_For_Freeeze', 'is_frozen', 'is_locked'].indexOf(value_col) > -1 ? summary.nForms ? count / summary.nForms : 'N/A' : ['DATA_PAGE_VERIFIED'].indexOf(value_col) > -1 ? summary.nNeedsVerification ? count / summary.nNeedsVerification : 'N/A' : ['is_signed'].indexOf(value_col) > -1 ? summary.nNeedsSignature ? count / summary.nNeedsSignature : 'N/A' : ['open_query_cnt', 'answer_query_cnt'].indexOf(value_col) > -1 ? count : console.log('Missed one: ' + value_col);
+        });
+
+        return summary;
+    }).entries(this.data.initial_filtered);
+
+    //Convert the nested data array to a flat data array.
+    nest.forEach(function (d) {
+        d.id = d.key;
+        delete d.key;
+        _this.config.value_cols.forEach(function (value_col) {
+            d[value_col] = d.values[value_col];
+        });
+        delete d.values;
+    });
+
+    //Add summarized data to array of summaries.
+    this.data.summaries.push(nest);
+}
+
+function summarizeData() {
+    var _this = this;
+
+    var t0 = performance.now();
+    //begin performance test
+
+    this.data.summaries = [];
+
+    //Summarize data by each ID variable.
+    this.config.id_cols.forEach(function (id_col, i) {
+        //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
+        _this.data.initial_filtered.forEach(function (d) {
+            d.id = _this.config.id_cols.slice(0, i + 1).map(function (id_col1) {
+                return d[id_col1];
+            }).join('|');
+        });
+
+        calculateStatistics.call(_this);
+    });
+
+    //Collapse array of arrays to array of objects.
+    this.data.summarized = d3.merge(this.data.summaries).sort(function (a, b) {
+        return a.id < b.id ? -1 : 1;
+    });
+    this.data.raw = this.data.summarized;
+
+    //end performance test
+    var t1 = performance.now();
+    console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
+}
+
+function update(filter) {
+    var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+    if (isIE) {
+        //update lower slider and annotation
+        if (reset) filter.lowerSlider.attr({
+            min: filter.min,
+            max: function max(d) {
+                if (d.variable.indexOf('query') < 0) {
+                    return filter.max * 100;
+                } else {
+                    return filter.upper;
+                }
+            }
+        }).property('value', filter.lower);
+
+        //update upper slider and annotation
+        if (reset) filter.upperSlider.attr({
+            min: filter.min,
+            max: function max(d) {
+                if (d.variable.indexOf('query') < 0) {
+                    return filter.max * 100;
+                } else {
+                    return filter.upper;
+                }
+            }
+        }).property('value', function (d) {
+            return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
+        });
+    } else {
+        //update lower slider and annotation
+        if (reset) filter.lowerSlider.attr({
+            min: filter.min,
+            max: filter.max
+        }).property('value', filter.lower);
+        filter.lowerAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.lower * 100) : filter.lower) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
+
+        //update upper slider and annotation
+        if (reset) filter.upperSlider.attr({
+            min: filter.min,
+            max: filter.max
+        }).property('value', filter.upper);
+        filter.upperAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.upper * 100) : filter.upper) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
+    }
+}
+
+function resetFilters() {
+    var _this = this;
+
+    //collapse rows and uncheck 'Expand All' Box
+    this.config.expand_all = false;
+    this.controls.wrap.selectAll('.control-group').filter(function (f) {
+        return f.option === 'expand_all';
+    }).select('input').property('checked', false);
+
+    this.columnControls.filters.forEach(function (filter) {
+        //Update query maximum.
+        if (filter.variable.indexOf('query') > -1) {
+            filter.max = d3.max(_this.data.summarized, function (di) {
+                return di[filter.variable];
+            });
+        }
+        //Reset upper and lower bounds.
+        filter.lower = filter.min;
+        filter.upper = filter.max;
+
+        //Reset sliders.
+        update.call(_this, filter, true);
+    });
+}
+
+function redraw() {
+    summarizeData.call(this);
+    resetFilters.call(this);
+    this.draw(this.data.summarized);
+}
+
+function createNestControls() {
+    var context = this;
+    var config = this.settings.synced;
+
+    var idList = config.nestings;
+    idList.push({ value_col: undefined, label: 'None' });
+
+    var idControlWrap = this.containers.nestControls.append('div').attr('class', 'chm-control chm-control--nest');
+    idControlWrap.append('span').attr('class', 'chm-control-label').text('Show Status for:');
+    var idNote = idControlWrap.append('span').attr('class', 'span-description');
+    var idSelects = idControlWrap.selectAll('select').data([0, 1, 2]).enter().append('select');
+
+    idSelects.selectAll('option').data(function (d) {
+        return d === 0 // first dropdown shouldn't have "None" option
+        ? idList.filter(function (n) {
+            return n.value_col !== undefined;
+        }) : idList;
+    }).enter().append('option').text(function (d) {
+        return d.label;
+    }).property('selected', function (d) {
+        var levelNum = d3.select(this.parentNode).datum();
+        return d.value_col == config.id_cols[levelNum];
+    });
+
+    idSelects.on('change', function () {
+        var selectedLevels = [];
+        idSelects.each(function (d, i) {
+            var _this = this;
+
+            selectedLevels.push(idList.filter(function (n) {
+                return n.label === _this.value;
+            })[0].value_col);
+        });
+
+        var uniqueLevels = selectedLevels.filter(function (f) {
+            return f != undefined;
+        }).filter(function (item, pos) {
+            return selectedLevels.indexOf(item) == pos;
+        });
+
+        console.log(context);
+        context.table.config.id_cols = uniqueLevels;
+
+        //Summarize filtered data and redraw table.
+        redraw.call(context.table);
+    });
+}
+
+function defineLayout() {
+    this.containers = {
+        main: d3.select(this.element).append('div').attr('id', 'crf-heat-map')
+    };
+
+    /**-------------------------------------------------------------------------------------------\
+    Left column
+    \-------------------------------------------------------------------------------------------**/
+
+    this.containers.leftColumn = this.containers.main.append('div').classed('chm-column chm-column--left', true);
+
+    this.containers.dataExport = this.containers.leftColumn.append('div').classed('chm-row chm-row--1 chm-data-export', true);
+
+    this.containers.controls = this.containers.leftColumn.append('div').classed('chm-row chm-row--2 chm-controls chm-controls--main', true);
+
+    /**-------------------------------------------------------------------------------------------\
+    Right column
+    \-------------------------------------------------------------------------------------------**/
+
+    this.containers.rightColumn = this.containers.main.append('div').classed('chm-column chm-column--right', true);
+
+    this.containers.nestControls = this.containers.rightColumn.append('div').classed('chm-row chm-row--1 chm-controls chm-controls--nests', true);
+    createNestControls.call(this);
+
+    this.containers.table = this.containers.rightColumn.append('div').classed('chm-row chm-row--2 chm-table', true);
+}
+
 var firstColumnWidth = 200;
 var otherColumnWidth = 120;
 
@@ -327,7 +432,37 @@ var paddingLeft = 6;
 
 
 function defineStyles() {
-    var styles = ['.row--hidden {' + '    display: none;' + '}', '.wc-table table thead tr th,' + '.wc-table table tbody tr td {' + ('    padding-right: ' + paddingRight + 'px;') + ('    padding-left: ' + paddingLeft + 'px;') + '}', '.wc-table table thead tr th:first-child,' + '.wc-table table tbody tr td:first-child {' + ('    width: ' + firstColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' + '.wc-table table tbody tr td:nth-child(n + 2) {' + ('    width: ' + otherColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}', '.wc-table table tbody tr:hover td:first-child {' + '    border-left: 1px solid black;' + '}',
+    var styles = ['#crf-heat-map {' + '}', '.chm-column {' + '    display: inline-block;' + '}', '.chm-column > * {' + '    width: 100%;' + '}',
+
+    /***--------------------------------------------------------------------------------------\
+      Left column
+    \--------------------------------------------------------------------------------------***/
+
+    '.chm-column--left {' + '    float: left;' + '    width: 20%;' + '}',
+
+    /****---------------------------------------------------------------------------------\
+      Controls
+    \---------------------------------------------------------------------------------****/
+
+    '.chm-controls .wc-controls {' + '    margin-right: 10px;' + '}', '.chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}', '.chm-controls .control-group > * {' + '    display: inline-block !important;' + '    margin: 0;' + '}', '.chm-controls .wc-control-label {' + '    width: 58%;' + '    text-align: right;' + '}', '.chm-controls .span-description {' + '}', '.chm-controls select.changer {' + '    width: 40%;' + '    float: right;' + '}', '.chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
+
+    /***--------------------------------------------------------------------------------------\
+      Right column
+    \--------------------------------------------------------------------------------------***/
+
+    '.chm-column--right {' + '    float: right;' + '    width: 80%;' + '}',
+
+    /****---------------------------------------------------------------------------------\
+      Nest controls
+    \---------------------------------------------------------------------------------****/
+
+    '.chm-nest-controls {' + '}', '.chm-nest-control {' + '    float: left;' + '    display: block;' + '}',
+
+    /****---------------------------------------------------------------------------------\
+      Table
+    \---------------------------------------------------------------------------------****/
+
+    '.chm-table table {' + '    display: table;' + '}', '.row--hidden {' + '    display: none;' + '}', '.wc-table table thead tr th,' + '.wc-table table tbody tr td {' + ('    padding-right: ' + paddingRight + 'px;') + ('    padding-left: ' + paddingLeft + 'px;') + '}', '.wc-table table thead tr th:first-child,' + '.wc-table table tbody tr td:first-child {' + ('    width: ' + firstColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' + '.wc-table table tbody tr td:nth-child(n + 2) {' + ('    width: ' + otherColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}', '.wc-table table tbody tr:hover td:first-child {' + '    border-left: 1px solid black;' + '}',
 
     /* range sliders */
 
@@ -341,10 +476,10 @@ function defineStyles() {
     '.cell--heat {' + '    text-align: right;' + '    font-size: 12px;' + '}', '.cell--heat--level6,' + '.cell--heat--level7,' + '.cell--heat--level8,' + '.cell--heat--level1,' + '.cell--heat--level2,' + '.cell--heat--level3 {' + '    color: black;' + '}', '.cell--heat--level9,' + '.cell--heat--level10,' + '.cell--heat--level11,' + '.cell--heat--level4,' + '.cell--heat--level5 {' + '    color: white;' + '}', '.cell--heat--level1 {' + '    background: #edf8e9;' + '}', '.cell--heat--level2 {' + '    background: #bae4b3;' + '}', '.cell--heat--level3 {' + '    background: #74c476' + '}', '.cell--heat--level4 {' + '    background: #31a354;' + '}', '.cell--heat--level5 {' + '    background: #006d2c;' + '}', '.cell--heat--level6 {' + '    background: #eff3ff;' + '}', '.cell--heat--level7 {' + '    background: #bdd7e7;' + '}', '.cell--heat--level8 {' + '    background: #6baed6' + '}', '.cell--heat--level9 {' + '    background: #3182bd;' + '}', '.cell--heat--level10 {' + '    background: #08519c;' + '}', '.cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'];
 
     //Attach styles to DOM.
-    var style = document.createElement('style');
-    style.type = 'text/css';
-    style.innerHTML = styles.join('\n');
-    document.getElementsByTagName('head')[0].appendChild(style);
+    this.style = document.createElement('style');
+    this.style.type = 'text/css';
+    this.style.innerHTML = styles.join('\n');
+    document.getElementsByTagName('head')[0].appendChild(this.style);
 }
 
 function rendererSettings() {
@@ -457,80 +592,6 @@ var configuration = {
     syncControlInputs: syncControlInputs
 };
 
-function calculateStatistics() {
-    var _this = this;
-
-    //Nest data by the ID variable defined above and calculate statistics for each summary variable.
-    var nest = d3.nest().key(function (d) {
-        return d.id;
-    }).rollup(function (d) {
-        //Define denominators.
-        var summary = {
-            nForms: d.length,
-            nNeedsVerification: d.filter(function (di) {
-                return di.needs_verification === '1';
-            }).length,
-            nNeedsSignature: d.filter(function (di) {
-                return di.needs_signature === '1';
-            }).length
-        };
-
-        //Define summarized values, either rates or counts.
-        _this.config.value_cols.forEach(function (value_col) {
-            var count = d3.sum(d, function (di) {
-                return di[value_col];
-            });
-            summary[value_col] = ['is_partial_entry', 'Ready_For_Freeeze', 'is_frozen', 'is_locked'].indexOf(value_col) > -1 ? summary.nForms ? count / summary.nForms : 'N/A' : ['DATA_PAGE_VERIFIED'].indexOf(value_col) > -1 ? summary.nNeedsVerification ? count / summary.nNeedsVerification : 'N/A' : ['is_signed'].indexOf(value_col) > -1 ? summary.nNeedsSignature ? count / summary.nNeedsSignature : 'N/A' : ['open_query_cnt', 'answer_query_cnt'].indexOf(value_col) > -1 ? count : console.log('Missed one: ' + value_col);
-        });
-
-        return summary;
-    }).entries(this.data.initial_filtered);
-
-    //Convert the nested data array to a flat data array.
-    nest.forEach(function (d) {
-        d.id = d.key;
-        delete d.key;
-        _this.config.value_cols.forEach(function (value_col) {
-            d[value_col] = d.values[value_col];
-        });
-        delete d.values;
-    });
-
-    //Add summarized data to array of summaries.
-    this.data.summaries.push(nest);
-}
-
-function summarizeData() {
-    var _this = this;
-
-    var t0 = performance.now();
-    //begin performance test
-
-    this.data.summaries = [];
-
-    //Summarize data by each ID variable.
-    this.config.id_cols.forEach(function (id_col, i) {
-        //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-        _this.data.initial_filtered.forEach(function (d) {
-            d.id = _this.config.id_cols.slice(0, i + 1).map(function (id_col1) {
-                return d[id_col1];
-            }).join('|');
-        });
-
-        calculateStatistics.call(_this);
-    });
-
-    //Collapse array of arrays to array of objects.
-    this.data.summarized = d3.merge(this.data.summaries).sort(function (a, b) {
-        return a.id < b.id ? -1 : 1;
-    });
-    this.data.raw = this.data.summarized;
-
-    //end performance test
-    var t1 = performance.now();
-    console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
-}
-
 function onInit() {
     this.data.initial = this.data.raw;
     this.data.initial_filtered = this.data.initial;
@@ -541,84 +602,6 @@ function onInit() {
     //Manually set controls' data to raw data.
     this.controls.data = this.data.initial;
     this.controls.ready = true;
-}
-
-function update(filter) {
-    var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-    if (isIE) {
-        //update lower slider and annotation
-        if (reset) filter.lowerSlider.attr({
-            min: filter.min,
-            max: function max(d) {
-                if (d.variable.indexOf('query') < 0) {
-                    return filter.max * 100;
-                } else {
-                    return filter.upper;
-                }
-            }
-        }).property('value', filter.lower);
-
-        //update upper slider and annotation
-        if (reset) filter.upperSlider.attr({
-            min: filter.min,
-            max: function max(d) {
-                if (d.variable.indexOf('query') < 0) {
-                    return filter.max * 100;
-                } else {
-                    return filter.upper;
-                }
-            }
-        }).property('value', function (d) {
-            return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
-        });
-    } else {
-        //update lower slider and annotation
-        if (reset) filter.lowerSlider.attr({
-            min: filter.min,
-            max: filter.max
-        }).property('value', filter.lower);
-        filter.lowerAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.lower * 100) : filter.lower) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
-
-        //update upper slider and annotation
-        if (reset) filter.upperSlider.attr({
-            min: filter.min,
-            max: filter.max
-        }).property('value', filter.upper);
-        filter.upperAnnotation.text('' + (filter.variable.indexOf('query') < 0 ? Math.round(filter.upper * 100) : filter.upper) + (filter.variable.indexOf('query') < 0 ? '%' : ''));
-    }
-}
-
-function resetFilters() {
-    var _this = this;
-
-    //collapse rows and uncheck 'Expand All' Box
-    this.config.expand_all = false;
-    this.controls.wrap.selectAll('.control-group').filter(function (f) {
-        return f.option === 'expand_all';
-    }).select('input').property('checked', false);
-
-    this.columnControls.filters.forEach(function (filter) {
-        //Update query maximum.
-        if (filter.variable.indexOf('query') > -1) {
-            filter.max = d3.max(_this.data.summarized, function (di) {
-                return di[filter.variable];
-            });
-        }
-        //Reset upper and lower bounds.
-        filter.lower = filter.min;
-        filter.upper = filter.max;
-
-        //Reset sliders.
-        update.call(_this, filter, true);
-    });
-}
-
-function redraw() {
-    summarizeData.call(this);
-    resetFilters.call(this);
-    this.draw(this.data.summarized);
 }
 
 function customizeFilters() {
@@ -657,53 +640,6 @@ function customizeCheckboxes() {
     }).select('.changer').on('change', function (d) {
         context.config[d.option] = this.checked;
         context.draw(context.data.raw);
-    });
-}
-
-function createNestControl() {
-    var context = this;
-    var config = this.config;
-
-    var idList = context.initial_config.nestings;
-    idList.push({ value_col: undefined, label: 'None' });
-
-    var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
-    idControlWrap.append('div').attr('class', 'wc-control-label').text('Show Status for:');
-    var idNote = idControlWrap.append('div').attr('class', 'span-description');
-    var idSelects = idControlWrap.selectAll('select').data([0, 1, 2]).enter().append('select');
-
-    idSelects.selectAll('option').data(function (d) {
-        return d === 0 // first dropdown shouldn't have "None" option
-        ? idList.filter(function (n) {
-            return n.value_col !== undefined;
-        }) : idList;
-    }).enter().append('option').text(function (d) {
-        return d.label;
-    }).property('selected', function (d) {
-        var levelNum = d3.select(this.parentNode).datum();
-        return d.value_col == config.id_cols[levelNum];
-    });
-
-    idSelects.on('change', function () {
-        var selectedLevels = [];
-        idSelects.each(function (d, i) {
-            var _this = this;
-
-            selectedLevels.push(idList.filter(function (n) {
-                return n.label === _this.value;
-            })[0].value_col);
-        });
-
-        var uniqueLevels = selectedLevels.filter(function (f) {
-            return f != undefined;
-        }).filter(function (item, pos) {
-            return selectedLevels.indexOf(item) == pos;
-        });
-
-        config.id_cols = uniqueLevels;
-
-        //Summarize filtered data and redraw table.
-        redraw.call(context);
     });
 }
 
@@ -984,7 +920,6 @@ function addColumnControls() {
 function onLayout() {
     customizeFilters.call(this);
     customizeCheckboxes.call(this);
-    createNestControl.call(this);
     moveExportButtons.call(this);
     drawLegend.call(this);
     addColumnControls.call(this);
@@ -1351,38 +1286,50 @@ function onDraw() {
     console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
 }
 
+function init(data) {
+    this.data = {
+        raw: data
+    };
+    this.table.init(data);
+}
+
 //utility functions
-//styles, configuration, and webcharts
-//table callbacks
 function crfHeatMap(element, settings) {
+    //main object
     var crfHeatMap = {
         element: element,
+        containers: {},
         settings: {
             user: settings
-        }
+        },
+        init: init
     };
+
+    //settings
+    crfHeatMap.settings.defaults = Object.assign({}, configuration.rendererSettings(), configuration.webchartsSettings()); // merge renderer-specific settings with Webcharts settings
+    crfHeatMap.settings.merged = merge(crfHeatMap.settings.defaults, crfHeatMap.settings.defaults); // merge user settings with default settings
+    crfHeatMap.settings.synced = configuration.syncSettings(crfHeatMap.settings.merged); // sync properties within merged settings, e.g. data mappings
+    crfHeatMap.settings.controls = {
+        inputs: configuration.syncControlInputs(crfHeatMap.settings.synced)
+    }; // define control settings
+
+    //DOM layout
+    defineLayout.call(crfHeatMap);
+
+    //controls
+    crfHeatMap.controls = webcharts.createControls(crfHeatMap.containers.controls.node(), crfHeatMap.settings.controls);
+
+    //table
+    crfHeatMap.table = webcharts.createTable(crfHeatMap.containers.table.node(), crfHeatMap.settings.synced, crfHeatMap.controls);
+    crfHeatMap.table.initial_config = crfHeatMap.settings.synced;
+    crfHeatMap.table.on('init', onInit);
+    crfHeatMap.table.on('layout', onLayout);
+    crfHeatMap.table.on('draw', onDraw);
+
+    //stylesheet
     defineStyles.call(crfHeatMap);
 
-    var defaultSettings = Object.assign({}, configuration.rendererSettings(), configuration.webchartsSettings());
-    var mergedSettings = merge(defaultSettings, settings); //Merge user settings onto default settings.
-    var syncedSettings = configuration.syncSettings(mergedSettings); //Sync properties within merged settings, e.g. data mappings.
-    var syncedControlInputs = configuration.syncControlInputs(syncedSettings); //Sync merged settings with controls.
-
-    var controls = webcharts.createControls(element, {
-        location: 'top',
-        inputs: syncedControlInputs
-    });
-    var table = webcharts.createTable(element, syncedSettings, controls);
-
-    table.initial_config = syncedSettings;
-
-    table.on('init', onInit);
-    table.on('layout', onLayout);
-    table.on('draw', onDraw);
-
-    defineStyles.call(table);
-
-    return table;
+    return crfHeatMap;
 }
 
 return crfHeatMap;

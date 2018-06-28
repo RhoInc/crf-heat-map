@@ -15,7 +15,6 @@ d3.csv(
     function(error, data) {
         if (error)
             console.log(error);
-        console.log(Object.keys(data[0]));
 
         var settings = {
             exports: ['csv', 'xlsx'],

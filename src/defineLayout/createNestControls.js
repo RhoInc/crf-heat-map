@@ -1,18 +1,22 @@
-import redraw from './customizeFilters/redraw';
+import redraw from '../onLayout/customizeFilters/redraw';
 
-export default function createNestControl() {
+export default function createNestControls() {
     const context = this;
-    const config = this.config;
+    const config = this.settings.synced;
 
-    var idList = context.initial_config.nestings;
+    var idList = config.nestings;
     idList.push({ value_col: undefined, label: 'None' });
 
-    var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
-    idControlWrap
+    var idControlWrap = this.containers.nestControls
         .append('div')
-        .attr('class', 'wc-control-label')
+        .attr('class', 'chm-control chm-control--nest');
+    idControlWrap
+        .append('span')
+        .attr('class', 'chm-control-label')
         .text('Show Status for:');
-    var idNote = idControlWrap.append('div').attr('class', 'span-description');
+    var idNote = idControlWrap
+        .append('span')
+        .attr('class', 'span-description');
     var idSelects = idControlWrap
         .selectAll('select')
         .data([0, 1, 2])
@@ -51,9 +55,10 @@ export default function createNestControl() {
                 return selectedLevels.indexOf(item) == pos;
             });
 
-        config.id_cols = uniqueLevels;
+        console.log(context);
+        context.table.config.id_cols = uniqueLevels;
 
         //Summarize filtered data and redraw table.
-        redraw.call(context);
+        redraw.call(context.table);
     });
 }

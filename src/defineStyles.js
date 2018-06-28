@@ -7,6 +7,84 @@ export const border = 1;
 
 export default function defineStyles() {
     const styles = [
+        '#crf-heat-map {' +
+            '}',
+        '.chm-column {' +
+            '    display: inline-block;' +
+            '}',
+        '.chm-column > * {' +
+            '    width: 100%;' +
+            '}',
+
+        /***--------------------------------------------------------------------------------------\
+          Left column
+        \--------------------------------------------------------------------------------------***/
+
+            '.chm-column--left {' +
+                '    float: left;' +
+                '    width: 20%;' +
+                '}',
+
+            /****---------------------------------------------------------------------------------\
+              Controls
+            \---------------------------------------------------------------------------------****/
+
+                '.chm-controls .wc-controls {' +
+                    '    margin-right: 10px;' +
+                    '}',
+                '.chm-controls .control-group {' +
+                    '    width: 100%;' +
+                    '    margin: 0 0 5px 0;' +
+                    '}',
+                '.chm-controls .control-group > * {' +
+                    '    display: inline-block !important;' +
+                    '    margin: 0;' +
+                    '}',
+                '.chm-controls .wc-control-label {' +
+                    '    width: 58%;' +
+                    '    text-align: right;' +
+                    '}',
+                '.chm-controls .span-description {' +
+                    '}',
+                '.chm-controls select.changer {' +
+                    '    width: 40%;' +
+                    '    float: right;' +
+                    '}',
+                '.chm-controls input.changer {' +
+                    '    margin-left: 2% !important;' +
+                    '}',
+
+        /***--------------------------------------------------------------------------------------\
+          Right column
+        \--------------------------------------------------------------------------------------***/
+
+            '.chm-column--right {' +
+                '    float: right;' +
+                '    width: 80%;' +
+                '}',
+
+            /****---------------------------------------------------------------------------------\
+              Nest controls
+            \---------------------------------------------------------------------------------****/
+
+            '.chm-nest-controls {' +
+                '}',
+            '.chm-nest-control {' +
+                '    float: left;' +
+                '    display: block;' +
+                '}',
+
+            /****---------------------------------------------------------------------------------\
+              Table
+            \---------------------------------------------------------------------------------****/
+
+            '.chm-table table {' +
+                '    display: table;' +
+                '}',
+
+
+
+
         '.row--hidden {' +
             '    display: none;' +
             '}',
@@ -141,8 +219,8 @@ export default function defineStyles() {
     ];
 
     //Attach styles to DOM.
-    const style = document.createElement('style');
-    style.type = 'text/css';
-    style.innerHTML = styles.join('\n');
-    document.getElementsByTagName('head')[0].appendChild(style);
+    this.style = document.createElement('style');
+    this.style.type = 'text/css';
+    this.style.innerHTML = styles.join('\n');
+    document.getElementsByTagName('head')[0].appendChild(this.style);
 }

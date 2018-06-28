@@ -1,3 +1,5 @@
+import createNestControls from './defineLayout/createNestControls';
+
 export default function defineLayout() {
     this.containers = {
         main: d3.select(this.element)
@@ -32,6 +34,7 @@ export default function defineLayout() {
             this.containers.nestControls = this.containers.rightColumn
                 .append('div')
                 .classed('chm-row chm-row--1 chm-controls chm-controls--nests', true);
+            createNestControls.call(this);
 
             this.containers.table = this.containers.rightColumn
                 .append('div')
