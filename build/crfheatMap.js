@@ -1509,7 +1509,7 @@
         //Capture subject-level information.
         if (subject_id_col) {
             //Add headers.
-            this.export.headers.push('Site', 'Subject Status', 'Freeze Status');
+            this.export.headers.push('Site', 'Subject Status', 'Subject Freeze Status');
 
             //Add columns.
             this.export.cols.push('site', 'status', 'freeze');
@@ -1789,6 +1789,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         var defaultSettings = Object.assign(
             {},
