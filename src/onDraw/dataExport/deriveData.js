@@ -14,18 +14,11 @@ export default function deriveData() {
     //Define columns.
     this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-    //Define data.
-    this.export.data = this.data.filtered.slice();
-    this.export.data.forEach((d, i) => {
-        //Split ID variable into as many columns as nests currently in place.
-        this.export.nests.forEach((id_col, j) => {
-            const id_val = d.id.split('|')[j];
-            d[id_col] = id_val || 'Total';
-        });
-    });
+    const subject_id_col_index = this.config.id_cols.indexOf('subjectnameoridentifier');
+    const subject_id_col = subject_id_col_index > -1;
 
-    //conditionally add subject level data if subjectID is the lowest id level
-    if (table.config.id_cols[table.config.id_cols.length - 1] === 'subjectnameoridentifier') {
+    //Capture subject-level information.
+    if (subject_id_col) {
         //Add headers.
         this.export.headers.push('Site', 'Subject Status', 'Freeze Status');
 
@@ -33,77 +26,36 @@ export default function deriveData() {
         this.export.cols.push('site', 'status', 'freeze');
 
         // build look up for subject
-        var subjectmap = {};
-        table.data.initial.forEach(function(row) {
-            subjectmap[row.subjectnameoridentifier] = {
-                site: row['sitename'],
-                status: row['status'],
-                freeze: row['SubjFreezeFlg']
+        var subjects = d3.set(table.data.initial.map(d => d['subjectnameoridentifier'])).values();
+        var subjectMap = subjects.reduce((acc, cur) => {
+            var subjectDatum = this.data.initial.find(d => d['subjectnameoridentifier'] === cur);
+            acc[cur] = {
+                site: subjectDatum.sitename,
+                status: subjectDatum.status,
+                freeze: subjectDatum.SubjFreezeFlg
             };
+            return acc;
+        }, {});
+    }
+
+    //Define data.
+    this.export.data = this.data.filtered.slice();
+    this.export.data.forEach((d, i, thisArray) => {
+        //Split ID variable into as many columns as nests currently in place.
+        this.export.nests.forEach((id_col, j) => {
+            const id_val = d.id.split('|')[j];
+            d[id_col] = id_val || 'Total';
         });
 
         // Now "join" subject level information to export data
-
-        // case 1: Subject is only nest
-        if (table.config.id_cols.length == 1) {
-            this.export.data.forEach(function(subject, index, objects) {
-                subject['site'] = subjectmap[subject['Nest 1: subjectnameoridentifier']]['site'];
-                subject['status'] =
-                    subjectmap[subject['Nest 1: subjectnameoridentifier']]['status'];
-                subject['freeze'] =
-                    subjectmap[subject['Nest 1: subjectnameoridentifier']]['freeze'];
-            });
+        if (subject_id_col) {
+            const subjectID = d[`Nest ${subject_id_col_index + 1}: subjectnameoridentifier`];
+            Object.assign(d, subjectMap[subjectID]);
         }
+    });
 
-        // case 2: Subject is lowest of two nests
-        else if (table.config.id_cols.length == 2) {
-            this.export.data.forEach(function(levelTwo, index, object) {
-                levelTwo['Nest 2: subjectnameoridentifier'] === 'Total' // remove Total rows
-                    ? object.splice(index, 1)
-                    : null;
-                if (typeof levelTwo.children != 'undefined') {
-                    levelTwo.children[0].forEach(function(d) {
-                        d.__data__['site'] =
-                            subjectmap[d.__data__['Nest 2: subjectnameoridentifier']]['site'];
-                        d.__data__['status'] =
-                            subjectmap[d.__data__['Nest 2: subjectnameoridentifier']]['status'];
-                        d.__data__['freeze'] =
-                            subjectmap[d.__data__['Nest 2: subjectnameoridentifier']]['freeze'];
-                    });
-                }
-            });
-        }
-
-        // case 3: Subject is lowest of three nests
-        else if (table.config.id_cols.length == 3) {
-            this.export.data.forEach(function(levelThree, index, object) {
-                levelThree['Nest 3: subjectnameoridentifier'] === 'Total' // remove Total rows
-                    ? object.splice(index, 1)
-                    : null;
-                Object.values(levelThree)[Object.values(levelThree).length - 2] === 'Total' // want to remove totals from nest 2 too
-                    ? object.splice(index, 1)
-                    : null;
-                if (typeof levelThree.children != 'undefined') {
-                    levelThree.children[0].forEach(function(levelTwo) {
-                        if (typeof levelTwo.__data__.children != 'undefined') {
-                            levelTwo.__data__.children[0].forEach(function(d) {
-                                d.__data__['site'] =
-                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']][
-                                        'site'
-                                    ];
-                                d.__data__['status'] =
-                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']][
-                                        'status'
-                                    ];
-                                d.__data__['freeze'] =
-                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']][
-                                        'freeze'
-                                    ];
-                            });
-                        }
-                    });
-                }
-            });
-        }
-    }
+    //Remove total rows.
+    this.export.data = this.export.data.filter(
+        d => !this.export.nests.some(nest => d[nest] === 'Total')
+    );
 }
