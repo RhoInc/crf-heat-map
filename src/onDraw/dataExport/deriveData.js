@@ -14,7 +14,6 @@ export default function deriveData() {
     //Define columns.
     this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-
     //Define data.
     this.export.data = this.data.filtered.slice();
     this.export.data.forEach((d, i) => {
@@ -48,8 +47,7 @@ export default function deriveData() {
         // case 1: Subject is only nest
         if (table.config.id_cols.length == 1) {
             this.export.data.forEach(function(subject, index, objects) {
-                subject['site'] =
-                    subjectmap[subject['Nest 1: subjectnameoridentifier']]['site'];
+                subject['site'] = subjectmap[subject['Nest 1: subjectnameoridentifier']]['site'];
                 subject['status'] =
                     subjectmap[subject['Nest 1: subjectnameoridentifier']]['status'];
                 subject['freeze'] =
@@ -90,11 +88,17 @@ export default function deriveData() {
                         if (typeof levelTwo.__data__.children != 'undefined') {
                             levelTwo.__data__.children[0].forEach(function(d) {
                                 d.__data__['site'] =
-                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']]['site'];
+                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']][
+                                        'site'
+                                    ];
                                 d.__data__['status'] =
-                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']]['status'];
+                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']][
+                                        'status'
+                                    ];
                                 d.__data__['freeze'] =
-                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']]['freeze'];
+                                    subjectmap[d.__data__['Nest 3: subjectnameoridentifier']][
+                                        'freeze'
+                                    ];
                             });
                         }
                     });

@@ -17,5 +17,5 @@ export default function onDraw() {
     //end performance test
     var t1 = performance.now();
     console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
-    console.log(this.data)
+    console.log(this.data);
 }
