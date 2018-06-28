@@ -636,7 +636,9 @@
                         return di[value_col];
                     });
                     summary[value_col] =
-                        ['is_partial_entry', 'is_frozen', 'is_locked'].indexOf(value_col) > -1
+                        ['is_partial_entry', 'Ready_For_Freeeze', 'is_frozen', 'is_locked'].indexOf(
+                            value_col
+                        ) > -1
                             ? summary.nForms
                                 ? count / summary.nForms
                                 : 'N/A'
@@ -992,7 +994,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth - heatCellWidth;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -1005,7 +1007,7 @@
                 'font-weight': 'bold',
                 'font-size': '17px'
             })
-            .attr('x', idCellWidth - heatCellWidth)
+            .attr('x', idCellWidth)
             .attr('y', legendHeight - rectHeight - 25);
 
         var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
@@ -1019,7 +1021,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth - heatCellWidth;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -1038,7 +1040,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 6 - heatCellWidth;
+                return rectWidth * i + idCellWidth + heatCellWidth * 6;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -1054,7 +1056,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 6 - heatCellWidth;
+                return rectWidth * i + idCellWidth + heatCellWidth * 6;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -1067,7 +1069,7 @@
                 'font-weight': 'bold',
                 'font-size': '17px'
             })
-            .attr('x', idCellWidth + heatCellWidth * 6 - heatCellWidth)
+            .attr('x', idCellWidth + heatCellWidth * 6)
             .attr('y', legendHeight - rectHeight - 25);
     }
 

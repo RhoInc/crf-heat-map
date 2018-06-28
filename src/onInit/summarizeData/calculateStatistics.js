@@ -15,7 +15,9 @@ export default function calculateStatistics() {
             this.config.value_cols.forEach(value_col => {
                 const count = d3.sum(d, di => di[value_col]);
                 summary[value_col] =
-                    ['is_partial_entry', 'is_frozen', 'is_locked'].indexOf(value_col) > -1
+                    ['is_partial_entry', 'Ready_For_Freeeze', 'is_frozen', 'is_locked'].indexOf(
+                        value_col
+                    ) > -1
                         ? summary.nForms
                             ? count / summary.nForms
                             : 'N/A'
