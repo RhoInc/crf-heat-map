@@ -867,6 +867,22 @@
             });
     }
 
+    function customizeCheckboxes() {
+        var context = this;
+
+        //Redefine change event listener of Expand All checkbox.
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.type === 'checkbox';
+            })
+            .select('.changer')
+            .on('change', function(d) {
+                context.config[d.option] = this.checked;
+                context.draw(context.data.raw);
+            });
+    }
+
     function createNestControl() {
         var context = this;
         var config = this.config;
@@ -1314,6 +1330,7 @@
 
     function onLayout() {
         customizeFilters.call(this);
+        customizeCheckboxes.call(this);
         createNestControl.call(this);
         drawLegend.call(this);
         addColumnControls.call(this);
@@ -1325,9 +1342,6 @@
         this.rows = this.tbody.selectAll('tr');
         this.rows
             .classed('row', true)
-            .classed('poo', function(d) {
-                console.log(d);
-            })
             .classed('row--expandable', function(d) {
                 return d.id.split('|').length < _this.config.id_cols.length;
             })
@@ -1790,16 +1804,17 @@
         var t0 = performance.now();
         //begin performance test
 
-        customizeRows.call(this);
-        customizeCells.call(this);
-        addRowDisplayToggle.call(this);
-        toggleCellAnnotations.call(this);
-        dataExport.call(this);
+        if (this.data.summarized.length) {
+            customizeRows.call(this);
+            customizeCells.call(this);
+            addRowDisplayToggle.call(this);
+            toggleCellAnnotations.call(this);
+            dataExport.call(this);
+        }
 
         //end performance test
         var t1 = performance.now();
         console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
-        console.log(this.data);
     }
 
     //utility functions
