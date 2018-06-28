@@ -1002,7 +1002,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth;
+                return rectWidth * i + idCellWidth - heatCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -1015,7 +1015,7 @@
                 'font-weight': 'bold',
                 'font-size': '17px'
             })
-            .attr('x', idCellWidth)
+            .attr('x', idCellWidth - heatCellWidth)
             .attr('y', legendHeight - rectHeight - 25);
 
         var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
@@ -1029,7 +1029,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth;
+                return rectWidth * i + idCellWidth - heatCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -1048,7 +1048,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 5;
+                return rectWidth * i + idCellWidth + heatCellWidth * 5 - heatCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -1064,7 +1064,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 5;
+                return rectWidth * i + idCellWidth + heatCellWidth * 5 - heatCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -1077,7 +1077,7 @@
                 'font-weight': 'bold',
                 'font-size': '17px'
             })
-            .attr('x', idCellWidth + heatCellWidth * 5)
+            .attr('x', idCellWidth + heatCellWidth * 5 - heatCellWidth)
             .attr('y', legendHeight - rectHeight - 25);
     }
 
