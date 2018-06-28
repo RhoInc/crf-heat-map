@@ -91,7 +91,7 @@ export default function drawLegend() {
         .attr('width', rectWidth)
         .attr('height', rectHeight)
         .attr('x', function(d, i) {
-            return rectWidth * i + idCellWidth + heatCellWidth * 5 - heatCellWidth;
+            return rectWidth * i + idCellWidth + heatCellWidth * 6 - heatCellWidth;
         })
         .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -105,7 +105,7 @@ export default function drawLegend() {
         .append('text')
         .text(d => d)
         .attr('x', function(d, i) {
-            return rectWidth * i + idCellWidth + heatCellWidth * 5 - heatCellWidth;
+            return rectWidth * i + idCellWidth + heatCellWidth * 6 - heatCellWidth;
         })
         .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -118,6 +118,6 @@ export default function drawLegend() {
             'font-weight': 'bold',
             'font-size': '17px'
         })
-        .attr('x', idCellWidth + heatCellWidth * 5 - heatCellWidth)
+        .attr('x', idCellWidth + heatCellWidth * 6 - heatCellWidth)
         .attr('y', legendHeight - rectHeight - 25);
 }

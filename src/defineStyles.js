@@ -90,17 +90,9 @@ export default function defineStyles() {
         '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
         '.filter-value--lower {' +
           '    width: 40px' +
-  //        'margin: 5 px' +
-          // '    align: left' +
-          // '.text {' +
-          //   '    width: 10px' +
-    //        'margin: 5 px' +
-            // '    align: left' +
         '}',
         '.filter-value--upper {' +
           '    width: 40px' +
-  //        'margin: 5 px' +
-          // '    align: right' +
         '}',
         /* ID cells */
 

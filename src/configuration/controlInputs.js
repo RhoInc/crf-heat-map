@@ -8,7 +8,7 @@ export default function controlInputs() {
         {
             type: 'subsetter',
             value_col: 'FreezeFlg',
-            label: 'Freeze Status'
+            label: 'Subject Freeze Status'
         },
         {
             type: 'subsetter',
