@@ -1,5 +1,5 @@
 export const firstColumnWidth = 200;
-export const otherColumnWidth = 150;
+export const otherColumnWidth = 120;
 export const margin = 0;
 export const paddingRight = 6;
 export const paddingLeft = 6;

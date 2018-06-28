@@ -4,6 +4,7 @@ import clone from './util/clone';
 import merge from './util/merge';
 
 //styles, configuration, and webcharts
+import defineLayout from './defineStyles';
 import defineStyles from './defineStyles';
 import configuration from './configuration/index';
 import { createControls, createTable } from 'webcharts';
@@ -14,6 +15,14 @@ import onLayout from './onLayout';
 import onDraw from './onDraw';
 
 export default function crfHeatMap(element, settings) {
+    const crfHeatMap = {
+        element,
+        settings: {
+            user: settings,
+        },
+    };
+    defineLayout.call(crfHeatMap);
+
     const defaultSettings = Object.assign(
         {},
         configuration.rendererSettings(),
