@@ -884,6 +884,15 @@
         });
     }
 
+    function moveExportButtons() {
+        this.wrap
+            .node()
+            .insertBefore(
+                this.wrap.select('.table-bottom').node(),
+                this.wrap.select('.table-top').node()
+            );
+    }
+
     function drawLegend() {
         var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
 
@@ -1153,6 +1162,7 @@
     function onLayout() {
         customizeFilters.call(this);
         createNestControl.call(this);
+        moveExportButtons.call(this);
         drawLegend.call(this);
         addColumnControls.call(this);
     }
