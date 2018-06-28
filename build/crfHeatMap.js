@@ -352,7 +352,7 @@
             '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
                 '.wc-table table tbody tr td:nth-child(n + 2) {' +
                 ('    width: ' + otherColumnWidth + 'px !important;') +
-                '    text-align: right;' +
+                '    text-align: left;' +
                 '}',
             '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}',
             '.wc-table table tbody tr:hover td:first-child {' +
@@ -370,6 +370,7 @@
                 '}',
             '.range-slider {' +
                 '    width: 100%;' +
+                '    pointer-events: none;' +
                 '    position: absolute;' +
                 '    height: 15px;' +
                 '    top: 1px;' +
@@ -411,7 +412,8 @@
                 '    border: 0;' +
                 '}',
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-
+            '.filter-value--lower {' + '    width: 40px' + '}',
+            '.filter-value--upper {' + '    width: 40px' + '}',
             /* ID cells */
 
             '.cell--id {' + '    background: white;' + '}',
@@ -488,13 +490,14 @@
             value_cols: [
                 'is_partial_entry',
                 'DATA_PAGE_VERIFIED',
+                'ready_for_freeze',
                 'is_frozen',
                 'is_signed',
                 'is_locked',
                 'open_query_cnt',
                 'answer_query_cnt'
             ],
-            filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
+            filter_cols: ['sitename', 'SubjFreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
             expand_all: false
         };
@@ -505,13 +508,14 @@
             cols: null,
             headers: [
                 'ID',
-                'CRFs Entered',
+                'Entered',
                 'Source Data Verified',
+                'Ready for Freeze',
                 'Frozen',
                 'Signed',
                 'Locked',
-                'Opened Queries',
-                'Answered Queries'
+                'Open',
+                'Answered'
             ],
             applyCSS: true,
             searchable: false,
@@ -545,7 +549,7 @@
             {
                 type: 'subsetter',
                 value_col: 'FreezeFlg',
-                label: 'Freeze Status'
+                label: 'Subject Freeze Status'
             },
             {
                 type: 'subsetter',
@@ -632,7 +636,9 @@
                         return di[value_col];
                     });
                     summary[value_col] =
-                        ['is_partial_entry', 'is_frozen', 'is_locked'].indexOf(value_col) > -1
+                        ['is_partial_entry', 'ready_for_freeze', 'is_frozen', 'is_locked'].indexOf(
+                            value_col
+                        ) > -1
                             ? summary.nForms
                                 ? count / summary.nForms
                                 : 'N/A'
@@ -716,37 +722,72 @@
     function update(filter) {
         var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-        //update lower slider and annotation
-        if (reset)
-            filter.lowerSlider
-                .attr({
-                    min: filter.min,
-                    max: filter.max
-                })
-                .property('value', filter.lower);
-        filter.lowerAnnotation.text(
-            '' +
-                (filter.variable.indexOf('query') < 0
-                    ? Math.round(filter.lower * 100)
-                    : filter.lower) +
-                (filter.variable.indexOf('query') < 0 ? '%' : '')
-        );
+        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+        if (isIE) {
+            //update lower slider and annotation
+            if (reset)
+                filter.lowerSlider
+                    .attr({
+                        min: filter.min,
+                        max: function max(d) {
+                            if (d.variable.indexOf('query') < 0) {
+                                return filter.max * 100;
+                            } else {
+                                return filter.upper;
+                            }
+                        }
+                    })
+                    .property('value', filter.lower);
 
-        //update upper slider and annotation
-        if (reset)
-            filter.upperSlider
-                .attr({
-                    min: filter.min,
-                    max: filter.max
-                })
-                .property('value', filter.upper);
-        filter.upperAnnotation.text(
-            '' +
-                (filter.variable.indexOf('query') < 0
-                    ? Math.round(filter.upper * 100)
-                    : filter.upper) +
-                (filter.variable.indexOf('query') < 0 ? '%' : '')
-        );
+            //update upper slider and annotation
+            if (reset)
+                filter.upperSlider
+                    .attr({
+                        min: filter.min,
+                        max: function max(d) {
+                            if (d.variable.indexOf('query') < 0) {
+                                return filter.max * 100;
+                            } else {
+                                return filter.upper;
+                            }
+                        }
+                    })
+                    .property('value', function(d) {
+                        return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
+                    });
+        } else {
+            //update lower slider and annotation
+            if (reset)
+                filter.lowerSlider
+                    .attr({
+                        min: filter.min,
+                        max: filter.max
+                    })
+                    .property('value', filter.lower);
+            filter.lowerAnnotation.text(
+                '' +
+                    (filter.variable.indexOf('query') < 0
+                        ? Math.round(filter.lower * 100)
+                        : filter.lower) +
+                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+            );
+
+            //update upper slider and annotation
+            if (reset)
+                filter.upperSlider
+                    .attr({
+                        min: filter.min,
+                        max: filter.max
+                    })
+                    .property('value', filter.upper);
+            filter.upperAnnotation.text(
+                '' +
+                    (filter.variable.indexOf('query') < 0
+                        ? Math.round(filter.upper * 100)
+                        : filter.upper) +
+                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+            );
+        }
     }
 
     function resetFilters() {
@@ -764,11 +805,11 @@
 
         this.columnControls.filters.forEach(function(filter) {
             //Update query maximum.
-            if (filter.variable.indexOf('query') > -1)
-                filter.max = d3.max(_this.data.filtered, function(di) {
+            if (filter.variable.indexOf('query') > -1) {
+                filter.max = d3.max(_this.data.summarized, function(di) {
                     return di[filter.variable];
                 });
-
+            }
             //Reset upper and lower bounds.
             filter.lower = filter.min;
             filter.upper = filter.max;
@@ -816,6 +857,22 @@
                     //Summarize filtered data and redraw table.
                     redraw.call(context);
                 });
+            });
+    }
+
+    function customizeCheckboxes() {
+        var context = this;
+
+        //Redefine change event listener of Expand All checkbox.
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.type === 'checkbox';
+            })
+            .select('.changer')
+            .on('change', function(d) {
+                context.config[d.option] = this.checked;
+                context.draw(context.data.raw);
             });
     }
 
@@ -941,6 +998,18 @@
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
+        // Add Title
+        d3
+            .select('svg.legend')
+            .append('text')
+            .text('CRFs')
+            .style({
+                'font-weight': 'bold',
+                'font-size': '17px'
+            })
+            .attr('x', idCellWidth)
+            .attr('y', legendHeight - rectHeight - 25);
+
         var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
 
         legendSVG
@@ -971,7 +1040,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 5;
+                return rectWidth * i + idCellWidth + heatCellWidth * 6;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -987,74 +1056,135 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 5;
+                return rectWidth * i + idCellWidth + heatCellWidth * 6;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
+
+        // Add Title
+        d3
+            .select('svg.legend')
+            .append('text')
+            .text('Queries')
+            .style({
+                'font-weight': 'bold',
+                'font-size': '17px'
+            })
+            .attr('x', idCellWidth + heatCellWidth * 6)
+            .attr('y', legendHeight - rectHeight - 25);
     }
 
     function addResetButton(th, d) {
         var _this = this;
 
+        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
         var resetButton = {};
         resetButton.container = d3
             .select(th)
             .append('div')
             .classed('reset-button-container', true);
-        resetButton.button = resetButton.container
-            .append('button')
-            .classed('reset-button', true)
-            .text('Reset sliders')
-            .on('click', function() {
-                resetFilters.call(_this);
-                _this.data.raw = _this.data.summarized;
-                _this.draw();
-            });
+
+        if (isIE) {
+            resetButton.button = resetButton.container
+                .append('button')
+                .classed('reset-button', true)
+                .text('Reset Ranges') // changed the name for IE
+                .on('click', function() {
+                    _this.data.raw = _this.data.summarized;
+                    resetFilters.call(_this);
+                    _this.draw(_this.data.raw);
+                });
+        } else {
+            resetButton.button = resetButton.container
+                .append('button')
+                .classed('reset-button', true)
+                .text('Reset sliders')
+                .on('click', function() {
+                    _this.data.raw = _this.data.summarized;
+                    resetFilters.call(_this);
+                    _this.draw(_this.data.raw);
+                });
+        }
         this.columnControls.resetButton = resetButton;
     }
 
     function layout(filter) {
-        filter.div = filter.cell
-            .append('div')
-            .datum(filter)
-            .classed('range-slider-container', true);
+        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+        if (isIE) {
+            //add containing div to header cell
+            filter.div = filter.cell
+                .append('div')
+                .datum(filter)
+                .classed('range-slider-container', true);
 
-        //lower slider
-        filter.lowerSlider = filter.div
-            .append('input')
-            .classed('range-slider filter-slider--lower', true)
-            .attr({
-                type: 'range',
-                step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-                min: 0
-            });
+            //lower slider
+            filter.lowerSlider = filter.div
+                .append('input')
+                .classed('range-value filter-value--lower', true)
+                .attr({
+                    type: 'number',
+                    min: 0,
+                    step: 1,
+                    value: 0
+                });
 
-        // var html5Slider = document.getElementsByI(".range-slider");
-        //
-        //         noUiSlider.create(html5Slider, {
-        //         	start: [ 10, 30 ],
-        //         	connect: true,
-        //         	range: {
-        //         		'min': -20,
-        //         		'max': 40
-        //         	}
-        //         });
+            filter.div
+                .append('text')
+                .classed('text', true)
+                .text(function(d) {
+                    return d.variable.indexOf('query') < 0 ? '% - ' : ' - ';
+                });
 
-        filter.lowerAnnotation = filter.div
-            .append('span')
-            .classed('range-annotation range-annotation--lower', true);
+            //upper slider
+            filter.upperSlider = filter.div
+                .append('input')
+                .classed('range-value filter-value--upper', true)
+                .attr({
+                    type: 'number',
+                    min: 0,
+                    step: 1,
+                    value: 100
+                });
 
-        //upper slider
-        filter.upperSlider = filter.div
-            .append('input')
-            .classed('range-slider filter-slider--upper', true)
-            .attr({
-                type: 'range',
-                step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
-                min: 0
-            });
-        filter.upperAnnotation = filter.div
-            .append('span')
-            .classed('range-annotation range-annotation--upper', true);
+            filter.div
+                .append('text')
+                .classed('text', true)
+                .text(function(d) {
+                    return d.variable.indexOf('query') < 0 ? '%' : '';
+                });
+        } else {
+            //add containing div to header cell
+            filter.div = filter.cell
+                .append('div')
+                .datum(filter)
+                .classed('range-slider-container', true);
+
+            //lower slider
+            filter.lowerSlider = filter.div
+                .append('input')
+                .classed('range-slider filter-slider--lower', true)
+                .attr({
+                    type: 'range',
+                    step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                    min: 0
+                });
+
+            filter.lowerAnnotation = filter.div
+                .append('span')
+                .classed('range-annotation range-annotation--lower', true);
+
+            //upper slider
+            filter.upperSlider = filter.div
+                .append('input')
+                .classed('range-slider filter-slider--upper', true)
+                .attr({
+                    type: 'range',
+                    step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                    min: 0
+                });
+            filter.upperAnnotation = filter.div
+                .append('span')
+                .classed('range-annotation range-annotation--upper', true);
+        }
     }
 
     function filterData() {
@@ -1074,34 +1204,75 @@
     function onInput(filter) {
         var context = this;
 
-        //Attach an event listener to sliders.
-        filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-            //expand rows and check 'Expand All'
-            context.config.expand_all = true;
-            context.controls.wrap
-                .selectAll('.control-group')
-                .filter(function(f) {
-                    return f.option === 'expand_all';
-                })
-                .select('input')
-                .property('checked', true);
+        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
 
-            var sliders = this.parentNode.getElementsByTagName('input');
-            var slider1 = parseFloat(sliders[0].value);
-            var slider2 = parseFloat(sliders[1].value);
+        if (isIE) {
+            //Attach an event listener to sliders.
+            filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
+                //expand rows and check 'Expand All'
 
-            if (slider1 <= slider2) {
-                d.lower = slider1;
-                d.upper = slider2;
-            } else {
-                d.lower = slider2;
-                d.upper = slider1;
-            }
+                context.config.expand_all = true;
+                context.controls.wrap
+                    .selectAll('.control-group')
+                    .filter(function(f) {
+                        return f.option === 'expand_all';
+                    })
+                    .select('input')
+                    .property('checked', true);
 
-            update.call(context, d);
-            filterData.call(context);
-            context.draw();
-        });
+                var sliders = this.parentNode.getElementsByTagName('input');
+                var slider1 = parseFloat(sliders[0].value);
+                var slider2 = parseFloat(sliders[1].value);
+
+                if (slider1 <= slider2) {
+                    if (d.variable.indexOf('query') < 0) {
+                        d.lower = slider1 / 100;
+                        d.upper = slider2 / 100;
+                    } else {
+                        d.lower = slider1;
+                        d.upper = slider2;
+                    }
+                } else {
+                    if (d.variable.indexOf('query') < 0) {
+                        d.lower = slider2 / 100;
+                        d.upper = slider1 / 100;
+                    } else {
+                        d.lower = slider2;
+                        d.upper = slider1;
+                    }
+                }
+                update.call(context, d);
+                filterData.call(context);
+                context.draw(context.data.raw);
+            });
+        } else {
+            filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+                //expand rows and check 'Expand All'
+                context.config.expand_all = true;
+                context.controls.wrap
+                    .selectAll('.control-group')
+                    .filter(function(f) {
+                        return f.option === 'expand_all';
+                    })
+                    .select('input')
+                    .property('checked', true);
+                var sliders = this.parentNode.getElementsByTagName('input');
+                var slider1 = parseFloat(sliders[0].value);
+                var slider2 = parseFloat(sliders[1].value);
+
+                if (slider1 <= slider2) {
+                    d.lower = slider1;
+                    d.upper = slider2;
+                } else {
+                    d.lower = slider2;
+                    d.upper = slider1;
+                }
+
+                update.call(context, d);
+                filterData.call(context);
+                context.draw(context.data.raw);
+            });
+        }
     }
 
     function addSliders(th, d) {
@@ -1161,6 +1332,7 @@
 
     function onLayout() {
         customizeFilters.call(this);
+        customizeCheckboxes.call(this);
         createNestControl.call(this);
         moveExportButtons.call(this);
         drawLegend.call(this);
@@ -1185,6 +1357,14 @@
     }
 
     function customizeCells() {
+        // add Dynel's hover text to table headers
+        d3
+            .select('th.answer_query_cnt')
+            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
+        d3
+            .select('th.is_frozen')
+            .attr('title', 'Data is clean and there are no outstanding issues.');
+
         this.cells = this.tbody.selectAll('td');
         this.cells
             .attr('class', function(d) {
@@ -1331,7 +1511,7 @@
         //Capture subject-level information.
         if (subject_id_col) {
             //Add headers.
-            this.export.headers.push('Site', 'Subject Status', 'Freeze Status');
+            this.export.headers.push('Site', 'Subject Status', 'Subject Freeze Status');
 
             //Add columns.
             this.export.cols.push('site', 'status', 'freeze');
@@ -1597,11 +1777,13 @@
         var t0 = performance.now();
         //begin performance test
 
-        customizeRows.call(this);
-        customizeCells.call(this);
-        addRowDisplayToggle.call(this);
-        toggleCellAnnotations.call(this);
-        dataExport.call(this);
+        if (this.data.summarized.length) {
+            customizeRows.call(this);
+            customizeCells.call(this);
+            addRowDisplayToggle.call(this);
+            toggleCellAnnotations.call(this);
+            dataExport.call(this);
+        }
 
         //end performance test
         var t1 = performance.now();

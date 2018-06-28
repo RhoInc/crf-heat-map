@@ -25,7 +25,7 @@ export default function rendererSettings() {
         value_cols: [
             'is_partial_entry',
             'DATA_PAGE_VERIFIED',
-            'Ready_For_Freeeze',
+            'ready_for_freeze',
             'is_frozen',
             'is_signed',
             'is_locked',
