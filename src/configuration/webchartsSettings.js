@@ -5,6 +5,7 @@ export default function webchartsSettings() {
             'ID',
             'Entered',
             'Source Data Verified',
+            'Ready for Freeze',
             'Frozen',
             'Signed',
             'Locked',

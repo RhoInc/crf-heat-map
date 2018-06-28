@@ -412,20 +412,8 @@
                 '    border: 0;' +
                 '}',
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-            '.filter-value--lower {' +
-                '    width: 40px' +
-                //        'margin: 5 px' +
-                // '    align: left' +
-                // '.text {' +
-                //   '    width: 10px' +
-                //        'margin: 5 px' +
-                // '    align: left' +
-                '}',
-            '.filter-value--upper {' +
-                '    width: 40px' +
-                //        'margin: 5 px' +
-                // '    align: right' +
-                '}',
+            '.filter-value--lower {' + '    width: 40px' + '}',
+            '.filter-value--upper {' + '    width: 40px' + '}',
             /* ID cells */
 
             '.cell--id {' + '    background: white;' + '}',
@@ -502,13 +490,14 @@
             value_cols: [
                 'is_partial_entry',
                 'DATA_PAGE_VERIFIED',
+                'Ready_For_Freeeze',
                 'is_frozen',
                 'is_signed',
                 'is_locked',
                 'open_query_cnt',
                 'answer_query_cnt'
             ],
-            filter_cols: ['sitename', 'FreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
+            filter_cols: ['sitename', 'SubjFreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
             expand_all: false
         };
@@ -521,6 +510,7 @@
                 'ID',
                 'Entered',
                 'Source Data Verified',
+                'Ready for Freeze',
                 'Frozen',
                 'Signed',
                 'Locked',
@@ -559,7 +549,7 @@
             {
                 type: 'subsetter',
                 value_col: 'FreezeFlg',
-                label: 'Freeze Status'
+                label: 'Subject Freeze Status'
             },
             {
                 type: 'subsetter',
@@ -646,7 +636,9 @@
                         return di[value_col];
                     });
                     summary[value_col] =
-                        ['is_partial_entry', 'is_frozen', 'is_locked'].indexOf(value_col) > -1
+                        ['is_partial_entry', 'Ready_For_Freeeze', 'is_frozen', 'is_locked'].indexOf(
+                            value_col
+                        ) > -1
                             ? summary.nForms
                                 ? count / summary.nForms
                                 : 'N/A'
@@ -1002,7 +994,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth - heatCellWidth;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -1015,7 +1007,7 @@
                 'font-weight': 'bold',
                 'font-size': '17px'
             })
-            .attr('x', idCellWidth - heatCellWidth)
+            .attr('x', idCellWidth)
             .attr('y', legendHeight - rectHeight - 25);
 
         var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
@@ -1029,7 +1021,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth - heatCellWidth;
+                return rectWidth * i + idCellWidth;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -1048,7 +1040,7 @@
             .attr('width', rectWidth)
             .attr('height', rectHeight)
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 5 - heatCellWidth;
+                return rectWidth * i + idCellWidth + heatCellWidth * 6;
             })
             .attr('y', (legendHeight - rectHeight) / 2);
 
@@ -1064,7 +1056,7 @@
                 return d;
             })
             .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 5 - heatCellWidth;
+                return rectWidth * i + idCellWidth + heatCellWidth * 6;
             })
             .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
 
@@ -1077,7 +1069,7 @@
                 'font-weight': 'bold',
                 'font-size': '17px'
             })
-            .attr('x', idCellWidth + heatCellWidth * 5 - heatCellWidth)
+            .attr('x', idCellWidth + heatCellWidth * 6)
             .attr('y', legendHeight - rectHeight - 25);
     }
 
@@ -1365,6 +1357,14 @@
     }
 
     function customizeCells() {
+        // add Dynel's hover text to table headers
+        d3
+            .select('th.answer_query_cnt')
+            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
+        d3
+            .select('th.is_frozen')
+            .attr('title', 'Data is clean and there are no outstanding issues.');
+
         this.cells = this.tbody.selectAll('td');
         this.cells
             .attr('class', function(d) {
@@ -1511,7 +1511,7 @@
         //Capture subject-level information.
         if (subject_id_col) {
             //Add headers.
-            this.export.headers.push('Site', 'Subject Status', 'Freeze Status');
+            this.export.headers.push('Site', 'Subject Status', 'Subject Freeze Status');
 
             //Add columns.
             this.export.cols.push('site', 'status', 'freeze');
