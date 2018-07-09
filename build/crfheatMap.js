@@ -356,10 +356,11 @@ function createNestControls() {
     var idList = config.nestings;
     idList.push({ value_col: undefined, label: 'None' });
 
-    var idControlWrap = this.containers.nestControls.append('div').attr('class', 'chm-control chm-control--nest');
-    idControlWrap.append('span').attr('class', 'chm-control-label').text('Show Status for:');
-    var idNote = idControlWrap.append('span').attr('class', 'span-description');
-    var idSelects = idControlWrap.selectAll('select').data([0, 1, 2]).enter().append('select');
+    this.containers.nestControls.append('span').attr('class', 'chm-control-label').text('');
+    var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+    var idSelects = this.containers.nestControls.selectAll('select').data([0, 1, 2]).enter().append('select').classed('chm-nest-control', true).attr('id', function (d) {
+        return 'chm-nest-control--' + (d + 1);
+    });
 
     idSelects.selectAll('option').data(function (d) {
         return d === 0 // first dropdown shouldn't have "None" option
@@ -397,72 +398,53 @@ function createNestControls() {
     });
 }
 
-function defineLayout() {
-    this.containers = {
-        main: d3.select(this.element).append('div').attr('id', 'crf-heat-map')
-    };
-
-    /**-------------------------------------------------------------------------------------------\
-    Left column
-    \-------------------------------------------------------------------------------------------**/
-
-    this.containers.leftColumn = this.containers.main.append('div').classed('chm-column chm-column--left', true);
-
-    this.containers.dataExport = this.containers.leftColumn.append('div').classed('chm-row chm-row--1 chm-data-export', true);
-
-    this.containers.controls = this.containers.leftColumn.append('div').classed('chm-row chm-row--2 chm-controls chm-controls--main', true);
-
-    /**-------------------------------------------------------------------------------------------\
-    Right column
-    \-------------------------------------------------------------------------------------------**/
-
-    this.containers.rightColumn = this.containers.main.append('div').classed('chm-column chm-column--right', true);
-
-    this.containers.nestControls = this.containers.rightColumn.append('div').classed('chm-row chm-row--1 chm-controls chm-controls--nests', true);
-    createNestControls.call(this);
-
-    this.containers.table = this.containers.rightColumn.append('div').classed('chm-row chm-row--2 chm-table', true);
-}
-
-var firstColumnWidth = 200;
+var firstColumnWidth = 150;
 var otherColumnWidth = 120;
 
 var paddingRight = 6;
 var paddingLeft = 6;
 
+var legendWidth = otherColumnWidth * 8 + paddingRight * 8 + paddingLeft * 8;
 
 function defineStyles() {
-    var styles = ['#crf-heat-map {' + '}', '.chm-column {' + '    display: inline-block;' + '}', '.chm-column > * {' + '    width: 100%;' + '}',
+    console.log(legendWidth);
+    var styles = ['#crf-heat-map {' + '}', '.chm-column {' + '    display: inline-block;' + '}', '.chm-column > * {' + '    width: 100%;' + '}', '.chm-row {' + '    display: inline-block;' + '}', '.chm-row > * {' + '    display: inline-block;' + '}',
 
     /***--------------------------------------------------------------------------------------\
       Left column
     \--------------------------------------------------------------------------------------***/
 
-    '.chm-column--left {' + '    float: left;' + '    width: 20%;' + '}',
+    '#chm-left-column {' + '    float: left;' + '    width: 20%;' + '}',
 
     /****---------------------------------------------------------------------------------\
       Controls
     \---------------------------------------------------------------------------------****/
 
-    '.chm-controls .wc-controls {' + '    margin-right: 10px;' + '}', '.chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}', '.chm-controls .control-group > * {' + '    display: inline-block !important;' + '    margin: 0;' + '}', '.chm-controls .wc-control-label {' + '    width: 58%;' + '    text-align: right;' + '}', '.chm-controls .span-description {' + '}', '.chm-controls select.changer {' + '    width: 40%;' + '    float: right;' + '}', '.chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
+    '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}', '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}', '#chm-controls .control-group > * {' + '    display: inline-block !important;' + '    margin: 0;' + '}', '#chm-controls .wc-control-label {' + '    width: 58%;' + '    text-align: right;' + '}', '#chm-controls .span-description {' + '}', '#chm-controls select.changer {' + '    width: 40%;' + '    float: right;' + '}', '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
 
     /***--------------------------------------------------------------------------------------\
       Right column
     \--------------------------------------------------------------------------------------***/
 
-    '.chm-column--right {' + '    float: right;' + '    width: 80%;' + '}',
+    '#chm-right-column {' + '    float: right;' + '    width: 80%;' + '}', '#chm-right-column-row-1 > * {' + '    display: inline-block;' + '}', '#chm-right-column-row-2 > * {' + '}',
 
     /****---------------------------------------------------------------------------------\
       Nest controls
     \---------------------------------------------------------------------------------****/
 
-    '.chm-nest-controls {' + '}', '.chm-nest-control {' + '    float: left;' + '    display: block;' + '}',
+    '#chm-nest-controls {' + ('    width: ' + firstColumnWidth + 'px;') + '}', '.chm-nest-control {' + '    float: left;' + '    display: block;' + '    clear: left;' + ('    padding-left: ' + paddingLeft + 'px;') + '}', '#chm-nest-control--1 {' + '    margin-left: 0;' + '}', '#chm-nest-control--2 {' + '    margin-left: 1em;' + '}', '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
+
+    /****---------------------------------------------------------------------------------\
+      Legend
+    \---------------------------------------------------------------------------------****/
+
+    '#chm-legend {' + '    float: right;' + '}',
 
     /****---------------------------------------------------------------------------------\
       Table
     \---------------------------------------------------------------------------------****/
 
-    '.chm-table table {' + '    display: table;' + '}', '.row--hidden {' + '    display: none;' + '}', '.wc-table table thead tr th,' + '.wc-table table tbody tr td {' + ('    padding-right: ' + paddingRight + 'px;') + ('    padding-left: ' + paddingLeft + 'px;') + '}', '.wc-table table thead tr th:first-child,' + '.wc-table table tbody tr td:first-child {' + ('    width: ' + firstColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' + '.wc-table table tbody tr td:nth-child(n + 2) {' + ('    width: ' + otherColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}', '.wc-table table tbody tr:hover td:first-child {' + '    border-left: 1px solid black;' + '}',
+    '#chm-table table {' + '    display: table;' + '}', '.row--hidden {' + '    display: none;' + '}', '.wc-table table thead tr th,' + '.wc-table table tbody tr td {' + ('    padding-right: ' + paddingRight + 'px;') + ('    padding-left: ' + paddingLeft + 'px;') + '}', '.wc-table table thead tr th:first-child,' + '.wc-table table tbody tr td:first-child {' + ('    width: ' + firstColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' + '.wc-table table tbody tr td:nth-child(n + 2) {' + ('    width: ' + otherColumnWidth + 'px !important;') + '    text-align: left;' + '}', '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}', '.wc-table table tbody tr:hover td:first-child {' + '    border-left: 1px solid black;' + '}',
 
     /* range sliders */
 
@@ -480,6 +462,129 @@ function defineStyles() {
     this.style.type = 'text/css';
     this.style.innerHTML = styles.join('\n');
     document.getElementsByTagName('head')[0].appendChild(this.style);
+}
+
+function drawLegend() {
+    // from https://stackoverflow.com/questions/24861073/detect-if-any-kind-of-ie-msie/24861307
+    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
+    var crfColors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+    var queryColors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
+
+    var legendHeight = 60;
+
+    var rectHeight = 20;
+    var rectWidth = 60;
+
+    // these widths are from what's in defineStyles.js
+    // might be way to pull these values from the classes setup there
+    // or set them both upstream  -  for now just copy from there
+    // had to slide this over slgihtly due to gridlines
+    var heatCellWidth = otherColumnWidth + paddingRight + paddingLeft;
+    isIE ? heatCellWidth = heatCellWidth + 1.25 : heatCellWidth = heatCellWidth + 2.25; // gridlines are little smaller in IE
+
+    var legendSVG = this.containers.legend.append('svg').classed('chm-legend-svg', true).attr('width', legendWidth).attr('height', legendHeight);
+
+    // Form Legend
+    legendSVG.selectAll('rect.chm-legend-rect--crf').data(crfColors).enter().append('rect').classed('chm-legend-rect chm-legend-rect--crf', true).style({
+        fill: function fill(d) {
+            return d;
+        },
+        'fill-opacity': 1
+    }).attr('width', rectWidth).attr('height', rectHeight).attr('x', function (d, i) {
+        return rectWidth * i;
+    }).attr('y', (legendHeight - rectHeight) / 2);
+
+    // Add Title
+    legendSVG.append('text').text('CRFs').style({
+        'font-weight': 'bold',
+        'font-size': '17px'
+    }).attr('x', 0).attr('y', legendHeight - rectHeight - 25);
+
+    var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
+
+    legendSVG.selectAll('g').data(formTickLabels).enter().append('text').text(function (d) {
+        return d;
+    }).attr('x', function (d, i) {
+        return rectWidth * i;
+    }).attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
+
+    // Query Legend
+    legendSVG.selectAll('rect.chm-legend-rect--query').data(queryColors).enter().append('rect').classed('chm-legend-rect chm-legend-rect--query', true).style({
+        fill: function fill(d) {
+            return d;
+        },
+        'fill-opacity': 1
+    }).attr('width', rectWidth).attr('height', rectHeight).attr('x', function (d, i) {
+        return rectWidth * i + heatCellWidth * 6;
+    }).attr('y', (legendHeight - rectHeight) / 2);
+
+    var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
+
+    legendSVG.selectAll('g').data(queryTickLabels).enter().append('text').text(function (d) {
+        return d;
+    }).attr('x', function (d, i) {
+        return rectWidth * i + heatCellWidth * 6;
+    }).attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
+
+    // Add Title
+    legendSVG.append('text').text('Queries').style({
+        'font-weight': 'bold',
+        'font-size': '17px'
+    }).attr('x', heatCellWidth * 6).attr('y', legendHeight - rectHeight - 25);
+}
+
+function defineLayout() {
+    this.containers = {
+        main: d3.select(this.element).append('div').attr('id', 'crf-heat-map')
+    };
+
+    /**-------------------------------------------------------------------------------------------\
+    Left column
+    \-------------------------------------------------------------------------------------------**/
+
+    this.containers.leftColumn = this.containers.main.append('div').classed('chm-column', true).attr('id', 'chm-left-column');
+
+    /***--------------------------------------------------------------------------------------\
+      Row 1
+    \--------------------------------------------------------------------------------------***/
+
+    this.containers.leftColumnRow1 = this.containers.leftColumn.append('div').classed('chm-row chm-row--1', true).attr('id', 'chm-left-column-row-1');
+
+    this.containers.dataExport = this.containers.leftColumnRow1.append('div').classed('chm-section', true).attr('id', 'chm-data-export');
+
+    /***--------------------------------------------------------------------------------------\
+      Row 2
+    \--------------------------------------------------------------------------------------***/
+
+    this.containers.leftColumnRow2 = this.containers.leftColumn.append('div').classed('chm-row chm-row--2', true).attr('id', 'chm-left-column-row-2');
+
+    this.containers.controls = this.containers.leftColumnRow2.append('div').classed('chm-section', true).attr('id', 'chm-controls');
+
+    /**-------------------------------------------------------------------------------------------\
+    Right column
+    \-------------------------------------------------------------------------------------------**/
+
+    this.containers.rightColumn = this.containers.main.append('div').classed('chm-column', true).attr('id', 'chm-right-column');
+
+    /***--------------------------------------------------------------------------------------\
+      Row 1
+    \--------------------------------------------------------------------------------------***/
+
+    this.containers.rightColumnRow1 = this.containers.rightColumn.append('div').classed('chm-row chm-row--1', true).attr('id', 'chm-right-column-row-1');
+
+    this.containers.nestControls = this.containers.rightColumnRow1.append('div').classed('chm-section', true).attr('id', 'chm-nest-controls');
+    createNestControls.call(this);
+
+    this.containers.legend = this.containers.rightColumnRow1.append('div').classed('chm-section', true).attr('id', 'chm-legend');
+    drawLegend.call(this);
+
+    /***--------------------------------------------------------------------------------------\
+      Row 2
+    \--------------------------------------------------------------------------------------***/
+
+    this.containers.rightColumnRow2 = this.containers.rightColumn.append('div').classed('chm-row chm-row--2', true).attr('id', 'chm-right-column-row-2');
+
+    this.containers.table = this.containers.rightColumnRow2.append('div').classed('chm-section', true).attr('id', 'chm-table');
 }
 
 function rendererSettings() {
@@ -641,83 +746,6 @@ function customizeCheckboxes() {
         context.config[d.option] = this.checked;
         context.draw(context.data.raw);
     });
-}
-
-function moveExportButtons() {
-    this.wrap.node().insertBefore(this.wrap.select('.table-bottom').node(), this.wrap.select('.table-top').node());
-}
-
-function drawLegend() {
-    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
-
-    var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
-
-    //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
-    var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
-
-    var legendHeight = 60;
-    var legendWidth = 1500;
-
-    var rectHeight = 20;
-    var rectWidth = 60;
-
-    // these widths are from what's in defineStyles.js
-    // might be way to pull these values from the classes setup there
-    // or set them both upstream  -  for now just copy from there
-    // had to slide this over slgihtly due to gridlines
-    var idCellWidth = firstColumnWidth + paddingRight + paddingLeft;
-    var heatCellWidth = otherColumnWidth + paddingRight + paddingLeft;
-    isIE ? heatCellWidth = heatCellWidth + 1.25 : heatCellWidth = heatCellWidth + 2.25; // gridlines are little smaller in IE
-
-    var legendSVG = d3.selectAll('.wc-chart').insert('svg', 'table').classed('legend', true).attr('width', legendWidth).attr('height', legendHeight);
-
-    // Form Legend
-    legendSVG.selectAll('.legend').data(colors).enter().append('rect').style({
-        fill: function fill(d) {
-            return d;
-        },
-        'fill-opacity': 1
-    }).attr('width', rectWidth).attr('height', rectHeight).attr('x', function (d, i) {
-        return rectWidth * i + idCellWidth;
-    }).attr('y', (legendHeight - rectHeight) / 2);
-
-    // Add Title
-    d3.select('svg.legend').append('text').text('CRFs').style({
-        'font-weight': 'bold',
-        'font-size': '17px'
-    }).attr('x', idCellWidth).attr('y', legendHeight - rectHeight - 25);
-
-    var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
-
-    legendSVG.selectAll('g').data(formTickLabels).enter().append('text').text(function (d) {
-        return d;
-    }).attr('x', function (d, i) {
-        return rectWidth * i + idCellWidth;
-    }).attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
-
-    // Query Legend
-    legendSVG.selectAll('.legend').data(greencolors).enter().append('rect').style({
-        fill: function fill(d) {
-            return d;
-        },
-        'fill-opacity': 1
-    }).attr('width', rectWidth).attr('height', rectHeight).attr('x', function (d, i) {
-        return rectWidth * i + idCellWidth + heatCellWidth * 6;
-    }).attr('y', (legendHeight - rectHeight) / 2);
-
-    var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
-
-    d3.select('svg.legend').selectAll('g').data(queryTickLabels).enter().append('text').text(function (d) {
-        return d;
-    }).attr('x', function (d, i) {
-        return rectWidth * i + idCellWidth + heatCellWidth * 6;
-    }).attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
-
-    // Add Title
-    d3.select('svg.legend').append('text').text('Queries').style({
-        'font-weight': 'bold',
-        'font-size': '17px'
-    }).attr('x', idCellWidth + heatCellWidth * 6).attr('y', legendHeight - rectHeight - 25);
 }
 
 function addResetButton(th, d) {
@@ -920,8 +948,7 @@ function addColumnControls() {
 function onLayout() {
     customizeFilters.call(this);
     customizeCheckboxes.call(this);
-    moveExportButtons.call(this);
-    drawLegend.call(this);
+    //moveExportButtons.call(this);
     addColumnControls.call(this);
 }
 
@@ -1321,6 +1348,7 @@ function crfHeatMap(element, settings) {
 
     //table
     crfHeatMap.table = webcharts.createTable(crfHeatMap.containers.table.node(), crfHeatMap.settings.synced, crfHeatMap.controls);
+    crfHeatMap.table.parent = crfHeatMap;
     crfHeatMap.table.initial_config = crfHeatMap.settings.synced;
     crfHeatMap.table.on('init', onInit);
     crfHeatMap.table.on('layout', onLayout);

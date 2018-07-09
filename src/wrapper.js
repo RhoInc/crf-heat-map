@@ -54,6 +54,7 @@ export default function crfHeatMap(element, settings) {
         crfHeatMap.settings.synced,
         crfHeatMap.controls
     );
+    crfHeatMap.table.parent = crfHeatMap;
     crfHeatMap.table.initial_config = crfHeatMap.settings.synced;
     crfHeatMap.table.on('init', onInit);
     crfHeatMap.table.on('layout', onLayout);

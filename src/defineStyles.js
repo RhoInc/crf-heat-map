@@ -1,11 +1,13 @@
-export const firstColumnWidth = 200;
+export const firstColumnWidth = 150;
 export const otherColumnWidth = 120;
 export const margin = 0;
 export const paddingRight = 6;
 export const paddingLeft = 6;
 export const border = 1;
+export const legendWidth = otherColumnWidth*8 + paddingRight*8 + paddingLeft*8;
 
 export default function defineStyles() {
+console.log(legendWidth);
     const styles = [
         '#crf-heat-map {' +
             '}',
@@ -15,12 +17,18 @@ export default function defineStyles() {
         '.chm-column > * {' +
             '    width: 100%;' +
             '}',
+        '.chm-row {' +
+            '    display: inline-block;' +
+            '}',
+        '.chm-row > * {' +
+            '    display: inline-block;' +
+            '}',
 
         /***--------------------------------------------------------------------------------------\
           Left column
         \--------------------------------------------------------------------------------------***/
 
-            '.chm-column--left {' +
+            '#chm-left-column {' +
                 '    float: left;' +
                 '    width: 20%;' +
                 '}',
@@ -29,28 +37,28 @@ export default function defineStyles() {
               Controls
             \---------------------------------------------------------------------------------****/
 
-                '.chm-controls .wc-controls {' +
+                '#chm-controls .wc-controls {' +
                     '    margin-right: 10px;' +
                     '}',
-                '.chm-controls .control-group {' +
+                '#chm-controls .control-group {' +
                     '    width: 100%;' +
                     '    margin: 0 0 5px 0;' +
                     '}',
-                '.chm-controls .control-group > * {' +
+                '#chm-controls .control-group > * {' +
                     '    display: inline-block !important;' +
                     '    margin: 0;' +
                     '}',
-                '.chm-controls .wc-control-label {' +
+                '#chm-controls .wc-control-label {' +
                     '    width: 58%;' +
                     '    text-align: right;' +
                     '}',
-                '.chm-controls .span-description {' +
+                '#chm-controls .span-description {' +
                     '}',
-                '.chm-controls select.changer {' +
+                '#chm-controls select.changer {' +
                     '    width: 40%;' +
                     '    float: right;' +
                     '}',
-                '.chm-controls input.changer {' +
+                '#chm-controls input.changer {' +
                     '    margin-left: 2% !important;' +
                     '}',
 
@@ -58,29 +66,54 @@ export default function defineStyles() {
           Right column
         \--------------------------------------------------------------------------------------***/
 
-            '.chm-column--right {' +
+            '#chm-right-column {' +
                 '    float: right;' +
                 '    width: 80%;' +
+                '}',
+            '#chm-right-column-row-1 > * {' +
+                '    display: inline-block;' +
+                '}',
+            '#chm-right-column-row-2 > * {' +
                 '}',
 
             /****---------------------------------------------------------------------------------\
               Nest controls
             \---------------------------------------------------------------------------------****/
 
-            '.chm-nest-controls {' +
-                '}',
-            '.chm-nest-control {' +
-                '    float: left;' +
-                '    display: block;' +
-                '}',
+                '#chm-nest-controls {' +
+                    `    width: ${firstColumnWidth}px;` +
+                    '}',
+                '.chm-nest-control {' +
+                    '    float: left;' +
+                    '    display: block;' +
+                    '    clear: left;' +
+                    `    padding-left: ${paddingLeft}px;` +
+                    '}',
+                '#chm-nest-control--1 {' +
+                    '    margin-left: 0;' +
+                    '}',
+                '#chm-nest-control--2 {' +
+                    '    margin-left: 1em;' +
+                    '}',
+                '#chm-nest-control--3 {' +
+                    '    margin-left: 2em;' +
+                    '}',
+
+            /****---------------------------------------------------------------------------------\
+              Legend
+            \---------------------------------------------------------------------------------****/
+
+                '#chm-legend {' +
+                    '    float: right;' +
+                    '}',
 
             /****---------------------------------------------------------------------------------\
               Table
             \---------------------------------------------------------------------------------****/
 
-            '.chm-table table {' +
-                '    display: table;' +
-                '}',
+                '#chm-table table {' +
+                    '    display: table;' +
+                    '}',
 
 
 

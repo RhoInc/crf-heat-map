@@ -1,4 +1,5 @@
 import createNestControls from './defineLayout/createNestControls';
+import drawLegend from './defineLayout/drawLegend';
 
 export default function defineLayout() {
     this.containers = {
@@ -13,15 +14,36 @@ export default function defineLayout() {
 
         this.containers.leftColumn = this.containers.main
             .append('div')
-            .classed('chm-column chm-column--left', true);
+            .classed('chm-column', true)
+            .attr('id', 'chm-left-column');
 
-            this.containers.dataExport = this.containers.leftColumn
-                .append('div')
-                .classed('chm-row chm-row--1 chm-data-export', true);
+        /***--------------------------------------------------------------------------------------\
+          Row 1
+        \--------------------------------------------------------------------------------------***/
 
-            this.containers.controls = this.containers.leftColumn
+            this.containers.leftColumnRow1 = this.containers.leftColumn
                 .append('div')
-                .classed('chm-row chm-row--2 chm-controls chm-controls--main', true);
+                .classed('chm-row chm-row--1', true)
+                .attr('id', 'chm-left-column-row-1');
+
+            this.containers.dataExport = this.containers.leftColumnRow1
+                .append('div')
+                .classed('chm-section', true)
+                .attr('id', 'chm-data-export');
+
+        /***--------------------------------------------------------------------------------------\
+          Row 2
+        \--------------------------------------------------------------------------------------***/
+
+            this.containers.leftColumnRow2 = this.containers.leftColumn
+                .append('div')
+                .classed('chm-row chm-row--2', true)
+                .attr('id', 'chm-left-column-row-2');
+
+            this.containers.controls = this.containers.leftColumnRow2
+                .append('div')
+                .classed('chm-section', true)
+                .attr('id', 'chm-controls');
 
     /**-------------------------------------------------------------------------------------------\
 	  Right column
@@ -29,14 +51,41 @@ export default function defineLayout() {
 
         this.containers.rightColumn = this.containers.main
             .append('div')
-            .classed('chm-column chm-column--right', true);
+            .classed('chm-column', true)
+            .attr('id', 'chm-right-column');
 
-            this.containers.nestControls = this.containers.rightColumn
+        /***--------------------------------------------------------------------------------------\
+          Row 1
+        \--------------------------------------------------------------------------------------***/
+
+            this.containers.rightColumnRow1 = this.containers.rightColumn
                 .append('div')
-                .classed('chm-row chm-row--1 chm-controls chm-controls--nests', true);
+                .classed('chm-row chm-row--1', true)
+                .attr('id', 'chm-right-column-row-1');
+
+            this.containers.nestControls = this.containers.rightColumnRow1
+                .append('div')
+                .classed('chm-section', true)
+                .attr('id', 'chm-nest-controls');
             createNestControls.call(this);
 
-            this.containers.table = this.containers.rightColumn
+            this.containers.legend = this.containers.rightColumnRow1
                 .append('div')
-                .classed('chm-row chm-row--2 chm-table', true);
+                .classed('chm-section', true)
+                .attr('id', 'chm-legend');
+            drawLegend.call(this);
+
+        /***--------------------------------------------------------------------------------------\
+          Row 2
+        \--------------------------------------------------------------------------------------***/
+
+            this.containers.rightColumnRow2 = this.containers.rightColumn
+                .append('div')
+                .classed('chm-row chm-row--2', true)
+                .attr('id', 'chm-right-column-row-2');
+
+            this.containers.table = this.containers.rightColumnRow2
+                .append('div')
+                .classed('chm-section', true)
+                .attr('id', 'chm-table');
 }

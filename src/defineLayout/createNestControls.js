@@ -7,21 +7,20 @@ export default function createNestControls() {
     var idList = config.nestings;
     idList.push({ value_col: undefined, label: 'None' });
 
-    var idControlWrap = this.containers.nestControls
-        .append('div')
-        .attr('class', 'chm-control chm-control--nest');
-    idControlWrap
+    this.containers.nestControls
         .append('span')
         .attr('class', 'chm-control-label')
-        .text('Show Status for:');
-    var idNote = idControlWrap
+        .text('');
+    var idNote = this.containers.nestControls
         .append('span')
         .attr('class', 'span-description');
-    var idSelects = idControlWrap
+    var idSelects = this.containers.nestControls
         .selectAll('select')
         .data([0, 1, 2])
         .enter()
-        .append('select');
+        .append('select')
+        .classed('chm-nest-control', true)
+        .attr('id', d => 'chm-nest-control--' + (d + 1));
 
     idSelects
         .selectAll('option')
