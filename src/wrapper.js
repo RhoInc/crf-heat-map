@@ -1,4 +1,5 @@
 //utility functions
+import './util/polyfills';
 import clone from './util/clone';
 import merge from './util/merge';
 

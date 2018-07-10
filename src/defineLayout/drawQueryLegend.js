@@ -1,7 +1,7 @@
 import addTitle from './drawLegend/addTitle';
 import drawRects from './drawLegend/drawRects';
 
-export default function drawLegend() {
+export default function drawQueryLegend() {
     const queryData = [
         {
             label: '>24',
