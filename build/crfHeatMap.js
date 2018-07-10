@@ -357,7 +357,7 @@
                         return di[value_col];
                     });
                     summary[value_col] =
-                        ['is_partial_entry', 'Ready_For_Freeeze', 'is_frozen', 'is_locked'].indexOf(
+                        ['is_partial_entry', 'ready_for_freeze', 'is_frozen', 'is_locked'].indexOf(
                             value_col
                         ) > -1
                             ? summary.nForms
@@ -1053,7 +1053,7 @@
             value_cols: [
                 'is_partial_entry',
                 'DATA_PAGE_VERIFIED',
-                'Ready_For_Freeeze',
+                'ready_for_freeze',
                 'is_frozen',
                 'is_signed',
                 'is_locked',
@@ -1183,7 +1183,6 @@
         this.controls.data = this.data.initial;
         this.controls.ready = true;
     }
-
 
     function customizeFilters() {
         var context = this;
