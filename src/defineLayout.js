@@ -1,5 +1,6 @@
 import createNestControls from './defineLayout/createNestControls';
-import drawLegend from './defineLayout/drawLegend';
+import drawCrfLegend from './defineLayout/drawCrfLegend';
+import drawQueryLegend from './defineLayout/drawQueryLegend';
 
 export default function defineLayout() {
     this.containers = {
@@ -72,8 +73,19 @@ export default function defineLayout() {
             this.containers.legend = this.containers.rightColumnRow1
                 .append('div')
                 .classed('chm-section', true)
-                .attr('id', 'chm-legend');
-            drawLegend.call(this);
+                .attr('id', 'chm-legend-container');
+
+            this.containers.crfLegend = this.containers.legend
+                .append('div')
+                .classed('chm-legend', true)
+                .attr('id', 'chm-crf-legend');
+            drawCrfLegend.call(this);
+
+            this.containers.queryLegend = this.containers.legend
+                .append('div')
+                .classed('chm-legend', true)
+                .attr('id', 'chm-query-legend');
+            drawQueryLegend.call(this);
 
         /***--------------------------------------------------------------------------------------\
           Row 2

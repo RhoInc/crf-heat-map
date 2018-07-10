@@ -19,10 +19,9 @@ export default function crfHeatMap(element, settings) {
     //main object
     const crfHeatMap = {
         element,
-        containers: {
-        },
+        containers: {},
         settings: {
-            user: settings,
+            user: settings
         },
         init
     };

@@ -11,9 +11,7 @@ export default function createNestControls() {
         .append('span')
         .attr('class', 'chm-control-label')
         .text('');
-    var idNote = this.containers.nestControls
-        .append('span')
-        .attr('class', 'span-description');
+    var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
     var idSelects = this.containers.nestControls
         .selectAll('select')
         .data([0, 1, 2])

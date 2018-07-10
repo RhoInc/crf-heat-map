@@ -1,13 +1,10 @@
-export const firstColumnWidth = 150;
-export const otherColumnWidth = 120;
-export const margin = 0;
+export const firstColumnWidth = 16;
+export const otherColumnWidth = 10.5;
 export const paddingRight = 6;
 export const paddingLeft = 6;
 export const border = 1;
-export const legendWidth = otherColumnWidth*8 + paddingRight*8 + paddingLeft*8;
 
 export default function defineStyles() {
-console.log(legendWidth);
     const styles = [
         '#crf-heat-map {' +
             '}',
@@ -23,6 +20,12 @@ console.log(legendWidth);
         '.chm-row > * {' +
             '    display: inline-block;' +
             '}',
+        '.chm-row--1 {' +
+            '    height: 67px;' +
+            '    padding-bottom: 10px;' +
+            '    border-bottom: 1px solid lightgray;' +
+            '    margin-bottom: 10px;' +
+            '}',
 
         /***--------------------------------------------------------------------------------------\
           Left column
@@ -30,7 +33,8 @@ console.log(legendWidth);
 
             '#chm-left-column {' +
                 '    float: left;' +
-                '    width: 20%;' +
+                '    width: 19.4%;' +
+                '    padding-right: .5%;' +
                 '}',
 
             /****---------------------------------------------------------------------------------\
@@ -68,7 +72,9 @@ console.log(legendWidth);
 
             '#chm-right-column {' +
                 '    float: right;' +
-                '    width: 80%;' +
+                '    width: 79.4%;' +
+                '    border-left: 1px solid lightgray;' +
+                '    padding-left: .5%;' +
                 '}',
             '#chm-right-column-row-1 > * {' +
                 '    display: inline-block;' +
@@ -81,7 +87,8 @@ console.log(legendWidth);
             \---------------------------------------------------------------------------------****/
 
                 '#chm-nest-controls {' +
-                    `    width: ${firstColumnWidth}px;` +
+                    `    width: ${firstColumnWidth}%;` +
+                    '    height: 100%;' +
                     '}',
                 '.chm-nest-control {' +
                     '    float: left;' +
@@ -103,14 +110,57 @@ console.log(legendWidth);
               Legend
             \---------------------------------------------------------------------------------****/
 
-                '#chm-legend {' +
+                '#chm-legend-container {' +
+                    `    width: ${100 - firstColumnWidth}%;` +
                     '    float: right;' +
+                    '    display: inline-block;' +
+                    '    height: 100%;' +
+                    '}',
+                '.chm-legend {' +
+                    '    padding-top: 17px;' +
+                    '    display: inline-block;' +
+                    '}',
+                '.chm-legend > * {' +
+                    '}',
+                '#chm-crf-legend {' +
+                    '    float: left;' +
+                    '    width: 74.9%;' +
+                    '}',
+                '#chm-query-legend {' +
+                    '    float: right;' +
+                    '    width: 24.9%;' +
+                    '}',
+
+                '.chm-legend-title {' +
+                    '    font-size: 20px;' +
+                    '    font-weight: bold;' +
+                    '}',
+
+                '#chm-query-legend .chm-legend-title {' +
+                    '    text-align: right;' +
+                    '}',
+
+                '.chm-legend-div {' +
+                    '    display: inline-block;' +
+                    '    height: 20px;' +
+                    '    text-align: center;' +
+                    '    font-weight: bold;' +
+                    '    font-size: 14px;' +
+                    '}',
+                '#chm-crf-legend .chm-legend-div {' +
+                    '    width: 20%;' +
+                    '}',
+                '#chm-query-legend .chm-legend-div {' +
+                    '    width: 20%;' +
                     '}',
 
             /****---------------------------------------------------------------------------------\
               Table
             \---------------------------------------------------------------------------------****/
 
+                '#chm-table {' +
+                    '    width: 100%;' +
+                    '}',
                 '#chm-table table {' +
                     '    display: table;' +
                     '}',
@@ -128,12 +178,12 @@ console.log(legendWidth);
             '}',
         '.wc-table table thead tr th:first-child,' +
         '.wc-table table tbody tr td:first-child {' +
-            `    width: ${firstColumnWidth}px !important;` +
+            `    width: ${firstColumnWidth}% !important;` +
             '    text-align: left;' +
             '}',
         '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
         '.wc-table table tbody tr td:nth-child(n + 2) {' +
-            `    width: ${otherColumnWidth}px !important;` +
+            `    width: ${otherColumnWidth}% !important;` +
             '    text-align: left;' +
             '}',
         '.wc-table table tbody tr:hover td {' +
@@ -222,6 +272,7 @@ console.log(legendWidth);
         '.cell--heat {' +
             '    text-align: right;' +
             '    font-size: 12px;' +
+            '    border: 1px solid white;' +
             '}',
         '.cell--heat--level6,' +
             '.cell--heat--level7,' +
