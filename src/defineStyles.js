@@ -1,12 +1,173 @@
-export const firstColumnWidth = 200;
-export const otherColumnWidth = 150;
-export const margin = 0;
+export const firstColumnWidth = 16;
+export const otherColumnWidth = 10.5;
 export const paddingRight = 6;
 export const paddingLeft = 6;
 export const border = 1;
 
 export default function defineStyles() {
     const styles = [
+        '#crf-heat-map {' +
+            '}',
+        '.chm-column {' +
+            '    display: inline-block;' +
+            '}',
+        '.chm-column > * {' +
+            '    width: 100%;' +
+            '}',
+        '.chm-row {' +
+            '    display: inline-block;' +
+            '}',
+        '.chm-row > * {' +
+            '    display: inline-block;' +
+            '}',
+        '.chm-row--1 {' +
+            '    height: 67px;' +
+            '    padding-bottom: 10px;' +
+            '    border-bottom: 1px solid lightgray;' +
+            '    margin-bottom: 10px;' +
+            '}',
+
+        /***--------------------------------------------------------------------------------------\
+          Left column
+        \--------------------------------------------------------------------------------------***/
+
+            '#chm-left-column {' +
+                '    float: left;' +
+                '    width: 19.4%;' +
+                '    padding-right: .5%;' +
+                '}',
+
+            /****---------------------------------------------------------------------------------\
+              Controls
+            \---------------------------------------------------------------------------------****/
+
+                '#chm-controls .wc-controls {' +
+                    '    margin-right: 10px;' +
+                    '}',
+                '#chm-controls .control-group {' +
+                    '    width: 100%;' +
+                    '    margin: 0 0 5px 0;' +
+                    '}',
+                '#chm-controls .control-group > * {' +
+                    '    display: inline-block !important;' +
+                    '    margin: 0;' +
+                    '}',
+                '#chm-controls .wc-control-label {' +
+                    '    width: 58%;' +
+                    '    text-align: right;' +
+                    '}',
+                '#chm-controls .span-description {' +
+                    '}',
+                '#chm-controls select.changer {' +
+                    '    width: 40%;' +
+                    '    float: right;' +
+                    '}',
+                '#chm-controls input.changer {' +
+                    '    margin-left: 2% !important;' +
+                    '}',
+
+        /***--------------------------------------------------------------------------------------\
+          Right column
+        \--------------------------------------------------------------------------------------***/
+
+            '#chm-right-column {' +
+                '    float: right;' +
+                '    width: 79.4%;' +
+                '    border-left: 1px solid lightgray;' +
+                '    padding-left: .5%;' +
+                '}',
+            '#chm-right-column-row-1 > * {' +
+                '    display: inline-block;' +
+                '}',
+            '#chm-right-column-row-2 > * {' +
+                '}',
+
+            /****---------------------------------------------------------------------------------\
+              Nest controls
+            \---------------------------------------------------------------------------------****/
+
+                '#chm-nest-controls {' +
+                    `    width: ${firstColumnWidth}%;` +
+                    '    height: 100%;' +
+                    '}',
+                '.chm-nest-control {' +
+                    '    float: left;' +
+                    '    display: block;' +
+                    '    clear: left;' +
+                    `    padding-left: ${paddingLeft}px;` +
+                    '}',
+                '#chm-nest-control--1 {' +
+                    '    margin-left: 0;' +
+                    '}',
+                '#chm-nest-control--2 {' +
+                    '    margin-left: 1em;' +
+                    '}',
+                '#chm-nest-control--3 {' +
+                    '    margin-left: 2em;' +
+                    '}',
+
+            /****---------------------------------------------------------------------------------\
+              Legend
+            \---------------------------------------------------------------------------------****/
+
+                '#chm-legend-container {' +
+                    `    width: ${100 - firstColumnWidth}%;` +
+                    '    float: right;' +
+                    '    display: inline-block;' +
+                    '    height: 100%;' +
+                    '}',
+                '.chm-legend {' +
+                    '    padding-top: 17px;' +
+                    '    display: inline-block;' +
+                    '}',
+                '.chm-legend > * {' +
+                    '}',
+                '#chm-crf-legend {' +
+                    '    float: left;' +
+                    '    width: 74.9%;' +
+                    '}',
+                '#chm-query-legend {' +
+                    '    float: right;' +
+                    '    width: 24.9%;' +
+                    '}',
+
+                '.chm-legend-title {' +
+                    '    font-size: 20px;' +
+                    '    font-weight: bold;' +
+                    '}',
+
+                '#chm-query-legend .chm-legend-title {' +
+                    '    text-align: right;' +
+                    '}',
+
+                '.chm-legend-div {' +
+                    '    display: inline-block;' +
+                    '    height: 20px;' +
+                    '    text-align: center;' +
+                    '    font-weight: bold;' +
+                    '    font-size: 14px;' +
+                    '}',
+                '#chm-crf-legend .chm-legend-div {' +
+                    '    width: 20%;' +
+                    '}',
+                '#chm-query-legend .chm-legend-div {' +
+                    '    width: 20%;' +
+                    '}',
+
+            /****---------------------------------------------------------------------------------\
+              Table
+            \---------------------------------------------------------------------------------****/
+
+                '#chm-table {' +
+                    '    width: 100%;' +
+                    '}',
+                '#chm-table table {' +
+                    '    display: table;' +
+                    '}',
+
+
+
+
         '.row--hidden {' +
             '    display: none;' +
             '}',
@@ -17,12 +178,12 @@ export default function defineStyles() {
             '}',
         '.wc-table table thead tr th:first-child,' +
         '.wc-table table tbody tr td:first-child {' +
-            `    width: ${firstColumnWidth}px !important;` +
+            `    width: ${firstColumnWidth}% !important;` +
             '    text-align: left;' +
             '}',
         '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
         '.wc-table table tbody tr td:nth-child(n + 2) {' +
-            `    width: ${otherColumnWidth}px !important;` +
+            `    width: ${otherColumnWidth}% !important;` +
             '    text-align: left;' +
             '}',
         '.wc-table table tbody tr:hover td {' +
@@ -111,6 +272,7 @@ export default function defineStyles() {
         '.cell--heat {' +
             '    text-align: right;' +
             '    font-size: 12px;' +
+            '    border: 1px solid white;' +
             '}',
         '.cell--heat--level6,' +
             '.cell--heat--level7,' +
@@ -141,8 +303,8 @@ export default function defineStyles() {
     ];
 
     //Attach styles to DOM.
-    const style = document.createElement('style');
-    style.type = 'text/css';
-    style.innerHTML = styles.join('\n');
-    document.getElementsByTagName('head')[0].appendChild(style);
+    this.style = document.createElement('style');
+    this.style.type = 'text/css';
+    this.style.innerHTML = styles.join('\n');
+    document.getElementsByTagName('head')[0].appendChild(this.style);
 }

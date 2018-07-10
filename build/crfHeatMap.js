@@ -330,14 +330,573 @@
         return target;
     }
 
-    var firstColumnWidth = 200;
-    var otherColumnWidth = 150;
+    function calculateStatistics() {
+        var _this = this;
 
+        //Nest data by the ID variable defined above and calculate statistics for each summary variable.
+        var nest = d3
+            .nest()
+            .key(function(d) {
+                return d.id;
+            })
+            .rollup(function(d) {
+                //Define denominators.
+                var summary = {
+                    nForms: d.length,
+                    nNeedsVerification: d.filter(function(di) {
+                        return di.needs_verification === '1';
+                    }).length,
+                    nNeedsSignature: d.filter(function(di) {
+                        return di.needs_signature === '1';
+                    }).length
+                };
+
+                //Define summarized values, either rates or counts.
+                _this.config.value_cols.forEach(function(value_col) {
+                    var count = d3.sum(d, function(di) {
+                        return di[value_col];
+                    });
+                    summary[value_col] =
+                        ['is_partial_entry', 'Ready_For_Freeeze', 'is_frozen', 'is_locked'].indexOf(
+                            value_col
+                        ) > -1
+                            ? summary.nForms
+                                ? count / summary.nForms
+                                : 'N/A'
+                            : ['DATA_PAGE_VERIFIED'].indexOf(value_col) > -1
+                                ? summary.nNeedsVerification
+                                    ? count / summary.nNeedsVerification
+                                    : 'N/A'
+                                : ['is_signed'].indexOf(value_col) > -1
+                                    ? summary.nNeedsSignature
+                                        ? count / summary.nNeedsSignature
+                                        : 'N/A'
+                                    : ['open_query_cnt', 'answer_query_cnt'].indexOf(value_col) > -1
+                                        ? count
+                                        : console.log('Missed one: ' + value_col);
+                });
+
+                return summary;
+            })
+            .entries(this.data.initial_filtered);
+
+        //Convert the nested data array to a flat data array.
+        nest.forEach(function(d) {
+            d.id = d.key;
+            delete d.key;
+            _this.config.value_cols.forEach(function(value_col) {
+                d[value_col] = d.values[value_col];
+            });
+            delete d.values;
+        });
+
+        //Add summarized data to array of summaries.
+        this.data.summaries.push(nest);
+    }
+
+    function summarizeData() {
+        var _this = this;
+
+        var t0 = performance.now();
+        //begin performance test
+
+        this.data.summaries = [];
+
+        //Summarize data by each ID variable.
+        this.config.id_cols.forEach(function(id_col, i) {
+            //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
+            _this.data.initial_filtered.forEach(function(d) {
+                d.id = _this.config.id_cols
+                    .slice(0, i + 1)
+                    .map(function(id_col1) {
+                        return d[id_col1];
+                    })
+                    .join('|');
+            });
+
+            calculateStatistics.call(_this);
+        });
+
+        //Collapse array of arrays to array of objects.
+        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
+            return a.id < b.id ? -1 : 1;
+        });
+        this.data.raw = this.data.summarized;
+
+        //end performance test
+        var t1 = performance.now();
+        console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
+    }
+
+    function update(filter) {
+        var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+        if (isIE) {
+            //update lower slider and annotation
+            if (reset)
+                filter.lowerSlider
+                    .attr({
+                        min: filter.min,
+                        max: function max(d) {
+                            if (d.variable.indexOf('query') < 0) {
+                                return filter.max * 100;
+                            } else {
+                                return filter.upper;
+                            }
+                        }
+                    })
+                    .property('value', filter.lower);
+
+            //update upper slider and annotation
+            if (reset)
+                filter.upperSlider
+                    .attr({
+                        min: filter.min,
+                        max: function max(d) {
+                            if (d.variable.indexOf('query') < 0) {
+                                return filter.max * 100;
+                            } else {
+                                return filter.upper;
+                            }
+                        }
+                    })
+                    .property('value', function(d) {
+                        return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
+                    });
+        } else {
+            //update lower slider and annotation
+            if (reset)
+                filter.lowerSlider
+                    .attr({
+                        min: filter.min,
+                        max: filter.max
+                    })
+                    .property('value', filter.lower);
+            filter.lowerAnnotation.text(
+                '' +
+                    (filter.variable.indexOf('query') < 0
+                        ? Math.round(filter.lower * 100)
+                        : filter.lower) +
+                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+            );
+
+            //update upper slider and annotation
+            if (reset)
+                filter.upperSlider
+                    .attr({
+                        min: filter.min,
+                        max: filter.max
+                    })
+                    .property('value', filter.upper);
+            filter.upperAnnotation.text(
+                '' +
+                    (filter.variable.indexOf('query') < 0
+                        ? Math.round(filter.upper * 100)
+                        : filter.upper) +
+                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+            );
+        }
+    }
+
+    function resetFilters() {
+        var _this = this;
+
+        //collapse rows and uncheck 'Expand All' Box
+        this.config.expand_all = false;
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(f) {
+                return f.option === 'expand_all';
+            })
+            .select('input')
+            .property('checked', false);
+
+        this.columnControls.filters.forEach(function(filter) {
+            //Update query maximum.
+            if (filter.variable.indexOf('query') > -1) {
+                filter.max = d3.max(_this.data.summarized, function(di) {
+                    return di[filter.variable];
+                });
+            }
+            //Reset upper and lower bounds.
+            filter.lower = filter.min;
+            filter.upper = filter.max;
+
+            //Reset sliders.
+            update.call(_this, filter, true);
+        });
+    }
+
+    function redraw() {
+        summarizeData.call(this);
+        resetFilters.call(this);
+        this.draw(this.data.summarized);
+    }
+
+    function createNestControls() {
+        var context = this;
+        var config = this.settings.synced;
+
+        var idList = config.nestings;
+        idList.push({ value_col: undefined, label: 'None' });
+
+        this.containers.nestControls
+            .append('span')
+            .attr('class', 'chm-control-label')
+            .text('');
+        var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+        var idSelects = this.containers.nestControls
+            .selectAll('select')
+            .data([0, 1, 2])
+            .enter()
+            .append('select')
+            .classed('chm-nest-control', true)
+            .attr('id', function(d) {
+                return 'chm-nest-control--' + (d + 1);
+            });
+
+        idSelects
+            .selectAll('option')
+            .data(function(d) {
+                return d === 0 // first dropdown shouldn't have "None" option
+                    ? idList.filter(function(n) {
+                          return n.value_col !== undefined;
+                      })
+                    : idList;
+            })
+            .enter()
+            .append('option')
+            .text(function(d) {
+                return d.label;
+            })
+            .property('selected', function(d) {
+                var levelNum = d3.select(this.parentNode).datum();
+                return d.value_col == config.id_cols[levelNum];
+            });
+
+        idSelects.on('change', function() {
+            var selectedLevels = [];
+            idSelects.each(function(d, i) {
+                var _this = this;
+
+                selectedLevels.push(
+                    idList.filter(function(n) {
+                        return n.label === _this.value;
+                    })[0].value_col
+                );
+            });
+
+            var uniqueLevels = selectedLevels
+                .filter(function(f) {
+                    return f != undefined;
+                })
+                .filter(function(item, pos) {
+                    return selectedLevels.indexOf(item) == pos;
+                });
+
+            console.log(context);
+            context.table.config.id_cols = uniqueLevels;
+
+            //Summarize filtered data and redraw table.
+            redraw.call(context.table);
+        });
+    }
+
+    function addTitle(container, text) {
+        container
+            .append('div')
+            .classed('chm-legend-component chm-legend-title', true)
+            .text(text);
+    }
+
+    function drawRects(container, data) {
+        container
+            .append('div')
+            .classed('chm-legend-component chm-legend-blocks', true)
+            .selectAll('div.chm-legend-block')
+            .data(data)
+            .enter()
+            .append('div')
+            .classed('chm-legend-div chm-legend-color-block', true)
+            .style({
+                background: function background(d) {
+                    return d.color;
+                },
+                color: function color(d, i) {
+                    return i < 3 ? 'black' : 'white';
+                }
+            })
+            .text(function(d) {
+                return d.label;
+            });
+    }
+
+    function drawCrfLegend() {
+        var crfData = [
+            {
+                label: '0-25%',
+                color: '#eff3ff'
+            },
+            {
+                label: '25-50%',
+                color: '#bdd7e7'
+            },
+            {
+                label: '50-75%',
+                color: '#6baed6'
+            },
+            {
+                label: '75-99%',
+                color: '#3182bd'
+            },
+            {
+                label: '100%',
+                color: '#08519c'
+            }
+        ];
+        addTitle(this.containers.crfLegend, 'CRFs');
+        drawRects(this.containers.crfLegend, crfData);
+    }
+
+    function drawQueryLegend() {
+        var queryData = [
+            {
+                label: '>24',
+                color: '#edf8e9'
+            },
+            {
+                label: '17-24',
+                color: '#bae4b3'
+            },
+            {
+                label: '9-16',
+                color: '#74c476'
+            },
+            {
+                label: '1-8',
+                color: '#31a354'
+            },
+            {
+                label: '0',
+                color: '#006d2c'
+            }
+        ];
+        addTitle(this.containers.queryLegend, 'Queries');
+        drawRects(this.containers.queryLegend, queryData);
+    }
+
+    function defineLayout() {
+        this.containers = {
+            main: d3
+                .select(this.element)
+                .append('div')
+                .attr('id', 'crf-heat-map')
+        };
+
+        /**-------------------------------------------------------------------------------------------\
+    Left column
+    \-------------------------------------------------------------------------------------------**/
+
+        this.containers.leftColumn = this.containers.main
+            .append('div')
+            .classed('chm-column', true)
+            .attr('id', 'chm-left-column');
+
+        /***--------------------------------------------------------------------------------------\
+      Row 1
+    \--------------------------------------------------------------------------------------***/
+
+        this.containers.leftColumnRow1 = this.containers.leftColumn
+            .append('div')
+            .classed('chm-row chm-row--1', true)
+            .attr('id', 'chm-left-column-row-1');
+
+        this.containers.dataExport = this.containers.leftColumnRow1
+            .append('div')
+            .classed('chm-section', true)
+            .attr('id', 'chm-data-export');
+
+        /***--------------------------------------------------------------------------------------\
+      Row 2
+    \--------------------------------------------------------------------------------------***/
+
+        this.containers.leftColumnRow2 = this.containers.leftColumn
+            .append('div')
+            .classed('chm-row chm-row--2', true)
+            .attr('id', 'chm-left-column-row-2');
+
+        this.containers.controls = this.containers.leftColumnRow2
+            .append('div')
+            .classed('chm-section', true)
+            .attr('id', 'chm-controls');
+
+        /**-------------------------------------------------------------------------------------------\
+    Right column
+    \-------------------------------------------------------------------------------------------**/
+
+        this.containers.rightColumn = this.containers.main
+            .append('div')
+            .classed('chm-column', true)
+            .attr('id', 'chm-right-column');
+
+        /***--------------------------------------------------------------------------------------\
+      Row 1
+    \--------------------------------------------------------------------------------------***/
+
+        this.containers.rightColumnRow1 = this.containers.rightColumn
+            .append('div')
+            .classed('chm-row chm-row--1', true)
+            .attr('id', 'chm-right-column-row-1');
+
+        this.containers.nestControls = this.containers.rightColumnRow1
+            .append('div')
+            .classed('chm-section', true)
+            .attr('id', 'chm-nest-controls');
+        createNestControls.call(this);
+
+        this.containers.legend = this.containers.rightColumnRow1
+            .append('div')
+            .classed('chm-section', true)
+            .attr('id', 'chm-legend-container');
+
+        this.containers.crfLegend = this.containers.legend
+            .append('div')
+            .classed('chm-legend', true)
+            .attr('id', 'chm-crf-legend');
+        drawCrfLegend.call(this);
+
+        this.containers.queryLegend = this.containers.legend
+            .append('div')
+            .classed('chm-legend', true)
+            .attr('id', 'chm-query-legend');
+        drawQueryLegend.call(this);
+
+        /***--------------------------------------------------------------------------------------\
+      Row 2
+    \--------------------------------------------------------------------------------------***/
+
+        this.containers.rightColumnRow2 = this.containers.rightColumn
+            .append('div')
+            .classed('chm-row chm-row--2', true)
+            .attr('id', 'chm-right-column-row-2');
+
+        this.containers.table = this.containers.rightColumnRow2
+            .append('div')
+            .classed('chm-section', true)
+            .attr('id', 'chm-table');
+    }
+
+    var firstColumnWidth = 16;
+    var otherColumnWidth = 10.5;
     var paddingRight = 6;
     var paddingLeft = 6;
 
     function defineStyles() {
         var styles = [
+            '#crf-heat-map {' + '}',
+            '.chm-column {' + '    display: inline-block;' + '}',
+            '.chm-column > * {' + '    width: 100%;' + '}',
+            '.chm-row {' + '    display: inline-block;' + '}',
+            '.chm-row > * {' + '    display: inline-block;' + '}',
+            '.chm-row--1 {' +
+                '    height: 67px;' +
+                '    padding-bottom: 10px;' +
+                '    border-bottom: 1px solid lightgray;' +
+                '    margin-bottom: 10px;' +
+                '}',
+
+            /***--------------------------------------------------------------------------------------\
+      Left column
+    \--------------------------------------------------------------------------------------***/
+
+            '#chm-left-column {' +
+                '    float: left;' +
+                '    width: 19.4%;' +
+                '    padding-right: .5%;' +
+                '}',
+
+            /****---------------------------------------------------------------------------------\
+      Controls
+    \---------------------------------------------------------------------------------****/
+
+            '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
+            '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
+            '#chm-controls .control-group > * {' +
+                '    display: inline-block !important;' +
+                '    margin: 0;' +
+                '}',
+            '#chm-controls .wc-control-label {' +
+                '    width: 58%;' +
+                '    text-align: right;' +
+                '}',
+            '#chm-controls .span-description {' + '}',
+            '#chm-controls select.changer {' + '    width: 40%;' + '    float: right;' + '}',
+            '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
+
+            /***--------------------------------------------------------------------------------------\
+      Right column
+    \--------------------------------------------------------------------------------------***/
+
+            '#chm-right-column {' +
+                '    float: right;' +
+                '    width: 79.4%;' +
+                '    border-left: 1px solid lightgray;' +
+                '    padding-left: .5%;' +
+                '}',
+            '#chm-right-column-row-1 > * {' + '    display: inline-block;' + '}',
+            '#chm-right-column-row-2 > * {' + '}',
+
+            /****---------------------------------------------------------------------------------\
+      Nest controls
+    \---------------------------------------------------------------------------------****/
+
+            '#chm-nest-controls {' +
+                ('    width: ' + firstColumnWidth + '%;') +
+                '    height: 100%;' +
+                '}',
+            '.chm-nest-control {' +
+                '    float: left;' +
+                '    display: block;' +
+                '    clear: left;' +
+                ('    padding-left: ' + paddingLeft + 'px;') +
+                '}',
+            '#chm-nest-control--1 {' + '    margin-left: 0;' + '}',
+            '#chm-nest-control--2 {' + '    margin-left: 1em;' + '}',
+            '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
+
+            /****---------------------------------------------------------------------------------\
+      Legend
+    \---------------------------------------------------------------------------------****/
+
+            '#chm-legend-container {' +
+                ('    width: ' + (100 - firstColumnWidth) + '%;') +
+                '    float: right;' +
+                '    display: inline-block;' +
+                '    height: 100%;' +
+                '}',
+            '.chm-legend {' + '    padding-top: 17px;' + '    display: inline-block;' + '}',
+            '.chm-legend > * {' + '}',
+            '#chm-crf-legend {' + '    float: left;' + '    width: 74.9%;' + '}',
+            '#chm-query-legend {' + '    float: right;' + '    width: 24.9%;' + '}',
+            '.chm-legend-title {' + '    font-size: 20px;' + '    font-weight: bold;' + '}',
+            '#chm-query-legend .chm-legend-title {' + '    text-align: right;' + '}',
+            '.chm-legend-div {' +
+                '    display: inline-block;' +
+                '    height: 20px;' +
+                '    text-align: center;' +
+                '    font-weight: bold;' +
+                '    font-size: 14px;' +
+                '}',
+            '#chm-crf-legend .chm-legend-div {' + '    width: 20%;' + '}',
+            '#chm-query-legend .chm-legend-div {' + '    width: 20%;' + '}',
+
+            /****---------------------------------------------------------------------------------\
+      Table
+    \---------------------------------------------------------------------------------****/
+
+            '#chm-table {' + '    width: 100%;' + '}',
+            '#chm-table table {' + '    display: table;' + '}',
             '.row--hidden {' + '    display: none;' + '}',
             '.wc-table table thead tr th,' +
                 '.wc-table table tbody tr td {' +
@@ -346,12 +905,12 @@
                 '}',
             '.wc-table table thead tr th:first-child,' +
                 '.wc-table table tbody tr td:first-child {' +
-                ('    width: ' + firstColumnWidth + 'px !important;') +
+                ('    width: ' + firstColumnWidth + '% !important;') +
                 '    text-align: left;' +
                 '}',
             '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
                 '.wc-table table tbody tr td:nth-child(n + 2) {' +
-                ('    width: ' + otherColumnWidth + 'px !important;') +
+                ('    width: ' + otherColumnWidth + '% !important;') +
                 '    text-align: left;' +
                 '}',
             '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}',
@@ -427,7 +986,11 @@
 
             /* heat cells */
 
-            '.cell--heat {' + '    text-align: right;' + '    font-size: 12px;' + '}',
+            '.cell--heat {' +
+                '    text-align: right;' +
+                '    font-size: 12px;' +
+                '    border: 1px solid white;' +
+                '}',
             '.cell--heat--level6,' +
                 '.cell--heat--level7,' +
                 '.cell--heat--level8,' +
@@ -457,10 +1020,10 @@
         ];
 
         //Attach styles to DOM.
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        style.innerHTML = styles.join('\n');
-        document.getElementsByTagName('head')[0].appendChild(style);
+        this.style = document.createElement('style');
+        this.style.type = 'text/css';
+        this.style.innerHTML = styles.join('\n');
+        document.getElementsByTagName('head')[0].appendChild(this.style);
     }
 
     function rendererSettings() {
@@ -490,7 +1053,7 @@
             value_cols: [
                 'is_partial_entry',
                 'DATA_PAGE_VERIFIED',
-                'ready_for_freeze',
+                'Ready_For_Freeeze',
                 'is_frozen',
                 'is_signed',
                 'is_locked',
@@ -609,104 +1172,6 @@
         syncControlInputs: syncControlInputs
     };
 
-    function calculateStatistics() {
-        var _this = this;
-
-        //Nest data by the ID variable defined above and calculate statistics for each summary variable.
-        var nest = d3
-            .nest()
-            .key(function(d) {
-                return d.id;
-            })
-            .rollup(function(d) {
-                //Define denominators.
-                var summary = {
-                    nForms: d.length,
-                    nNeedsVerification: d.filter(function(di) {
-                        return di.needs_verification === '1';
-                    }).length,
-                    nNeedsSignature: d.filter(function(di) {
-                        return di.needs_signature === '1';
-                    }).length
-                };
-
-                //Define summarized values, either rates or counts.
-                _this.config.value_cols.forEach(function(value_col) {
-                    var count = d3.sum(d, function(di) {
-                        return di[value_col];
-                    });
-                    summary[value_col] =
-                        ['is_partial_entry', 'ready_for_freeze', 'is_frozen', 'is_locked'].indexOf(
-                            value_col
-                        ) > -1
-                            ? summary.nForms
-                                ? count / summary.nForms
-                                : 'N/A'
-                            : ['DATA_PAGE_VERIFIED'].indexOf(value_col) > -1
-                                ? summary.nNeedsVerification
-                                    ? count / summary.nNeedsVerification
-                                    : 'N/A'
-                                : ['is_signed'].indexOf(value_col) > -1
-                                    ? summary.nNeedsSignature
-                                        ? count / summary.nNeedsSignature
-                                        : 'N/A'
-                                    : ['open_query_cnt', 'answer_query_cnt'].indexOf(value_col) > -1
-                                        ? count
-                                        : console.log('Missed one: ' + value_col);
-                });
-
-                return summary;
-            })
-            .entries(this.data.initial_filtered);
-
-        //Convert the nested data array to a flat data array.
-        nest.forEach(function(d) {
-            d.id = d.key;
-            delete d.key;
-            _this.config.value_cols.forEach(function(value_col) {
-                d[value_col] = d.values[value_col];
-            });
-            delete d.values;
-        });
-
-        //Add summarized data to array of summaries.
-        this.data.summaries.push(nest);
-    }
-
-    function summarizeData() {
-        var _this = this;
-
-        var t0 = performance.now();
-        //begin performance test
-
-        this.data.summaries = [];
-
-        //Summarize data by each ID variable.
-        this.config.id_cols.forEach(function(id_col, i) {
-            //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-            _this.data.initial_filtered.forEach(function(d) {
-                d.id = _this.config.id_cols
-                    .slice(0, i + 1)
-                    .map(function(id_col1) {
-                        return d[id_col1];
-                    })
-                    .join('|');
-            });
-
-            calculateStatistics.call(_this);
-        });
-
-        //Collapse array of arrays to array of objects.
-        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            return a.id < b.id ? -1 : 1;
-        });
-        this.data.raw = this.data.summarized;
-
-        //end performance test
-        var t1 = performance.now();
-        console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
-    }
-
     function onInit() {
         this.data.initial = this.data.raw;
         this.data.initial_filtered = this.data.initial;
@@ -719,111 +1184,6 @@
         this.controls.ready = true;
     }
 
-    function update(filter) {
-        var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-        if (isIE) {
-            //update lower slider and annotation
-            if (reset)
-                filter.lowerSlider
-                    .attr({
-                        min: filter.min,
-                        max: function max(d) {
-                            if (d.variable.indexOf('query') < 0) {
-                                return filter.max * 100;
-                            } else {
-                                return filter.upper;
-                            }
-                        }
-                    })
-                    .property('value', filter.lower);
-
-            //update upper slider and annotation
-            if (reset)
-                filter.upperSlider
-                    .attr({
-                        min: filter.min,
-                        max: function max(d) {
-                            if (d.variable.indexOf('query') < 0) {
-                                return filter.max * 100;
-                            } else {
-                                return filter.upper;
-                            }
-                        }
-                    })
-                    .property('value', function(d) {
-                        return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
-                    });
-        } else {
-            //update lower slider and annotation
-            if (reset)
-                filter.lowerSlider
-                    .attr({
-                        min: filter.min,
-                        max: filter.max
-                    })
-                    .property('value', filter.lower);
-            filter.lowerAnnotation.text(
-                '' +
-                    (filter.variable.indexOf('query') < 0
-                        ? Math.round(filter.lower * 100)
-                        : filter.lower) +
-                    (filter.variable.indexOf('query') < 0 ? '%' : '')
-            );
-
-            //update upper slider and annotation
-            if (reset)
-                filter.upperSlider
-                    .attr({
-                        min: filter.min,
-                        max: filter.max
-                    })
-                    .property('value', filter.upper);
-            filter.upperAnnotation.text(
-                '' +
-                    (filter.variable.indexOf('query') < 0
-                        ? Math.round(filter.upper * 100)
-                        : filter.upper) +
-                    (filter.variable.indexOf('query') < 0 ? '%' : '')
-            );
-        }
-    }
-
-    function resetFilters() {
-        var _this = this;
-
-        //collapse rows and uncheck 'Expand All' Box
-        this.config.expand_all = false;
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(f) {
-                return f.option === 'expand_all';
-            })
-            .select('input')
-            .property('checked', false);
-
-        this.columnControls.filters.forEach(function(filter) {
-            //Update query maximum.
-            if (filter.variable.indexOf('query') > -1) {
-                filter.max = d3.max(_this.data.summarized, function(di) {
-                    return di[filter.variable];
-                });
-            }
-            //Reset upper and lower bounds.
-            filter.lower = filter.min;
-            filter.upper = filter.max;
-
-            //Reset sliders.
-            update.call(_this, filter, true);
-        });
-    }
-
-    function redraw() {
-        summarizeData.call(this);
-        resetFilters.call(this);
-        this.draw(this.data.summarized);
-    }
 
     function customizeFilters() {
         var context = this;
@@ -874,203 +1234,6 @@
                 context.config[d.option] = this.checked;
                 context.draw(context.data.raw);
             });
-    }
-
-    function createNestControl() {
-        var context = this;
-        var config = this.config;
-
-        var idList = context.initial_config.nestings;
-        idList.push({ value_col: undefined, label: 'None' });
-
-        var idControlWrap = context.controls.wrap.append('div').attr('class', 'control-group');
-        idControlWrap
-            .append('div')
-            .attr('class', 'wc-control-label')
-            .text('Show Status for:');
-        var idNote = idControlWrap.append('div').attr('class', 'span-description');
-        var idSelects = idControlWrap
-            .selectAll('select')
-            .data([0, 1, 2])
-            .enter()
-            .append('select');
-
-        idSelects
-            .selectAll('option')
-            .data(function(d) {
-                return d === 0 // first dropdown shouldn't have "None" option
-                    ? idList.filter(function(n) {
-                          return n.value_col !== undefined;
-                      })
-                    : idList;
-            })
-            .enter()
-            .append('option')
-            .text(function(d) {
-                return d.label;
-            })
-            .property('selected', function(d) {
-                var levelNum = d3.select(this.parentNode).datum();
-                return d.value_col == config.id_cols[levelNum];
-            });
-
-        idSelects.on('change', function() {
-            var selectedLevels = [];
-            idSelects.each(function(d, i) {
-                var _this = this;
-
-                selectedLevels.push(
-                    idList.filter(function(n) {
-                        return n.label === _this.value;
-                    })[0].value_col
-                );
-            });
-
-            var uniqueLevels = selectedLevels
-                .filter(function(f) {
-                    return f != undefined;
-                })
-                .filter(function(item, pos) {
-                    return selectedLevels.indexOf(item) == pos;
-                });
-
-            config.id_cols = uniqueLevels;
-
-            //Summarize filtered data and redraw table.
-            redraw.call(context);
-        });
-    }
-
-    function moveExportButtons() {
-        this.wrap
-            .node()
-            .insertBefore(
-                this.wrap.select('.table-bottom').node(),
-                this.wrap.select('.table-top').node()
-            );
-    }
-
-    function drawLegend() {
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g); //check if browser is IE
-
-        var colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
-
-        //var colors = ['#FEE724', '#5CC963', '#20918C', '#3A528B', '#440154']; veridis
-        var greencolors = ['#edf8e9', '#bae4b3', '#74c476', '#31a354', '#006d2c'];
-
-        var legendHeight = 60;
-        var legendWidth = 1500;
-
-        var rectHeight = 20;
-        var rectWidth = 60;
-
-        // these widths are from what's in defineStyles.js
-        // might be way to pull these values from the classes setup there
-        // or set them both upstream  -  for now just copy from there
-        // had to slide this over slgihtly due to gridlines
-        var idCellWidth = firstColumnWidth + paddingRight + paddingLeft;
-        var heatCellWidth = otherColumnWidth + paddingRight + paddingLeft;
-        isIE ? (heatCellWidth = heatCellWidth + 1.25) : (heatCellWidth = heatCellWidth + 2.25); // gridlines are little smaller in IE
-
-        var legendSVG = d3
-            .selectAll('.wc-chart')
-            .insert('svg', 'table')
-            .classed('legend', true)
-            .attr('width', legendWidth)
-            .attr('height', legendHeight);
-
-        // Form Legend
-        legendSVG
-            .selectAll('.legend')
-            .data(colors)
-            .enter()
-            .append('rect')
-            .style({
-                fill: function fill(d) {
-                    return d;
-                },
-                'fill-opacity': 1
-            })
-            .attr('width', rectWidth)
-            .attr('height', rectHeight)
-            .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth;
-            })
-            .attr('y', (legendHeight - rectHeight) / 2);
-
-        // Add Title
-        d3
-            .select('svg.legend')
-            .append('text')
-            .text('CRFs')
-            .style({
-                'font-weight': 'bold',
-                'font-size': '17px'
-            })
-            .attr('x', idCellWidth)
-            .attr('y', legendHeight - rectHeight - 25);
-
-        var formTickLabels = ['0-25%', '25-50%', '50-75%', '75-99%', '100%'];
-
-        legendSVG
-            .selectAll('g')
-            .data(formTickLabels)
-            .enter()
-            .append('text')
-            .text(function(d) {
-                return d;
-            })
-            .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth;
-            })
-            .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
-
-        // Query Legend
-        legendSVG
-            .selectAll('.legend')
-            .data(greencolors)
-            .enter()
-            .append('rect')
-            .style({
-                fill: function fill(d) {
-                    return d;
-                },
-                'fill-opacity': 1
-            })
-            .attr('width', rectWidth)
-            .attr('height', rectHeight)
-            .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 6;
-            })
-            .attr('y', (legendHeight - rectHeight) / 2);
-
-        var queryTickLabels = ['>24', '17-24', '9-16', '1-8', '0'];
-
-        d3
-            .select('svg.legend')
-            .selectAll('g')
-            .data(queryTickLabels)
-            .enter()
-            .append('text')
-            .text(function(d) {
-                return d;
-            })
-            .attr('x', function(d, i) {
-                return rectWidth * i + idCellWidth + heatCellWidth * 6;
-            })
-            .attr('y', (legendHeight - rectHeight) / 2 + rectHeight + 15);
-
-        // Add Title
-        d3
-            .select('svg.legend')
-            .append('text')
-            .text('Queries')
-            .style({
-                'font-weight': 'bold',
-                'font-size': '17px'
-            })
-            .attr('x', idCellWidth + heatCellWidth * 6)
-            .attr('y', legendHeight - rectHeight - 25);
     }
 
     function addResetButton(th, d) {
@@ -1333,9 +1496,7 @@
     function onLayout() {
         customizeFilters.call(this);
         customizeCheckboxes.call(this);
-        createNestControl.call(this);
-        moveExportButtons.call(this);
-        drawLegend.call(this);
+        //moveExportButtons.call(this);
         addColumnControls.call(this);
     }
 
@@ -1790,34 +1951,67 @@
         console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
     }
 
+    function init(data) {
+        this.data = {
+            raw: data
+        };
+        this.table.init(data);
+    }
+
     //utility functions
     //styles, configuration, and webcharts
     //table callbacks
     function crfHeatMap(element, settings) {
-        var defaultSettings = Object.assign(
+        //main object
+        var crfHeatMap = {
+            element: element,
+            containers: {},
+            settings: {
+                user: settings
+            },
+            init: init
+        };
+
+        //settings
+        crfHeatMap.settings.defaults = Object.assign(
             {},
             configuration.rendererSettings(),
             configuration.webchartsSettings()
+        ); // merge renderer-specific settings with Webcharts settings
+        crfHeatMap.settings.merged = merge(
+            crfHeatMap.settings.defaults,
+            crfHeatMap.settings.defaults
+        ); // merge user settings with default settings
+        crfHeatMap.settings.synced = configuration.syncSettings(crfHeatMap.settings.merged); // sync properties within merged settings, e.g. data mappings
+        crfHeatMap.settings.controls = {
+            inputs: configuration.syncControlInputs(crfHeatMap.settings.synced)
+        }; // define control settings
+
+        //DOM layout
+        defineLayout.call(crfHeatMap);
+
+        //controls
+        crfHeatMap.controls = webcharts.createControls(
+            crfHeatMap.containers.controls.node(),
+            crfHeatMap.settings.controls
         );
-        var mergedSettings = merge(defaultSettings, settings); //Merge user settings onto default settings.
-        var syncedSettings = configuration.syncSettings(mergedSettings); //Sync properties within merged settings, e.g. data mappings.
-        var syncedControlInputs = configuration.syncControlInputs(syncedSettings); //Sync merged settings with controls.
 
-        var controls = webcharts.createControls(element, {
-            location: 'top',
-            inputs: syncedControlInputs
-        });
-        var table = webcharts.createTable(element, syncedSettings, controls);
+        //table
+        crfHeatMap.table = webcharts.createTable(
+            crfHeatMap.containers.table.node(),
+            crfHeatMap.settings.synced,
+            crfHeatMap.controls
+        );
+        crfHeatMap.table.parent = crfHeatMap;
+        crfHeatMap.table.initial_config = crfHeatMap.settings.synced;
+        crfHeatMap.table.on('init', onInit);
+        crfHeatMap.table.on('layout', onLayout);
+        crfHeatMap.table.on('draw', onDraw);
 
-        table.initial_config = syncedSettings;
+        //stylesheet
+        defineStyles.call(crfHeatMap);
 
-        table.on('init', onInit);
-        table.on('layout', onLayout);
-        table.on('draw', onDraw);
-
-        defineStyles.call(table);
-
-        return table;
+        return crfHeatMap;
     }
 
     return crfHeatMap;

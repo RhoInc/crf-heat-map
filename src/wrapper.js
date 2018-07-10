@@ -4,6 +4,7 @@ import clone from './util/clone';
 import merge from './util/merge';
 
 //styles, configuration, and webcharts
+import defineLayout from './defineLayout';
 import defineStyles from './defineStyles';
 import configuration from './configuration/index';
 import { createControls, createTable } from 'webcharts';
@@ -13,29 +14,54 @@ import onInit from './onInit';
 import onLayout from './onLayout';
 import onDraw from './onDraw';
 
+import init from './init';
+
 export default function crfHeatMap(element, settings) {
-    const defaultSettings = Object.assign(
+    //main object
+    const crfHeatMap = {
+        element,
+        containers: {},
+        settings: {
+            user: settings
+        },
+        init
+    };
+
+    //settings
+    crfHeatMap.settings.defaults = Object.assign(
         {},
         configuration.rendererSettings(),
         configuration.webchartsSettings()
+    ); // merge renderer-specific settings with Webcharts settings
+    crfHeatMap.settings.merged = merge(crfHeatMap.settings.defaults, crfHeatMap.settings.defaults); // merge user settings with default settings
+    crfHeatMap.settings.synced = configuration.syncSettings(crfHeatMap.settings.merged); // sync properties within merged settings, e.g. data mappings
+    crfHeatMap.settings.controls = {
+        inputs: configuration.syncControlInputs(crfHeatMap.settings.synced)
+    }; // define control settings
+
+    //DOM layout
+    defineLayout.call(crfHeatMap);
+
+    //controls
+    crfHeatMap.controls = createControls(
+        crfHeatMap.containers.controls.node(),
+        crfHeatMap.settings.controls
     );
-    const mergedSettings = merge(defaultSettings, settings); //Merge user settings onto default settings.
-    const syncedSettings = configuration.syncSettings(mergedSettings); //Sync properties within merged settings, e.g. data mappings.
-    const syncedControlInputs = configuration.syncControlInputs(syncedSettings); //Sync merged settings with controls.
 
-    const controls = createControls(element, {
-        location: 'top',
-        inputs: syncedControlInputs
-    });
-    const table = createTable(element, syncedSettings, controls);
+    //table
+    crfHeatMap.table = createTable(
+        crfHeatMap.containers.table.node(),
+        crfHeatMap.settings.synced,
+        crfHeatMap.controls
+    );
+    crfHeatMap.table.parent = crfHeatMap;
+    crfHeatMap.table.initial_config = crfHeatMap.settings.synced;
+    crfHeatMap.table.on('init', onInit);
+    crfHeatMap.table.on('layout', onLayout);
+    crfHeatMap.table.on('draw', onDraw);
 
-    table.initial_config = syncedSettings;
+    //stylesheet
+    defineStyles.call(crfHeatMap);
 
-    table.on('init', onInit);
-    table.on('layout', onLayout);
-    table.on('draw', onDraw);
-
-    defineStyles.call(table);
-
-    return table;
+    return crfHeatMap;
 }
