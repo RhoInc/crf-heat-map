@@ -1184,6 +1184,7 @@
         this.controls.ready = true;
     }
 
+
     function customizeFilters() {
         var context = this;
 
