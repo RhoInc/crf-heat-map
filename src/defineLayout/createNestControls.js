@@ -22,7 +22,7 @@ export default function createNestControls() {
             id: d => 'chm-nest-control--' + (d + 1),
             title:
                 'These dropdowns control the attributes within which the CRF rates and query counts are aggregated.\n' +
-                'Each row in the table represents a combination of one or more of these attributes.',
+                'Each row in the table represents a combination of one or more of these attributes.'
         });
 
     idSelects

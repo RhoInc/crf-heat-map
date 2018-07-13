@@ -5,13 +5,12 @@ export default function tweakMultiSelects() {
         .selectAll('.control-group')
         .filter(d => d.type === 'subsetter' && d.multiple)
         .each(function(d) {
-            d3.select(this).select('select')
+            d3
+                .select(this)
+                .select('select')
                 .attr(
                     'size',
-                    context.filters
-                        .find(filter => filter.col === d.value_col)
-                        .choices
-                        .length
+                    context.filters.find(filter => filter.col === d.value_col).choices.length
                 )
                 .attr('title', 'Hold the CTRL key to select or deselect a single option.')
                 .selectAll('option')
