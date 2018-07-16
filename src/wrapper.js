@@ -33,7 +33,7 @@ export default function crfHeatMap(element, settings) {
         configuration.rendererSettings(),
         configuration.webchartsSettings()
     ); // merge renderer-specific settings with Webcharts settings
-    crfHeatMap.settings.merged = merge(crfHeatMap.settings.defaults, crfHeatMap.settings.defaults); // merge user settings with default settings
+    crfHeatMap.settings.merged = merge(crfHeatMap.settings.defaults, crfHeatMap.settings.user); // merge user settings with default settings
     crfHeatMap.settings.synced = configuration.syncSettings(crfHeatMap.settings.merged); // sync properties within merged settings, e.g. data mappings
     crfHeatMap.settings.controls = {
         inputs: configuration.syncControlInputs(crfHeatMap.settings.synced)
