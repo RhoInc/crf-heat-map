@@ -552,8 +552,13 @@
             .enter()
             .append('select')
             .classed('chm-nest-control', true)
-            .attr('id', function(d) {
-                return 'chm-nest-control--' + (d + 1);
+            .attr({
+                id: function id(d) {
+                    return 'chm-nest-control--' + (d + 1);
+                },
+                title:
+                    'These dropdowns control the attributes within which the CRF rates and query counts are aggregated.\n' +
+                    'Each row in the table represents a combination of one or more of these attributes.'
             });
 
         idSelects
@@ -595,7 +600,6 @@
                     return selectedLevels.indexOf(item) == pos;
                 });
 
-            console.log(context);
             context.table.config.id_cols = uniqueLevels;
 
             //Summarize filtered data and redraw table.
@@ -716,6 +720,16 @@
             .append('div')
             .classed('chm-section', true)
             .attr('id', 'chm-data-export');
+        this.containers.leftColumnRow1
+            .append('div')
+            .classed('chm-label', true)
+            .attr('id', 'chm-nest-label')
+            .text('Summarize by:');
+        this.containers.leftColumnRow1
+            .append('div')
+            .classed('chm-label', true)
+            .attr('id', 'chm-controls-label')
+            .text('');
 
         /***--------------------------------------------------------------------------------------\
       Row 2
@@ -817,7 +831,23 @@
                 '}',
 
             /****---------------------------------------------------------------------------------\
-      Controls
+      Row 1 - Data Export
+    \---------------------------------------------------------------------------------****/
+
+            '#chm-left-column-row-1 {' + '    position: relative;' + '}',
+            '#chm-nest-label {' + '    float: right;' + '}',
+            '#chm-controls-label {' +
+                '    position: absolute;' +
+                '    bottom: 0;' +
+                '    width: 100%;' +
+                '    text-align: center;' +
+                '    vertical-align: bottom;' +
+                '    font-size: 24px;' +
+                '    font-weight: bold;' +
+                '}',
+
+            /****---------------------------------------------------------------------------------\
+      Row 2 - Controls
     \---------------------------------------------------------------------------------****/
 
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
@@ -831,7 +861,11 @@
                 '    text-align: right;' +
                 '}',
             '#chm-controls .span-description {' + '}',
-            '#chm-controls select.changer {' + '    width: 40%;' + '    float: right;' + '}',
+            '#chm-controls select.changer {' +
+                '    width: 40%;' +
+                '    float: right;' +
+                '    overflow-y: auto;' +
+                '}',
             '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
 
             /***--------------------------------------------------------------------------------------\
@@ -898,6 +932,7 @@
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '}',
             '.row--hidden {' + '    display: none;' + '}',
+            '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
                 '.wc-table table tbody tr td {' +
                 ('    padding-right: ' + paddingRight + 'px;') +
@@ -912,10 +947,6 @@
                 '.wc-table table tbody tr td:nth-child(n + 2) {' +
                 ('    width: ' + otherColumnWidth + '% !important;') +
                 '    text-align: left;' +
-                '}',
-            '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}',
-            '.wc-table table tbody tr:hover td:first-child {' +
-                '    border-left: 1px solid black;' +
                 '}',
 
             /* range sliders */
@@ -973,6 +1004,14 @@
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
             '.filter-value--lower {' + '    width: 40px' + '}',
             '.filter-value--upper {' + '    width: 40px' + '}',
+
+            /* Table body rows */
+
+            '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}',
+            '.wc-table table tbody tr:hover td:first-child {' +
+                '    border-left: 1px solid black;' +
+                '}',
+
             /* ID cells */
 
             '.cell--id {' + '    background: white;' + '}',
@@ -1117,7 +1156,8 @@
             {
                 type: 'subsetter',
                 value_col: 'status',
-                label: 'Subject Status'
+                label: 'Subject Status',
+                multiple: true
             },
             {
                 type: 'subsetter',
@@ -1198,24 +1238,62 @@
                 dropdown.on('change', function(di) {
                     context.filters.find(function(filter) {
                         return filter.col === di.value_col;
-                    }).val = dropdown.select('option:checked').text();
+                    }).val = this.multiple
+                        ? dropdown
+                              .selectAll('option:checked')
+                              .pop()
+                              .map(function(d) {
+                                  return d.textContent;
+                              })
+                        : dropdown.selectAll('option:checked').text();
                     context.data.initial_filtered = context.data.initial;
                     context.filters
                         .filter(function(filter) {
-                            return filter.val !== 'All';
+                            return (
+                                filter.val !== 'All' &&
+                                !(
+                                    Array.isArray(filter.val) &&
+                                    filter.val.length === filter.choices.length
+                                )
+                            );
                         })
                         .forEach(function(filter) {
-                            if (filter.val !== 'All')
-                                context.data.initial_filtered = context.data.initial_filtered.filter(
-                                    function(dii) {
-                                        return dii[filter.col] === filter.val;
-                                    }
-                                );
+                            context.data.initial_filtered = context.data.initial_filtered.filter(
+                                function(dii) {
+                                    return Array.isArray(filter.val)
+                                        ? filter.val.indexOf(dii[filter.col]) > -1
+                                        : dii[filter.col] === filter.val;
+                                }
+                            );
                         });
 
                     //Summarize filtered data and redraw table.
                     redraw.call(context);
                 });
+            });
+    }
+
+    function tweakMultiSelects() {
+        var context = this;
+
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.type === 'subsetter' && d.multiple;
+            })
+            .each(function(d) {
+                d3
+                    .select(this)
+                    .select('select')
+                    .attr(
+                        'size',
+                        context.filters.find(function(filter) {
+                            return filter.col === d.value_col;
+                        }).choices.length
+                    )
+                    .attr('title', 'Hold the CTRL key to select or deselect a single option.')
+                    .selectAll('option')
+                    .property('selected', true);
             });
     }
 
@@ -1494,6 +1572,7 @@
 
     function onLayout() {
         customizeFilters.call(this);
+        tweakMultiSelects.call(this);
         customizeCheckboxes.call(this);
         //moveExportButtons.call(this);
         addColumnControls.call(this);

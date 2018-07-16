@@ -31,6 +31,16 @@ export default function defineLayout() {
                 .append('div')
                 .classed('chm-section', true)
                 .attr('id', 'chm-data-export');
+            this.containers.leftColumnRow1
+                .append('div')
+                .classed('chm-label', true)
+                .attr('id', 'chm-nest-label')
+                .text('Summarize by:');
+            this.containers.leftColumnRow1
+                .append('div')
+                .classed('chm-label', true)
+                .attr('id', 'chm-controls-label')
+                .text('');
 
         /***--------------------------------------------------------------------------------------\
           Row 2

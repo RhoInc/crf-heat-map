@@ -18,7 +18,12 @@ export default function createNestControls() {
         .enter()
         .append('select')
         .classed('chm-nest-control', true)
-        .attr('id', d => 'chm-nest-control--' + (d + 1));
+        .attr({
+            id: d => 'chm-nest-control--' + (d + 1),
+            title:
+                'These dropdowns control the attributes within which the CRF rates and query counts are aggregated.\n' +
+                'Each row in the table represents a combination of one or more of these attributes.'
+        });
 
     idSelects
         .selectAll('option')
@@ -52,7 +57,6 @@ export default function createNestControls() {
                 return selectedLevels.indexOf(item) == pos;
             });
 
-        console.log(context);
         context.table.config.id_cols = uniqueLevels;
 
         //Summarize filtered data and redraw table.

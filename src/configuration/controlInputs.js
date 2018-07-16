@@ -13,7 +13,8 @@ export default function controlInputs() {
         {
             type: 'subsetter',
             value_col: 'status',
-            label: 'Subject Status'
+            label: 'Subject Status',
+            multiple: true
         },
         {
             type: 'subsetter',
