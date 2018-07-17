@@ -44,22 +44,37 @@ export default function createNestControls() {
         });
 
     idSelects.on('change', function() {
-        var selectedLevels = [];
-        idSelects.each(function(d, i) {
-            selectedLevels.push(idList.filter(n => n.label === this.value)[0].value_col);
-        });
+        //indicate loading
+        context.containers.loading.classed('chm-hidden', false);
 
-        var uniqueLevels = selectedLevels
-            .filter(function(f) {
-                return f != undefined;
-            })
-            .filter(function(item, pos) {
-                return selectedLevels.indexOf(item) == pos;
-            });
+        const loading = setInterval(() => {
+            const loadingIndicated = context.containers.loading.style('display') !== 'none';
 
-        context.table.config.id_cols = uniqueLevels;
+            if (loadingIndicated) {
+                clearInterval(loading);
+                context.containers.loading.classed('chm-hidden', true);
 
-        //Summarize filtered data and redraw table.
-        redraw.call(context.table);
+                //Capture the currently selected nesting variables.
+                var selectedLevels = [];
+                idSelects.each(function(d, i) {
+                    selectedLevels.push(idList.filter(n => n.label === this.value)[0].value_col);
+                });
+
+                //Remove duplicate nesting variables.
+                var uniqueLevels = selectedLevels
+                    .filter(function(f) {
+                        return f != undefined;
+                    })
+                    .filter(function(item, pos) {
+                        return selectedLevels.indexOf(item) == pos;
+                    });
+
+                //Update nesting variables.
+                context.table.config.id_cols = uniqueLevels;
+
+                //Summarize filtered data and redraw table.
+                redraw.call(context.table);
+            }
+        }, 25);
     });
 }
