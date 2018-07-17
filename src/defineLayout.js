@@ -41,6 +41,10 @@ export default function defineLayout() {
                 .classed('chm-label', true)
                 .attr('id', 'chm-controls-label')
                 .text('');
+            this.containers.loading = this.containers.leftColumnRow1
+                .append('div')
+                .attr('id', 'chm-loading')
+                .text('Loading...');
 
         /***--------------------------------------------------------------------------------------\
           Row 2

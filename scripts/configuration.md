@@ -12,28 +12,7 @@ an array of objects specifying the variables to nest the data by for calculation
 
 **default:** 
 ```
-[
-  {
-    "value_col": "sitename",
-    "label": "Site",
-    "default": true
-  },
-  {
-    "value_col": "subjectnameoridentifier",
-    "label": "Subject ID",
-    "default": true
-  },
-  {
-    "value_col": "foldername",
-    "label": "Folder",
-    "default": false
-  },
-  {
-    "value_col": "formoid",
-    "label": "Form",
-    "default": false
-  }
-]
+undefined
 ```
 
 ### settings.nestings[].value_col
@@ -50,10 +29,10 @@ Label
 
 **default:** none
 
-### settings.nestings[].default
+### settings.nestings[].default_nesting
 `boolean`
 
-Default
+Default Nesting
 
 **default:** none
 
@@ -66,15 +45,7 @@ binary flag variables that capture some status related to the case report form (
 
 **default:** 
 ```
-[
-  "is_partial_entry",
-  "DATA_PAGE_VERIFIED",
-  "is_frozen",
-  "is_signed",
-  "is_locked",
-  "open_query_cnt",
-  "answer_query"
-]
+undefined
 ```
 
 
@@ -86,14 +57,7 @@ variables in the data with which to filter the data
 
 **default:** 
 ```
-[
-  "sitename",
-  "FreezeFlg",
-  "status",
-  "subset1",
-  "subset2",
-  "subset3"
-]
+undefined
 ```
 
 

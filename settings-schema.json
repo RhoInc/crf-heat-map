@@ -2,7 +2,6 @@
     "title": "settings",
     "description": "JSON schema for the configuration of CRF-Heat-Map",
     "overview": "The most straightforward way to customize the CRF Heat Map is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the CRF Heat Map is a Webcharts `table` object, many default Webcharts settings are set in the [webchartsSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/webchartsSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality. These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js). All defaults can be overwritten by users.",
-
     "version": "1.0.0",
     "type": "object",
     "properties": {
@@ -13,40 +12,40 @@
             "items": {
                 "type": "object",
                 "properties":{
-                   "value_col":{
-                   "title":"Value Column",
-                   "type":"string"
-               },
-               "label":{
-                  "title":"Label",
-                  "type":"string"
-               },
-               "default":{
-                  "title":"Default",
-                  "type":"boolean"
-               }
-              }
+                    "value_col":{
+                        "title":"Value Column",
+                        "type":"string"
+                    },
+                    "label":{
+                        "title":"Label",
+                        "type":"string"
+                    },
+                    "default_nesting":{
+                        "title":"Default Nesting",
+                        "type":"boolean"
+                    }
+                }
             },
-            "defaultObject": [
+            "default": [
                 {
                     "value_col": "sitename",
                     "label": "Site",
-                    "default": true
+                    "default_nesting": true
                 },
                 {
                     "value_col": "subjectnameoridentifier",
                     "label": "Subject ID",
-                    "default": true
+                    "default_nesting": true
                 },
                 {
                     "value_col": "foldername",
                     "label": "Folder",
-                    "default": false
+                    "default_nesting": false
                 },
                 {
                     "value_col": "formoid",
                     "label": "Form",
-                    "default": false
+                    "default_nesting": false
                 }
             ]
         },
@@ -59,14 +58,15 @@
                 "description": "the name of the CRF status variable",
                 "type": "string"
             },
-            "defaultObject": [
+            "default": [
                 "is_partial_entry",
                 "DATA_PAGE_VERIFIED",
+                "ready_for_freeze",
                 "is_frozen",
                 "is_signed",
                 "is_locked",
                 "open_query_cnt",
-                "answer_query"
+                "answer_query_cnt"
             ]
         },
         "filter_cols": {
@@ -78,7 +78,7 @@
                 "description": "the name of the filter variable",
                 "type": "string"
             },
-            "defaultObject": [
+            "default": [
                 "sitename",
                 "FreezeFlg",
                 "status",

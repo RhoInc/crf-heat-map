@@ -4,22 +4,22 @@ export default function rendererSettings() {
             {
                 value_col: 'sitename',
                 label: 'Site',
-                default: true
+                default_nesting: true
             },
             {
                 value_col: 'subjectnameoridentifier',
                 label: 'Subject ID',
-                default: true
+                default_nesting: true
             },
             {
                 value_col: 'foldername',
                 label: 'Folder',
-                default: false
+                default_nesting: false
             },
             {
                 value_col: 'formoid',
                 label: 'Form',
-                default: false
+                default_nesting: false
             }
         ],
         value_cols: [

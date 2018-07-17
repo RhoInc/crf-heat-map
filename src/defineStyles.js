@@ -8,6 +8,9 @@ export default function defineStyles() {
     const styles = [
         '#crf-heat-map {' +
             '}',
+        '.chm-hidden {' +
+            '    display: none !important;' +
+            '}',
         '.chm-column {' +
             '    display: inline-block;' +
             '}',
@@ -43,6 +46,11 @@ export default function defineStyles() {
 
                 '#chm-left-column-row-1 {' +
                     '    position: relative;' +
+                    '}',
+                '#chm-loading {' +
+                    '    font-size: 24px;' +
+                    '    font-weight: bold;' +
+                    '    color: #045a8d;' +
                     '}',
                 '#chm-nest-label {' +
                     '    float: right;' +

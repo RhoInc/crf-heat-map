@@ -581,29 +581,44 @@
             });
 
         idSelects.on('change', function() {
-            var selectedLevels = [];
-            idSelects.each(function(d, i) {
-                var _this = this;
+            //indicate loading
+            context.containers.loading.classed('chm-hidden', false);
 
-                selectedLevels.push(
-                    idList.filter(function(n) {
-                        return n.label === _this.value;
-                    })[0].value_col
-                );
-            });
+            var loading = setInterval(function() {
+                var loadingIndicated = context.containers.loading.style('display') !== 'none';
 
-            var uniqueLevels = selectedLevels
-                .filter(function(f) {
-                    return f != undefined;
-                })
-                .filter(function(item, pos) {
-                    return selectedLevels.indexOf(item) == pos;
-                });
+                if (loadingIndicated) {
+                    clearInterval(loading);
+                    context.containers.loading.classed('chm-hidden', true);
 
-            context.table.config.id_cols = uniqueLevels;
+                    //Capture the currently selected nesting variables.
+                    var selectedLevels = [];
+                    idSelects.each(function(d, i) {
+                        var _this = this;
 
-            //Summarize filtered data and redraw table.
-            redraw.call(context.table);
+                        selectedLevels.push(
+                            idList.filter(function(n) {
+                                return n.label === _this.value;
+                            })[0].value_col
+                        );
+                    });
+
+                    //Remove duplicate nesting variables.
+                    var uniqueLevels = selectedLevels
+                        .filter(function(f) {
+                            return f != undefined;
+                        })
+                        .filter(function(item, pos) {
+                            return selectedLevels.indexOf(item) == pos;
+                        });
+
+                    //Update nesting variables.
+                    context.table.config.id_cols = uniqueLevels;
+
+                    //Summarize filtered data and redraw table.
+                    redraw.call(context.table);
+                }
+            }, 25);
         });
     }
 
@@ -730,6 +745,10 @@
             .classed('chm-label', true)
             .attr('id', 'chm-controls-label')
             .text('');
+        this.containers.loading = this.containers.leftColumnRow1
+            .append('div')
+            .attr('id', 'chm-loading')
+            .text('Loading...');
 
         /***--------------------------------------------------------------------------------------\
       Row 2
@@ -809,6 +828,7 @@
     function defineStyles() {
         var styles = [
             '#crf-heat-map {' + '}',
+            '.chm-hidden {' + '    display: none !important;' + '}',
             '.chm-column {' + '    display: inline-block;' + '}',
             '.chm-column > * {' + '    width: 100%;' + '}',
             '.chm-row {' + '    display: inline-block;' + '}',
@@ -835,6 +855,11 @@
     \---------------------------------------------------------------------------------****/
 
             '#chm-left-column-row-1 {' + '    position: relative;' + '}',
+            '#chm-loading {' +
+                '    font-size: 24px;' +
+                '    font-weight: bold;' +
+                '    color: #045a8d;' +
+                '}',
             '#chm-nest-label {' + '    float: right;' + '}',
             '#chm-controls-label {' +
                 '    position: absolute;' +
@@ -1071,22 +1096,22 @@
                 {
                     value_col: 'sitename',
                     label: 'Site',
-                    default: true
+                    default_nesting: true
                 },
                 {
                     value_col: 'subjectnameoridentifier',
                     label: 'Subject ID',
-                    default: true
+                    default_nesting: true
                 },
                 {
                     value_col: 'foldername',
                     label: 'Folder',
-                    default: false
+                    default_nesting: false
                 },
                 {
                     value_col: 'formoid',
                     label: 'Form',
-                    default: false
+                    default_nesting: false
                 }
             ],
             value_cols: [
@@ -1131,13 +1156,14 @@
     function syncSettings(settings) {
         settings.id_cols = settings.nestings
             .filter(function(d) {
-                return d.default === true;
+                return d.default_nesting === true;
             })
             .map(function(f) {
                 return f.value_col;
             })
             .slice(0, 3);
         settings.cols = d3.merge([['id'], settings.value_cols]);
+
         return settings;
     }
 
@@ -1235,40 +1261,59 @@
             })
             .each(function(d) {
                 var dropdown = d3.select(this).select('.changer');
-                dropdown.on('change', function(di) {
-                    context.filters.find(function(filter) {
-                        return filter.col === di.value_col;
-                    }).val = this.multiple
-                        ? dropdown
-                              .selectAll('option:checked')
-                              .pop()
-                              .map(function(d) {
-                                  return d.textContent;
-                              })
-                        : dropdown.selectAll('option:checked').text();
-                    context.data.initial_filtered = context.data.initial;
-                    context.filters
-                        .filter(function(filter) {
-                            return (
-                                filter.val !== 'All' &&
-                                !(
-                                    Array.isArray(filter.val) &&
-                                    filter.val.length === filter.choices.length
-                                )
-                            );
-                        })
-                        .forEach(function(filter) {
-                            context.data.initial_filtered = context.data.initial_filtered.filter(
-                                function(dii) {
-                                    return Array.isArray(filter.val)
-                                        ? filter.val.indexOf(dii[filter.col]) > -1
-                                        : dii[filter.col] === filter.val;
-                                }
-                            );
-                        });
 
-                    //Summarize filtered data and redraw table.
-                    redraw.call(context);
+                dropdown.on('change', function(di) {
+                    var _this = this;
+
+                    //indicate loading
+                    context.parent.containers.loading.classed('chm-hidden', false);
+
+                    var loading = setInterval(function() {
+                        var loadingIndicated =
+                            context.parent.containers.loading.style('display') !== 'none';
+
+                        if (loadingIndicated) {
+                            clearInterval(loading);
+                            context.parent.containers.loading.classed('chm-hidden', true);
+
+                            //Update filter object.
+                            context.filters.find(function(filter) {
+                                return filter.col === di.value_col;
+                            }).val = _this.multiple
+                                ? dropdown
+                                      .selectAll('option:checked')
+                                      .pop()
+                                      .map(function(d) {
+                                          return d.textContent;
+                                      })
+                                : dropdown.selectAll('option:checked').text();
+
+                            //Filter data.
+                            context.data.initial_filtered = context.data.initial;
+                            context.filters
+                                .filter(function(filter) {
+                                    return (
+                                        filter.val !== 'All' &&
+                                        !(
+                                            Array.isArray(filter.val) &&
+                                            filter.val.length === filter.choices.length
+                                        )
+                                    );
+                                })
+                                .forEach(function(filter) {
+                                    context.data.initial_filtered = context.data.initial_filtered.filter(
+                                        function(dii) {
+                                            return Array.isArray(filter.val)
+                                                ? filter.val.indexOf(dii[filter.col]) > -1
+                                                : dii[filter.col] === filter.val;
+                                        }
+                                    );
+                                });
+
+                            //Summarize filtered data and redraw table.
+                            redraw.call(context);
+                        }
+                    }, 25);
                 });
             });
     }
@@ -1282,8 +1327,7 @@
                 return d.type === 'subsetter' && d.multiple;
             })
             .each(function(d) {
-                d3
-                    .select(this)
+                d3.select(this)
                     .select('select')
                     .attr(
                         'size',
@@ -1597,12 +1641,14 @@
 
     function customizeCells() {
         // add Dynel's hover text to table headers
-        d3
-            .select('th.answer_query_cnt')
-            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
-        d3
-            .select('th.is_frozen')
-            .attr('title', 'Data is clean and there are no outstanding issues.');
+        d3.select('th.answer_query_cnt').attr(
+            'title',
+            'Site has closed issue, but DM needs to close or requery.'
+        );
+        d3.select('th.is_frozen').attr(
+            'title',
+            'Data is clean and there are no outstanding issues.'
+        );
 
         this.cells = this.tbody.selectAll('td');
         this.cells
@@ -1683,8 +1729,7 @@
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('row--collapsed');
 
-            row
-                .classed('row--collapsed', collapsed) //toggle the class
+            row.classed('row--collapsed', collapsed) //toggle the class
                 .classed('row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
@@ -2027,6 +2072,8 @@
         //end performance test
         var t1 = performance.now();
         console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
+
+        this.parent.containers.loading.classed('chm-hidden', true);
     }
 
     function init(data) {
