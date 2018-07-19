@@ -26,3 +26,17 @@ d3.csv(
         instance.init(data);
     }
 );
+
+d3.select('#title')
+    .append('button')
+    .style('float', 'right')
+    .text('Enable boostrap')
+    .on('click', () => {
+        d3.selectAll("link")
+            .filter(function() {
+                return /bootstrap.css/.test(this.href);
+            })
+            .property('disabled', function() {
+                return !this.disabled;
+            });
+    });

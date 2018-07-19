@@ -6,6 +6,13 @@ export const border = 1;
 
 export default function defineStyles() {
     const styles = [
+        'body #crf-heat-map {' +
+            '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
+            '    font-size: 16px;' +
+            '    line-height: normal;' +
+            '    color: #333;' +
+            '    background-color: #fff;' +
+            '}',
         '#crf-heat-map {' +
             '}',
         '.chm-hidden {' +
@@ -24,7 +31,7 @@ export default function defineStyles() {
             '    display: inline-block;' +
             '}',
         '.chm-row--1 {' +
-            '    height: 67px;' +
+            '    height: 6em;' +
             '    padding-bottom: 10px;' +
             '    border-bottom: 1px solid lightgray;' +
             '    margin-bottom: 10px;' +
@@ -193,10 +200,6 @@ export default function defineStyles() {
                 '#chm-table table {' +
                     '    display: table;' +
                     '}',
-
-                '.row--hidden {' +
-                    '    display: none;' +
-                    '}',
                 '.wc-table table thead tr th {' +
                     '    cursor: default;' +
                     '}',
@@ -290,49 +293,49 @@ export default function defineStyles() {
 
                 /* ID cells */
 
-                '.cell--id {' + '    background: white;' + '}',
+                '.chm-cell--id {' + '    background: white;' + '}',
 
-                '.row--expandable .cell--id {' +
+                '.chm-table-row--expandable .chm-cell--id {' +
                     '    color: blue;' +
                     '    cursor: pointer;' +
                     '    text-decoration: underline;' +
                     '}',
-                '.cell--id--level2 {' + '    text-indent: 1em;' + '}',
-                '.cell--id--level3 {' + '    text-indent: 2em;' + '}',
+                '.chm-cell--id--level2 {' + '    text-indent: 1em;' + '}',
+                '.chm-cell--id--level3 {' + '    text-indent: 2em;' + '}',
 
                 /* heat cells */
 
-                '.cell--heat {' +
+                '.chm-cell--heat {' +
                     '    text-align: right;' +
                     '    font-size: 12px;' +
                     '    border: 1px solid white;' +
                     '}',
-                '.cell--heat--level6,' +
-                    '.cell--heat--level7,' +
-                    '.cell--heat--level8,' +
-                    '.cell--heat--level1,' +
-                    '.cell--heat--level2,' +
-                    '.cell--heat--level3 {' +
+                '.chm-cell--heat--level6,' +
+                    '.chm-cell--heat--level7,' +
+                    '.chm-cell--heat--level8,' +
+                    '.chm-cell--heat--level1,' +
+                    '.chm-cell--heat--level2,' +
+                    '.chm-cell--heat--level3 {' +
                     '    color: black;' +
                     '}',
-                '.cell--heat--level9,' +
-                    '.cell--heat--level10,' +
-                    '.cell--heat--level11,' +
-                    '.cell--heat--level4,' +
-                    '.cell--heat--level5 {' +
+                '.chm-cell--heat--level9,' +
+                    '.chm-cell--heat--level10,' +
+                    '.chm-cell--heat--level11,' +
+                    '.chm-cell--heat--level4,' +
+                    '.chm-cell--heat--level5 {' +
                     '    color: white;' +
                     '}',
-                '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',
-                '.cell--heat--level2 {' + '    background: #bae4b3;' + '}',
-                '.cell--heat--level3 {' + '    background: #74c476' + '}',
-                '.cell--heat--level4 {' + '    background: #31a354;' + '}',
-                '.cell--heat--level5 {' + '    background: #006d2c;' + '}',
-                '.cell--heat--level6 {' + '    background: #eff3ff;' + '}',
-                '.cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
-                '.cell--heat--level8 {' + '    background: #6baed6' + '}',
-                '.cell--heat--level9 {' + '    background: #3182bd;' + '}',
-                '.cell--heat--level10 {' + '    background: #08519c;' + '}',
-                '.cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
+                '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '}',
+                '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '}',
+                '.chm-cell--heat--level3 {' + '    background: #74c476' + '}',
+                '.chm-cell--heat--level4 {' + '    background: #31a354;' + '}',
+                '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '}',
+                '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '}',
+                '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
+                '.chm-cell--heat--level8 {' + '    background: #6baed6' + '}',
+                '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '}',
+                '.chm-cell--heat--level10 {' + '    background: #08519c;' + '}',
+                '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
             ];
 
     //Attach styles to DOM.

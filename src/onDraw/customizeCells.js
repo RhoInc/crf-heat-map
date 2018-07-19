@@ -9,12 +9,12 @@ export default function customizeCells() {
     this.cells = this.tbody.selectAll('td');
     this.cells
         .attr('class', d => {
-            let cellClass = 'cell';
+            let cellClass = 'chm-cell';
 
             if (d.col === 'id')
-                cellClass = cellClass + ' cell--id' + ' cell--id--level' + d.text.split('|').length;
+                cellClass = cellClass + ' chm-cell--id' + ' chm-cell--id--level' + d.text.split('|').length;
             else {
-                cellClass = cellClass + ' cell--heat';
+                cellClass = cellClass + ' chm-cell--heat';
                 let level;
                 if (d.col.indexOf('query') > -1)
                     level =
@@ -32,7 +32,7 @@ export default function customizeCells() {
                                         : d.text > 0.25
                                             ? 7
                                             : 6;
-                cellClass = cellClass + ' cell--heat--level' + level;
+                cellClass = cellClass + ' chm-cell--heat--level' + level;
             }
 
             return cellClass;
