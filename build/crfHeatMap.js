@@ -1521,8 +1521,7 @@
         if (isIE) {
             //Attach an event listener to sliders.
             filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
-                //expand rows and check 'Expand All'
-
+                //Expand rows and check 'Expand All'.
                 context.config.expand_all = true;
                 context.controls.wrap
                     .selectAll('.control-group')
@@ -1531,8 +1530,7 @@
                     })
                     .select('input')
                     .property('checked', true);
-
-                var sliders = this.parentNode.getElementsByTagName('input');
+                var sliders = this.parentNode.parentNode.getElementsByTagName('input');
                 var slider1 = parseFloat(sliders[0].value);
                 var slider2 = parseFloat(sliders[1].value);
 
@@ -1559,7 +1557,7 @@
             });
         } else {
             filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-                //expand rows and check 'Expand All'
+                //Expand rows and check 'Expand All'.
                 context.config.expand_all = true;
                 context.controls.wrap
                     .selectAll('.control-group')
