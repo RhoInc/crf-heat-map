@@ -7,7 +7,8 @@ if (window.origin !== 'https://rhoinc.github.io') {
 }
 
 d3.csv(
-    'https://rawgit.com/RhoInc/crf-heat-map/v1.0.0-dev/build/test-page/rx_DataPage.csv', // until master is set up
+    //'https://rawgit.com/RhoInc/crf-heat-map/v1.0.0-dev/build/test-page/rx_DataPage.csv', // until master is set up
+    './rx_DataPage.csv',
     function(d) {
         return d;
     },
@@ -27,16 +28,19 @@ d3.csv(
     }
 );
 
-d3.select('#title')
+//Add button that toggles bootstrap styling.
+const bootstrapToggle = d3.select('#title')
     .append('button')
+    .attr('id', 'bootstrap-toggle')
     .style('float', 'right')
-    .text('Enable boostrap')
+    .text('Disable boostrap');
+bootstrapToggle
     .on('click', () => {
-        d3.selectAll("link")
+        const bootstrap = d3.selectAll("link")
             .filter(function() {
                 return /bootstrap.css/.test(this.href);
-            })
-            .property('disabled', function() {
-                return !this.disabled;
             });
+        const disabled = bootstrap.property('disabled');
+        bootstrap.property('disabled', !disabled);
+        bootstrapToggle.text((disabled ? 'Disable' : 'Enable') + ' boostrap');
     });

@@ -1,9 +1,8 @@
 export default function customizeCells() {
     // add Dynel's hover text to table headers
-    d3.select('th.answer_query_cnt').attr(
-        'title',
-        'Site has closed issue, but DM needs to close or requery.'
-    );
+    d3
+        .select('th.answer_query_cnt')
+        .attr('title', 'Site has closed issue, but DM needs to close or requery.');
     d3.select('th.is_frozen').attr('title', 'Data is clean and there are no outstanding issues.');
 
     this.cells = this.tbody.selectAll('td');
@@ -12,7 +11,8 @@ export default function customizeCells() {
             let cellClass = 'chm-cell';
 
             if (d.col === 'id')
-                cellClass = cellClass + ' chm-cell--id' + ' chm-cell--id--level' + d.text.split('|').length;
+                cellClass =
+                    cellClass + ' chm-cell--id' + ' chm-cell--id--level' + d.text.split('|').length;
             else {
                 cellClass = cellClass + ' chm-cell--heat';
                 let level;

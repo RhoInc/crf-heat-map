@@ -10,10 +10,14 @@ export default function defineStyles() {
             '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
             '    font-size: 16px;' +
             '    line-height: normal;' +
-            '    color: #333;' +
-            '    background-color: #fff;' +
             '}',
         '#crf-heat-map {' +
+            '}',
+        '#crf-heat-map div {' +
+            '    box-sizing: content-box;' +
+            '}',
+        '#crf-heat-map select {' +
+            '    font-size: 12px;' +
             '}',
         '.chm-hidden {' +
             '    display: none !important;' +
@@ -225,6 +229,8 @@ export default function defineStyles() {
                     '}',
                 '.reset-button {' +
                     '    width: 100%;' +
+                    '    font-weight: bold;' +
+                    '    font-size: 15px;' +
                     '}',
                 '.range-slider-container {' +
                     '    position: relative;' +
