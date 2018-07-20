@@ -9,16 +9,14 @@ export default function onInput(filter) {
     if (isIE) {
         //Attach an event listener to sliders.
         filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
-            //expand rows and check 'Expand All'
-
+            //Expand rows and check 'Expand All'.
             context.config.expand_all = true;
             context.controls.wrap
                 .selectAll('.control-group')
                 .filter(f => f.option === 'expand_all')
                 .select('input')
                 .property('checked', true);
-
-            const sliders = this.parentNode.getElementsByTagName('input');
+            const sliders = this.parentNode.parentNode.getElementsByTagName('input');
             const slider1 = parseFloat(sliders[0].value);
             const slider2 = parseFloat(sliders[1].value);
 
@@ -45,7 +43,7 @@ export default function onInput(filter) {
         });
     } else {
         filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-            //expand rows and check 'Expand All'
+            //Expand rows and check 'Expand All'.
             context.config.expand_all = true;
             context.controls.wrap
                 .selectAll('.control-group')
