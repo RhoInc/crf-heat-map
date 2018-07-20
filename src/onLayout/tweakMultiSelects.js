@@ -5,7 +5,8 @@ export default function tweakMultiSelects() {
         .selectAll('.control-group')
         .filter(d => d.type === 'subsetter' && d.multiple)
         .each(function(d) {
-            d3.select(this)
+            d3
+                .select(this)
                 .select('select')
                 .attr(
                     'size',

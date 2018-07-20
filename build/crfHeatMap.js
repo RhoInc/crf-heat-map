@@ -827,14 +827,21 @@
 
     function defineStyles() {
         var styles = [
+            'body #crf-heat-map {' +
+                '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
+                '    font-size: 16px;' +
+                '    line-height: normal;' +
+                '}',
             '#crf-heat-map {' + '}',
+            '#crf-heat-map div {' + '    box-sizing: content-box;' + '}',
+            '#crf-heat-map select {' + '    font-size: 12px;' + '}',
             '.chm-hidden {' + '    display: none !important;' + '}',
             '.chm-column {' + '    display: inline-block;' + '}',
             '.chm-column > * {' + '    width: 100%;' + '}',
             '.chm-row {' + '    display: inline-block;' + '}',
             '.chm-row > * {' + '    display: inline-block;' + '}',
             '.chm-row--1 {' +
-                '    height: 67px;' +
+                '    height: 6em;' +
                 '    padding-bottom: 10px;' +
                 '    border-bottom: 1px solid lightgray;' +
                 '    margin-bottom: 10px;' +
@@ -956,7 +963,6 @@
 
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '}',
-            '.row--hidden {' + '    display: none;' + '}',
             '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
                 '.wc-table table tbody tr td {' +
@@ -977,7 +983,11 @@
             /* range sliders */
 
             '#column-controls th {' + '}',
-            '.reset-button {' + '    width: 100%;' + '}',
+            '.reset-button {' +
+                '    width: 100%;' +
+                '    font-weight: bold;' +
+                '    font-size: 15px;' +
+                '}',
             '.range-slider-container {' +
                 '    position: relative;' +
                 '    width: 100%;' +
@@ -1027,8 +1037,12 @@
                 '    border: 0;' +
                 '}',
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-            '.filter-value--lower {' + '    width: 40px' + '}',
-            '.filter-value--upper {' + '    width: 40px' + '}',
+            '.range-value-container {' + '    display: inline-block;' + '    width: 45%;' + '}',
+            '.range-value-container > * {' + '    text-align: right;' + '}',
+            '.range-value-container--lower {' + '    float: left;' + '}',
+            '.range-value-container--upper {' + '    float: right;' + '}',
+            '.range-value {' + '    width: 70%;' + '}',
+            '.chm-text {' + '    font-size: 12px;' + '    font-weight: normal;' + '}',
 
             /* Table body rows */
 
@@ -1039,48 +1053,48 @@
 
             /* ID cells */
 
-            '.cell--id {' + '    background: white;' + '}',
-            '.row--expandable .cell--id {' +
+            '.chm-cell--id {' + '    background: white;' + '}',
+            '.chm-table-row--expandable .chm-cell--id {' +
                 '    color: blue;' +
                 '    cursor: pointer;' +
                 '    text-decoration: underline;' +
                 '}',
-            '.cell--id--level2 {' + '    text-indent: 1em;' + '}',
-            '.cell--id--level3 {' + '    text-indent: 2em;' + '}',
+            '.chm-cell--id--level2 {' + '    text-indent: 1em;' + '}',
+            '.chm-cell--id--level3 {' + '    text-indent: 2em;' + '}',
 
             /* heat cells */
 
-            '.cell--heat {' +
+            '.chm-cell--heat {' +
                 '    text-align: right;' +
                 '    font-size: 12px;' +
                 '    border: 1px solid white;' +
                 '}',
-            '.cell--heat--level6,' +
-                '.cell--heat--level7,' +
-                '.cell--heat--level8,' +
-                '.cell--heat--level1,' +
-                '.cell--heat--level2,' +
-                '.cell--heat--level3 {' +
+            '.chm-cell--heat--level6,' +
+                '.chm-cell--heat--level7,' +
+                '.chm-cell--heat--level8,' +
+                '.chm-cell--heat--level1,' +
+                '.chm-cell--heat--level2,' +
+                '.chm-cell--heat--level3 {' +
                 '    color: black;' +
                 '}',
-            '.cell--heat--level9,' +
-                '.cell--heat--level10,' +
-                '.cell--heat--level11,' +
-                '.cell--heat--level4,' +
-                '.cell--heat--level5 {' +
+            '.chm-cell--heat--level9,' +
+                '.chm-cell--heat--level10,' +
+                '.chm-cell--heat--level11,' +
+                '.chm-cell--heat--level4,' +
+                '.chm-cell--heat--level5 {' +
                 '    color: white;' +
                 '}',
-            '.cell--heat--level1 {' + '    background: #edf8e9;' + '}',
-            '.cell--heat--level2 {' + '    background: #bae4b3;' + '}',
-            '.cell--heat--level3 {' + '    background: #74c476' + '}',
-            '.cell--heat--level4 {' + '    background: #31a354;' + '}',
-            '.cell--heat--level5 {' + '    background: #006d2c;' + '}',
-            '.cell--heat--level6 {' + '    background: #eff3ff;' + '}',
-            '.cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
-            '.cell--heat--level8 {' + '    background: #6baed6' + '}',
-            '.cell--heat--level9 {' + '    background: #3182bd;' + '}',
-            '.cell--heat--level10 {' + '    background: #08519c;' + '}',
-            '.cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
+            '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '}',
+            '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '}',
+            '.chm-cell--heat--level3 {' + '    background: #74c476' + '}',
+            '.chm-cell--heat--level4 {' + '    background: #31a354;' + '}',
+            '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '}',
+            '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '}',
+            '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
+            '.chm-cell--heat--level8 {' + '    background: #6baed6' + '}',
+            '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '}',
+            '.chm-cell--heat--level10 {' + '    background: #08519c;' + '}',
+            '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
         ];
 
         //Attach styles to DOM.
@@ -1327,7 +1341,8 @@
                 return d.type === 'subsetter' && d.multiple;
             })
             .each(function(d) {
-                d3.select(this)
+                d3
+                    .select(this)
                     .select('select')
                     .attr(
                         'size',
@@ -1401,7 +1416,10 @@
                 .classed('range-slider-container', true);
 
             //lower slider
-            filter.lowerSlider = filter.div
+            var rangeValueLowerDiv = filter.div
+                .append('div')
+                .classed('range-value-container range-value-container--lower', true);
+            filter.lowerSlider = rangeValueLowerDiv
                 .append('input')
                 .classed('range-value filter-value--lower', true)
                 .attr({
@@ -1411,15 +1429,25 @@
                     value: 0
                 });
 
-            filter.div
-                .append('text')
-                .classed('text', true)
+            rangeValueLowerDiv
+                .append('span')
+                .classed('chm-text', true)
                 .text(function(d) {
-                    return d.variable.indexOf('query') < 0 ? '% - ' : ' - ';
+                    return d.variable.indexOf('query') < 0 ? '%' : '';
+                });
+
+            filter.div
+                .append('span')
+                .classed('chm-dash', true)
+                .text(function(d) {
+                    return ' - ';
                 });
 
             //upper slider
-            filter.upperSlider = filter.div
+            var rangeValueUpperDiv = filter.div
+                .append('div')
+                .classed('range-value-container range-value-container--upper', true);
+            filter.upperSlider = rangeValueUpperDiv
                 .append('input')
                 .classed('range-value filter-value--upper', true)
                 .attr({
@@ -1429,9 +1457,9 @@
                     value: 100
                 });
 
-            filter.div
-                .append('text')
-                .classed('text', true)
+            rangeValueUpperDiv
+                .append('span')
+                .classed('chm-text', true)
                 .text(function(d) {
                     return d.variable.indexOf('query') < 0 ? '%' : '';
                 });
@@ -1627,39 +1655,40 @@
 
         this.rows = this.tbody.selectAll('tr');
         this.rows
-            .classed('row', true)
-            .classed('row--expandable', function(d) {
+            .classed('chm-table-row', true)
+            .classed('chm-table-row--expandable', function(d) {
                 return d.id.split('|').length < _this.config.id_cols.length;
             })
-            .classed('row--collapsed', function(d) {
+            .classed('chm-table-row--collapsed', function(d) {
                 return d.id.split('|').length < _this.config.id_cols.length;
             })
-            .classed('row--hidden', function(d) {
+            .classed('chm-hidden', function(d) {
                 return d.id.indexOf('|') > -1;
             });
     }
 
     function customizeCells() {
         // add Dynel's hover text to table headers
-        d3.select('th.answer_query_cnt').attr(
-            'title',
-            'Site has closed issue, but DM needs to close or requery.'
-        );
-        d3.select('th.is_frozen').attr(
-            'title',
-            'Data is clean and there are no outstanding issues.'
-        );
+        d3
+            .select('th.answer_query_cnt')
+            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
+        d3
+            .select('th.is_frozen')
+            .attr('title', 'Data is clean and there are no outstanding issues.');
 
         this.cells = this.tbody.selectAll('td');
         this.cells
             .attr('class', function(d) {
-                var cellClass = 'cell';
+                var cellClass = 'chm-cell';
 
                 if (d.col === 'id')
                     cellClass =
-                        cellClass + ' cell--id' + ' cell--id--level' + d.text.split('|').length;
+                        cellClass +
+                        ' chm-cell--id' +
+                        ' chm-cell--id--level' +
+                        d.text.split('|').length;
                 else {
-                    cellClass = cellClass + ' cell--heat';
+                    cellClass = cellClass + ' chm-cell--heat';
                     var level = void 0;
                     if (d.col.indexOf('query') > -1)
                         level =
@@ -1685,7 +1714,7 @@
                                             : d.text > 0.25
                                                 ? 7
                                                 : 6;
-                    cellClass = cellClass + ' cell--heat--level' + level;
+                    cellClass = cellClass + ' chm-cell--heat--level' + level;
                 }
 
                 return cellClass;
@@ -1706,7 +1735,7 @@
         var config = this.config;
 
         if (this.config.expand_all) {
-            this.rows.classed('row--hidden', false);
+            this.rows.classed('chm-hidden', false);
         }
 
         var expandable_rows = this.rows
@@ -1727,16 +1756,17 @@
 
         expandable_rows.on('click', function(d) {
             var row = d3.select(this.parentNode);
-            var collapsed = !row.classed('row--collapsed');
+            var collapsed = !row.classed('chm-row--collapsed');
 
-            row.classed('row--collapsed', collapsed) //toggle the class
-                .classed('row--expanded', !collapsed); //toggle the class
+            row
+                .classed('chm-row--collapsed', collapsed) //toggle the class
+                .classed('chm-row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
                 if (d.children) {
                     d.children
-                        .classed('row--hidden row--collapsed', true)
-                        .classed('row--expanded', false);
+                        .classed('chm-hidden chm-row--collapsed', true)
+                        .classed('chm-row--expanded', false);
                     d.children.each(function(di) {
                         iterativeCollapse(di);
                     });
@@ -1746,7 +1776,7 @@
             if (collapsed) {
                 iterativeCollapse(d); //hide the whole tree
             } else {
-                d.children.classed('row--hidden', false); //show just the immediate children
+                d.children.classed('chm-hidden', false); //show just the immediate children
             }
         });
     }
