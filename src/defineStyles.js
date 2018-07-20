@@ -281,12 +281,26 @@ export default function defineStyles() {
                     '    border: 0;' +
                     '}',
                 '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-                '.filter-value--lower {' +
-                '    width: 40px' +
-                '}',
-                '.filter-value--upper {' +
-                '    width: 40px' +
-                '}',
+                '.range-value-container {' +
+                    '    display: inline-block;' +
+                    '    width: 45%;' +
+                    '}',
+                '.range-value-container > * {' +
+                    '    text-align: right;' +
+                    '}',
+                '.range-value-container--lower {' +
+                    '    float: left;' +
+                    '}',
+                '.range-value-container--upper {' +
+                    '    float: right;' +
+                    '}',
+                '.range-value {' +
+                    '    width: 70%;' +
+                    '}',
+                '.chm-text {' +
+                    '    font-size: 12px;' +
+                    '    font-weight: normal;' +
+                    '}',
 
                 /* Table body rows */
 

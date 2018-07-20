@@ -33,9 +33,9 @@ const bootstrapToggle = d3.select('#title')
     .append('button')
     .attr('id', 'bootstrap-toggle')
     .style('float', 'right')
-    .text('Disable boostrap');
+    .text('Enable boostrap');
 bootstrapToggle
-    .on('click', () => {
+    .on('click', function() {
         const bootstrap = d3.selectAll("link")
             .filter(function() {
                 return /bootstrap.css/.test(this.href);

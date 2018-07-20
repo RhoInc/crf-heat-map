@@ -1037,8 +1037,12 @@
                 '    border: 0;' +
                 '}',
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-            '.filter-value--lower {' + '    width: 40px' + '}',
-            '.filter-value--upper {' + '    width: 40px' + '}',
+            '.range-value-container {' + '    display: inline-block;' + '    width: 45%;' + '}',
+            '.range-value-container > * {' + '    text-align: right;' + '}',
+            '.range-value-container--lower {' + '    float: left;' + '}',
+            '.range-value-container--upper {' + '    float: right;' + '}',
+            '.range-value {' + '    width: 70%;' + '}',
+            '.chm-text {' + '    font-size: 12px;' + '    font-weight: normal;' + '}',
 
             /* Table body rows */
 
@@ -1412,7 +1416,10 @@
                 .classed('range-slider-container', true);
 
             //lower slider
-            filter.lowerSlider = filter.div
+            var rangeValueLowerDiv = filter.div
+                .append('div')
+                .classed('range-value-container range-value-container--lower', true);
+            filter.lowerSlider = rangeValueLowerDiv
                 .append('input')
                 .classed('range-value filter-value--lower', true)
                 .attr({
@@ -1422,15 +1429,25 @@
                     value: 0
                 });
 
-            filter.div
-                .append('text')
-                .classed('text', true)
+            rangeValueLowerDiv
+                .append('span')
+                .classed('chm-text', true)
                 .text(function(d) {
-                    return d.variable.indexOf('query') < 0 ? '% - ' : ' - ';
+                    return d.variable.indexOf('query') < 0 ? '%' : '';
+                });
+
+            filter.div
+                .append('span')
+                .classed('chm-dash', true)
+                .text(function(d) {
+                    return ' - ';
                 });
 
             //upper slider
-            filter.upperSlider = filter.div
+            var rangeValueUpperDiv = filter.div
+                .append('div')
+                .classed('range-value-container range-value-container--upper', true);
+            filter.upperSlider = rangeValueUpperDiv
                 .append('input')
                 .classed('range-value filter-value--upper', true)
                 .attr({
@@ -1440,9 +1457,9 @@
                     value: 100
                 });
 
-            filter.div
-                .append('text')
-                .classed('text', true)
+            rangeValueUpperDiv
+                .append('span')
+                .classed('chm-text', true)
                 .text(function(d) {
                     return d.variable.indexOf('query') < 0 ? '%' : '';
                 });
