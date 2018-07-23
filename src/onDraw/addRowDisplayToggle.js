@@ -22,18 +22,18 @@ export default function addRowDisplayToggle() {
     });
 
     expandable_rows.on('click', function(d) {
+        console.log('click');
         var row = d3.select(this.parentNode);
-        var collapsed = !row.classed('chm-row--collapsed');
+        var collapsed = !row.classed('chm-table-row--collapsed');
 
-        row
-            .classed('chm-row--collapsed', collapsed) //toggle the class
-            .classed('chm-row--expanded', !collapsed); //toggle the class
+        row.classed('chm-table-row--collapsed', collapsed) //toggle the class
+            .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
         function iterativeCollapse(d) {
             if (d.children) {
                 d.children
-                    .classed('chm-hidden chm-row--collapsed', true)
-                    .classed('chm-row--expanded', false);
+                    .classed('chm-hidden chm-table-row--collapsed', true)
+                    .classed('chm-table-row--expanded', false);
                 d.children.each(function(di) {
                     iterativeCollapse(di);
                 });

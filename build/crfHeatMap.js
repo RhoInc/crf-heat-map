@@ -1341,8 +1341,7 @@
                 return d.type === 'subsetter' && d.multiple;
             })
             .each(function(d) {
-                d3
-                    .select(this)
+                d3.select(this)
                     .select('select')
                     .attr(
                         'size',
@@ -1667,12 +1666,14 @@
 
     function customizeCells() {
         // add Dynel's hover text to table headers
-        d3
-            .select('th.answer_query_cnt')
-            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
-        d3
-            .select('th.is_frozen')
-            .attr('title', 'Data is clean and there are no outstanding issues.');
+        d3.select('th.answer_query_cnt').attr(
+            'title',
+            'Site has closed issue, but DM needs to close or requery.'
+        );
+        d3.select('th.is_frozen').attr(
+            'title',
+            'Data is clean and there are no outstanding issues.'
+        );
 
         this.cells = this.tbody.selectAll('td');
         this.cells
@@ -1753,18 +1754,18 @@
         });
 
         expandable_rows.on('click', function(d) {
+            console.log('click');
             var row = d3.select(this.parentNode);
-            var collapsed = !row.classed('chm-row--collapsed');
+            var collapsed = !row.classed('chm-table-row--collapsed');
 
-            row
-                .classed('chm-row--collapsed', collapsed) //toggle the class
-                .classed('chm-row--expanded', !collapsed); //toggle the class
+            row.classed('chm-table-row--collapsed', collapsed) //toggle the class
+                .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
                 if (d.children) {
                     d.children
-                        .classed('chm-hidden chm-row--collapsed', true)
-                        .classed('chm-row--expanded', false);
+                        .classed('chm-hidden chm-table-row--collapsed', true)
+                        .classed('chm-table-row--expanded', false);
                     d.children.each(function(di) {
                         iterativeCollapse(di);
                     });
@@ -1891,8 +1892,22 @@
         });
 
         this.filters.forEach(function(d, i) {
-            table.export.data[i]['Filter'] = d.col;
-            table.export.data[i]['Value'] = d.val;
+            if (i < _this.export.data.length) {
+                table.export.data[i]['Filter'] = d.col;
+                table.export.data[i]['Value'] = d.val;
+            } else
+                table.export.data.push(
+                    Object.assign(
+                        _this.export.cols.reduce(function(acc, cur) {
+                            acc[cur] = '';
+                            return acc;
+                        }, {}),
+                        {
+                            Filter: d.col,
+                            Value: d.val
+                        }
+                    )
+                );
         });
 
         //header row
@@ -1907,7 +1922,9 @@
             //add rows to CSV array
             var row = _this.export.cols.map(function(col, i) {
                 var value =
-                    _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
+                    _this.config.value_cols.indexOf(col) > -1 &&
+                    col.indexOf('query') < 0 &&
+                    ['N/A', ''].indexOf(d[col]) < 0
                         ? Math.round(d[col] * 100)
                         : d[col];
 
@@ -1953,10 +1970,10 @@
         };
         var arrayOfArrays = this.export.data.map(function(d) {
             return _this.export.cols.map(function(col) {
-                return _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
-                    ? d[col] !== 'N/A'
-                        ? d[col] //Math.round(d[col]*100)
-                        : ''
+                return _this.config.value_cols.indexOf(col) > -1 &&
+                    col.indexOf('query') < 0 &&
+                    ['N/A', ''].indexOf(d[col]) < 0
+                    ? d[col]
                     : d[col];
             });
         }); // convert data from array of objects to array of arrays.
