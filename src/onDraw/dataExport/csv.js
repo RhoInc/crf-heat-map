@@ -12,10 +12,15 @@ export default function csv() {
         d['Value'] = '';
     });
 
-    this.filters.forEach((d, i) => {
+    this.filters.forEach((filter, i) => {
         if (i < this.export.data.length) {
-            table.export.data[i]['Filter'] = d.col;
-            table.export.data[i]['Value'] = d.val;
+            table.export.data[i]['Filter'] = filter.col;
+            table.export.data[i]['Value'] =
+                Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                    ? filter.val.join(', ')
+                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                        ? 'All'
+                        : filter.val;
         } else
             table.export.data.push(
                 Object.assign(
@@ -24,8 +29,8 @@ export default function csv() {
                         return acc;
                     }, {}),
                     {
-                        Filter: d.col,
-                        Value: d.val
+                        Filter: filter.col,
+                        Value: filter.val
                     }
                 )
             );

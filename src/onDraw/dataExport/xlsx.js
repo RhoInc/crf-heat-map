@@ -64,7 +64,14 @@ export default function xlsx() {
     workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
         [['Filter', 'Value']].concat(
             this.filters.map(filter => {
-                return [filter.col, filter.val];
+                return [
+                    filter.col,
+                    Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                        ? filter.val.join(', ')
+                        : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                            ? 'All'
+                            : filter.val
+                ];
             })
         )
     );

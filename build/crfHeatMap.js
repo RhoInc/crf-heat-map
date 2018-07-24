@@ -1341,7 +1341,8 @@
                 return d.type === 'subsetter' && d.multiple;
             })
             .each(function(d) {
-                d3.select(this)
+                d3
+                    .select(this)
                     .select('select')
                     .attr(
                         'size',
@@ -1666,14 +1667,12 @@
 
     function customizeCells() {
         // add Dynel's hover text to table headers
-        d3.select('th.answer_query_cnt').attr(
-            'title',
-            'Site has closed issue, but DM needs to close or requery.'
-        );
-        d3.select('th.is_frozen').attr(
-            'title',
-            'Data is clean and there are no outstanding issues.'
-        );
+        d3
+            .select('th.answer_query_cnt')
+            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
+        d3
+            .select('th.is_frozen')
+            .attr('title', 'Data is clean and there are no outstanding issues.');
 
         this.cells = this.tbody.selectAll('td');
         this.cells
@@ -1758,7 +1757,8 @@
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('chm-table-row--collapsed');
 
-            row.classed('chm-table-row--collapsed', collapsed) //toggle the class
+            row
+                .classed('chm-table-row--collapsed', collapsed) //toggle the class
                 .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
@@ -1891,10 +1891,15 @@
             d['Value'] = '';
         });
 
-        this.filters.forEach(function(d, i) {
+        this.filters.forEach(function(filter, i) {
             if (i < _this.export.data.length) {
-                table.export.data[i]['Filter'] = d.col;
-                table.export.data[i]['Value'] = d.val;
+                table.export.data[i]['Filter'] = filter.col;
+                table.export.data[i]['Value'] =
+                    Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                        ? filter.val.join(', ')
+                        : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                            ? 'All'
+                            : filter.val;
             } else
                 table.export.data.push(
                     Object.assign(
@@ -1903,8 +1908,8 @@
                             return acc;
                         }, {}),
                         {
-                            Filter: d.col,
-                            Value: d.val
+                            Filter: filter.col,
+                            Value: filter.val
                         }
                     )
                 );
@@ -2035,7 +2040,15 @@
         workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
             [['Filter', 'Value']].concat(
                 this.filters.map(function(filter) {
-                    return [filter.col, filter.val];
+                    return [
+                        filter.col,
+                        Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                            ? filter.val.join(', ')
+                            : Array.isArray(filter.val) &&
+                              filter.val.length === filter.choices.length
+                                ? 'All'
+                                : filter.val
+                    ];
                 })
             )
         );
