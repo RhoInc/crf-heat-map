@@ -1190,7 +1190,7 @@
             },
             {
                 type: 'subsetter',
-                value_col: 'FreezeFlg',
+                value_col: 'SubjFreezeFlg',
                 label: 'Subject Freeze Status'
             },
             {
