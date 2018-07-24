@@ -12,9 +12,28 @@ export default function csv() {
         d['Value'] = '';
     });
 
-    this.filters.forEach((d, i) => {
-        table.export.data[i]['Filter'] = d.col;
-        table.export.data[i]['Value'] = d.val;
+    this.filters.forEach((filter, i) => {
+        if (i < this.export.data.length) {
+            table.export.data[i]['Filter'] = filter.col;
+            table.export.data[i]['Value'] =
+                Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                    ? filter.val.join(', ')
+                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                        ? 'All'
+                        : filter.val;
+        } else
+            table.export.data.push(
+                Object.assign(
+                    this.export.cols.reduce((acc, cur) => {
+                        acc[cur] = '';
+                        return acc;
+                    }, {}),
+                    {
+                        Filter: filter.col,
+                        Value: filter.val
+                    }
+                )
+            );
     });
 
     //header row
@@ -25,7 +44,9 @@ export default function csv() {
         //add rows to CSV array
         const row = this.export.cols.map((col, i) => {
             let value =
-                this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
+                this.config.value_cols.indexOf(col) > -1 &&
+                col.indexOf('query') < 0 &&
+                ['N/A', ''].indexOf(d[col]) < 0
                     ? Math.round(d[col] * 100)
                     : d[col];
 

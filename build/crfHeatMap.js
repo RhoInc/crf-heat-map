@@ -1753,18 +1753,19 @@
         });
 
         expandable_rows.on('click', function(d) {
+            console.log('click');
             var row = d3.select(this.parentNode);
-            var collapsed = !row.classed('chm-row--collapsed');
+            var collapsed = !row.classed('chm-table-row--collapsed');
 
             row
-                .classed('chm-row--collapsed', collapsed) //toggle the class
-                .classed('chm-row--expanded', !collapsed); //toggle the class
+                .classed('chm-table-row--collapsed', collapsed) //toggle the class
+                .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
             function iterativeCollapse(d) {
                 if (d.children) {
                     d.children
-                        .classed('chm-hidden chm-row--collapsed', true)
-                        .classed('chm-row--expanded', false);
+                        .classed('chm-hidden chm-table-row--collapsed', true)
+                        .classed('chm-table-row--expanded', false);
                     d.children.each(function(di) {
                         iterativeCollapse(di);
                     });
@@ -1890,9 +1891,28 @@
             d['Value'] = '';
         });
 
-        this.filters.forEach(function(d, i) {
-            table.export.data[i]['Filter'] = d.col;
-            table.export.data[i]['Value'] = d.val;
+        this.filters.forEach(function(filter, i) {
+            if (i < _this.export.data.length) {
+                table.export.data[i]['Filter'] = filter.col;
+                table.export.data[i]['Value'] =
+                    Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                        ? filter.val.join(', ')
+                        : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                            ? 'All'
+                            : filter.val;
+            } else
+                table.export.data.push(
+                    Object.assign(
+                        _this.export.cols.reduce(function(acc, cur) {
+                            acc[cur] = '';
+                            return acc;
+                        }, {}),
+                        {
+                            Filter: filter.col,
+                            Value: filter.val
+                        }
+                    )
+                );
         });
 
         //header row
@@ -1907,7 +1927,9 @@
             //add rows to CSV array
             var row = _this.export.cols.map(function(col, i) {
                 var value =
-                    _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
+                    _this.config.value_cols.indexOf(col) > -1 &&
+                    col.indexOf('query') < 0 &&
+                    ['N/A', ''].indexOf(d[col]) < 0
                         ? Math.round(d[col] * 100)
                         : d[col];
 
@@ -1953,10 +1975,10 @@
         };
         var arrayOfArrays = this.export.data.map(function(d) {
             return _this.export.cols.map(function(col) {
-                return _this.config.value_cols.indexOf(col) > -1 && col.indexOf('query') < 0
-                    ? d[col] !== 'N/A'
-                        ? d[col] //Math.round(d[col]*100)
-                        : ''
+                return _this.config.value_cols.indexOf(col) > -1 &&
+                    col.indexOf('query') < 0 &&
+                    ['N/A', ''].indexOf(d[col]) < 0
+                    ? d[col]
                     : d[col];
             });
         }); // convert data from array of objects to array of arrays.
@@ -2018,7 +2040,15 @@
         workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
             [['Filter', 'Value']].concat(
                 this.filters.map(function(filter) {
-                    return [filter.col, filter.val];
+                    return [
+                        filter.col,
+                        Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                            ? filter.val.join(', ')
+                            : Array.isArray(filter.val) &&
+                              filter.val.length === filter.choices.length
+                                ? 'All'
+                                : filter.val
+                    ];
                 })
             )
         );
