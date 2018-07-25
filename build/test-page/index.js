@@ -2,12 +2,13 @@ if (window.origin !== 'https://rhoinc.github.io') {
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = '../raveXplorer.js';
+    script.src = '../crfHeatMap.js';
     head.appendChild(script);
 }
 
 d3.csv(
-    'https://rawgit.com/RhoInc/rave-xplorer/master/build/test-page/rx_DataPage.csv',
+    'https://rawgit.com/RhoInc/crf-heat-map/v1.0.0-dev/build/test-page/rx_DataPage.csv', // until master is set up
+    //'./rx_DataPage.csv',
     function(d) {
         return d;
     },
@@ -15,8 +16,10 @@ d3.csv(
         if (error)
             console.log(error);
 
-        var settings = {};
-        var instance = raveXplorer(
+        var settings = {
+            exports: ['csv', 'xlsx'],
+        };
+        var instance = crfHeatMap(
             '#container',
             settings
         );
@@ -24,3 +27,20 @@ d3.csv(
         instance.init(data);
     }
 );
+
+//Add button that toggles bootstrap styling.
+const bootstrapToggle = d3.select('#title')
+    .append('button')
+    .attr('id', 'bootstrap-toggle')
+    .style('float', 'right')
+    .text('Enable bootstrap');
+bootstrapToggle
+    .on('click', function() {
+        const bootstrap = d3.selectAll("link")
+            .filter(function() {
+                return /bootstrap.css/.test(this.href);
+            });
+        const disabled = bootstrap.property('disabled');
+        bootstrap.property('disabled', !disabled);
+        bootstrapToggle.text((disabled ? 'Disable' : 'Enable') + ' bootstrap');
+    });

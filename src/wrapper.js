@@ -1,27 +1,67 @@
-import './util/object-assign';
-import defineStyles from './defineStyles';
+//utility functions
+import './util/polyfills';
+import clone from './util/clone';
 import merge from './util/merge';
-import defaultSettings, { syncSettings, syncControlInputs } from './defaultSettings';
+
+//styles, configuration, and webcharts
+import defineLayout from './defineLayout';
+import defineStyles from './defineStyles';
+import configuration from './configuration/index';
 import { createControls, createTable } from 'webcharts';
+
+//table callbacks
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDraw from './onDraw';
 
-export default function raveXplorer(element, settings) {
-    const mergedSettings = merge(defaultSettings, settings), //Merge user settings onto default settings.
-        syncedSettings = syncSettings(mergedSettings), //Sync properties within merged settings, e.g. data mappings.
-        syncedControlInputs = syncControlInputs(syncedSettings), //Sync merged settings with controls.
-        controls = createControls(element, {
-            location: 'top',
-            inputs: syncedControlInputs
-        }), //Define controls.
-        chart = createTable(element, mergedSettings, controls); //Define chart.
+import init from './init';
 
-    chart.on('init', onInit);
-    chart.on('layout', onLayout);
-    chart.on('draw', onDraw);
+export default function crfHeatMap(element, settings) {
+    //main object
+    const crfHeatMap = {
+        element,
+        containers: {},
+        settings: {
+            user: settings
+        },
+        init
+    };
 
-    defineStyles();
+    //settings
+    crfHeatMap.settings.defaults = Object.assign(
+        {},
+        configuration.rendererSettings(),
+        configuration.webchartsSettings()
+    ); // merge renderer-specific settings with Webcharts settings
+    crfHeatMap.settings.merged = merge(crfHeatMap.settings.defaults, crfHeatMap.settings.user); // merge user settings with default settings
+    crfHeatMap.settings.synced = configuration.syncSettings(crfHeatMap.settings.merged); // sync properties within merged settings, e.g. data mappings
+    crfHeatMap.settings.controls = {
+        inputs: configuration.syncControlInputs(crfHeatMap.settings.synced)
+    }; // define control settings
 
-    return chart;
+    //DOM layout
+    defineLayout.call(crfHeatMap);
+
+    //controls
+    crfHeatMap.controls = createControls(
+        crfHeatMap.containers.controls.node(),
+        crfHeatMap.settings.controls
+    );
+
+    //table
+    crfHeatMap.table = createTable(
+        crfHeatMap.containers.table.node(),
+        crfHeatMap.settings.synced,
+        crfHeatMap.controls
+    );
+    crfHeatMap.table.parent = crfHeatMap;
+    crfHeatMap.table.initial_config = crfHeatMap.settings.synced;
+    crfHeatMap.table.on('init', onInit);
+    crfHeatMap.table.on('layout', onLayout);
+    crfHeatMap.table.on('draw', onDraw);
+
+    //stylesheet
+    defineStyles.call(crfHeatMap);
+
+    return crfHeatMap;
 }

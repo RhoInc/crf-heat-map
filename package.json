@@ -1,11 +1,11 @@
 {
-  "name": "rave-xplorer",
-  "description": "Heatmap showing database form status at different levels",
+  "name": "crf-heat-map",
+  "description": "Heat Map showing database form status at different levels",
   "version": "1.0.0",
   "author": "Rho, Inc.",
   "license": "MIT",
-  "homepage": "https://github.com/rhoinc/rave-xplorer#readme",
-  "main": "./build/raveXplorer.js",
+  "homepage": "https://github.com/rhoinc/crf-heat-map#readme",
+  "main": "./build/crfHeatMap.js",
   "module": "./src/wrapper.js",
   "keywords": [
     "visualization",
@@ -13,6 +13,7 @@
   ],
   "dependencies": {
     "d3": "^3",
+    "local-web-server": "^2.5.6",
     "webcharts": "^1.10"
   },
   "scripts": {
@@ -20,8 +21,8 @@
     "build-md": "node ./scripts/configuration-markdown.js",
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-build",
-    "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write src/**/*.js",
-    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/raveXplorer.js",
+    "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"src/**/!(*defineLayout|*defineStyles).js\"",
+    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/crfHeatMap.js",
     "test-page": "start chrome ./build/test-page/index.html && start firefox ./build/test-page/index.html && start iexplore file://%CD%/build/test-page/index.html",
     "watch": "rollup -c -w"
   },
@@ -36,9 +37,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RhoInc/rave-xplorer.git"
+    "url": "https://github.com/RhoInc/crf-heat-map.git"
   },
   "bugs": {
-    "url": "https://github.com/RhoInc/rave-xplorer/issues"
+    "url": "https://github.com/RhoInc/crf-heat-map/issues"
+  },
+  "optionalDependencies": {
+    "xlsx": "^0.13.0"
   }
 }

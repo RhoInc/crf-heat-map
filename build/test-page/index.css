@@ -23,28 +23,3 @@
     margin: 12px 2%;
     display: inline-block;
 }
-#container .control-group > * {
-    display: inline-block;
-}
-#container .control-group .changer {
-    margin-left: 5px;
-}
-.hide  {
-    display: none;
-}
-#table {
-    border-collapse: collapse;
-}
-#table, th, td {
-    border: .2px solid white;
-}
-.diagonal-stripe-1 {
-    color : black;
-    background: repeating-linear-gradient(
-        45deg,
-        red,
-        red 10px,
-        blue 10px,
-        blue 20px
-    );
-}

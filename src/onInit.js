@@ -1,10 +1,13 @@
-import flattenData from './flattenData';
+import summarizeData from './onInit/summarizeData';
 
 export default function onInit() {
     this.data.initial = this.data.raw;
+    this.data.initial_filtered = this.data.initial;
 
-    var t0 = performance.now();
-    this.data.raw = flattenData.call(this);
-    var t1 = performance.now();
-    console.log('Call to flattenData took ' + (t1 - t0) + ' milliseconds.');
+    //Summarize raw data.
+    summarizeData.call(this);
+
+    //Manually set controls' data to raw data.
+    this.controls.data = this.data.initial;
+    this.controls.ready = true;
 }

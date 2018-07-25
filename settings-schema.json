@@ -1,7 +1,103 @@
-{"title": "settings",
-  "description": "JSON schema for the configuration of Rave-Xplorer",
-  "overview": "Currently Rave-Xplorer does not have any renderer specific settings. Since Rave-Xplorer is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/rave-Xplorer/blob/master/src/defaultSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings. ",
-  "version": "1.0.0",
-  "type": "object",
-  "properties": {}
+{
+    "title": "settings",
+    "description": "JSON schema for the configuration of CRF-Heat-Map",
+    "overview": "The most straightforward way to customize the CRF Heat Map is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the CRF Heat Map is a Webcharts `table` object, many default Webcharts settings are set in the [webchartsSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/webchartsSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality. These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js). All defaults can be overwritten by users.",
+    "version": "1.0.0",
+    "type": "object",
+    "properties": {
+        "nestings": {
+            "title": "Data Nesting",
+            "description": "an array of objects specifying the variables to nest the data by for calculations",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties":{
+                    "value_col":{
+                        "title":"Value Column",
+                        "type":"string"
+                    },
+                    "label":{
+                        "title":"Label",
+                        "type":"string"
+                    },
+                    "default_nesting":{
+                        "title":"Default Nesting",
+                        "type":"boolean"
+                    }
+                }
+            },
+            "default": [
+                {
+                    "value_col": "sitename",
+                    "label": "Site",
+                    "default_nesting": true
+                },
+                {
+                    "value_col": "subjectnameoridentifier",
+                    "label": "Subject ID",
+                    "default_nesting": true
+                },
+                {
+                    "value_col": "foldername",
+                    "label": "Folder",
+                    "default_nesting": false
+                },
+                {
+                    "value_col": "formoid",
+                    "label": "Form",
+                    "default_nesting": false
+                }
+            ]
+        },
+        "value_cols": {
+            "title": "CRF Flags",
+            "description": "binary flag variables that capture some status related to the case report form (CRF)",
+            "type": "array",
+            "items": {
+                "title": "Variable Name",
+                "description": "the name of the CRF status variable",
+                "type": "string"
+            },
+            "default": [
+                "is_partial_entry",
+                "DATA_PAGE_VERIFIED",
+                "ready_for_freeze",
+                "is_frozen",
+                "is_signed",
+                "is_locked",
+                "open_query_cnt",
+                "answer_query_cnt"
+            ]
+        },
+        "filter_cols": {
+            "title": "Data Filters",
+            "description": "variables in the data with which to filter the data",
+            "type": "array",
+            "items": {
+                "title": "Variable Name",
+                "description": "the name of the filter variable",
+                "type": "string"
+            },
+            "default": [
+                "sitename",
+                "FreezeFlg",
+                "status",
+                "subset1",
+                "subset2",
+                "subset3"
+            ]
+        },
+        "display_cell_annotations": {
+            "title": "Display Cell Annotations",
+            "description": "displays cell annotations always or only on hover",
+            "type": "boolean",
+            "default": true
+        },
+        "expand_all": {
+            "title": "Expand All Rows",
+            "description": "expands all nests so that no rows are hidden",
+            "type": "boolean",
+            "default": false
+        }
+    }
 }
