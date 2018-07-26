@@ -12,12 +12,12 @@ export default function rendererSettings() {
                 default_nesting: true
             },
             {
-                value_col: 'foldername',
+                value_col: 'folderinstance',
                 label: 'Folder',
                 default_nesting: false
             },
             {
-                value_col: 'formoid',
+                value_col: 'ecrfpagename',
                 label: 'Form',
                 default_nesting: false
             }

@@ -6,6 +6,9 @@ export const border = 1;
 
 export default function defineStyles() {
     const styles = [
+        'body {' +
+            '    overflow-y: scroll;' +
+            '}',
         'body #crf-heat-map {' +
             '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
             '    font-size: 16px;' +
