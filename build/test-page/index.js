@@ -7,8 +7,8 @@ if (window.origin !== 'https://rhoinc.github.io') {
 }
 
 d3.csv(
-    'https://rawgit.com/RhoInc/crf-heat-map/v1.0.0-dev/build/test-page/rx_DataPage.csv', // until master is set up
-    //'./rx_DataPage.csv',
+    'https://rawgit.com/RhoInc/crf-heat-map/master/build/test-page/rx_DataPage.csv',
+    //'./rx_DataPage.csv', // to improve speed use local data file in development
     function(d) {
         return d;
     },

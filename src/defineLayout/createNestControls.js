@@ -4,7 +4,7 @@ export default function createNestControls() {
     const context = this;
     const config = this.settings.synced;
 
-    var idList = config.nestings;
+    var idList = config.nestings.slice();
     idList.push({ value_col: undefined, label: 'None' });
 
     this.containers.nestControls

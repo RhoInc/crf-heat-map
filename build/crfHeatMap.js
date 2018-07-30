@@ -538,7 +538,7 @@
         var context = this;
         var config = this.settings.synced;
 
-        var idList = config.nestings;
+        var idList = config.nestings.slice();
         idList.push({ value_col: undefined, label: 'None' });
 
         this.containers.nestControls
@@ -827,6 +827,7 @@
 
     function defineStyles() {
         var styles = [
+            'body {' + '    overflow-y: scroll;' + '}',
             'body #crf-heat-map {' +
                 '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
                 '    font-size: 16px;' +
@@ -1118,12 +1119,12 @@
                     default_nesting: true
                 },
                 {
-                    value_col: 'foldername',
+                    value_col: 'folderinstance',
                     label: 'Folder',
                     default_nesting: false
                 },
                 {
-                    value_col: 'formoid',
+                    value_col: 'ecrfpagename',
                     label: 'Form',
                     default_nesting: false
                 }
@@ -2134,10 +2135,39 @@
         this.parent.containers.loading.classed('chm-hidden', true);
     }
 
+    function checkRequiredVariables() {
+        var _this = this;
+
+        var requiredVariables = d3
+            .set(
+                d3.merge([
+                    this.settings.synced.nestings.map(function(nesting) {
+                        return nesting.value_col + ' (' + nesting.label + ')';
+                    }),
+                    this.settings.synced.value_cols,
+                    this.settings.synced.filter_cols
+                ])
+            )
+            .values();
+        var missingVariables = requiredVariables.filter(function(variable) {
+            return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
+        });
+        if (missingVariables.length)
+            alert(
+                'The data are missing ' +
+                    (missingVariables.length === 1 ? 'this variable' : 'these variables') +
+                    ': ' +
+                    missingVariables.join(', ') +
+                    '.'
+            );
+    }
+
     function init(data) {
         this.data = {
-            raw: data
+            raw: data,
+            variables: Object.keys(data[0])
         };
+        checkRequiredVariables.call(this);
         this.table.init(data);
     }
 
