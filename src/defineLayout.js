@@ -1,6 +1,7 @@
 import createNestControls from './defineLayout/createNestControls';
 import drawCrfLegend from './defineLayout/drawCrfLegend';
 import drawQueryLegend from './defineLayout/drawQueryLegend';
+var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
 
 export default function defineLayout() {
     this.containers = {
@@ -8,6 +9,12 @@ export default function defineLayout() {
             .append('div')
             .attr('id', 'crf-heat-map'),
     };
+
+    // display warning message to user if they are using IE
+    if (isIE) {
+      this.containers.main.append("p").style({'color':'red','font-size':'20px','padding':'20px'}).text("Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.")
+    }
+
 
     /**-------------------------------------------------------------------------------------------\
 	  Left column
