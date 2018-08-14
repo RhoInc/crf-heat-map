@@ -16,7 +16,7 @@ The CRF Heat Map is fully interactive with user-defined summary combinations, da
 The code to initialize the chart looks like this:
 
 ```javascript
-    d3.csv('rx_DataPage.csv', function(data) {
+    d3.csv('dmc_DataPage.csv', function(data) {
         crfHeatMap('body', {}).init(data);
     });
 ```

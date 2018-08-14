@@ -1,7 +1,7 @@
 export default function customizeCells() {
     // add Dynel's hover text to table headers
     d3
-        .select('th.answer_query_cnt')
+        .select('th.answer_query_ct')
         .attr('title', 'Site has closed issue, but DM needs to close or requery.');
     d3.select('th.is_frozen').attr('title', 'Data is clean and there are no outstanding issues.');
 

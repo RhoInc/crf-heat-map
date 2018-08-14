@@ -65,8 +65,8 @@
                 "is_frozen",
                 "is_signed",
                 "is_locked",
-                "open_query_cnt",
-                "answer_query_cnt"
+                "open_query_ct",
+                "answer_query_ct"
             ]
         },
         "filter_cols": {

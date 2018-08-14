@@ -29,8 +29,8 @@ export default function rendererSettings() {
             'is_frozen',
             'is_signed',
             'is_locked',
-            'open_query_cnt',
-            'answer_query_cnt'
+            'open_query_ct',
+            'answer_query_ct'
         ],
         filter_cols: ['sitename', 'SubjFreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
         display_cell_annotations: true,

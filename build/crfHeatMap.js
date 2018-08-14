@@ -371,7 +371,7 @@
                                     ? summary.nNeedsSignature
                                         ? count / summary.nNeedsSignature
                                         : 'N/A'
-                                    : ['open_query_cnt', 'answer_query_cnt'].indexOf(value_col) > -1
+                                    : ['open_query_ct', 'answer_query_ct'].indexOf(value_col) > -1
                                         ? count
                                         : console.log('Missed one: ' + value_col);
                 });
@@ -1136,8 +1136,8 @@
                 'is_frozen',
                 'is_signed',
                 'is_locked',
-                'open_query_cnt',
-                'answer_query_cnt'
+                'open_query_ct',
+                'answer_query_ct'
             ],
             filter_cols: ['sitename', 'SubjFreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
@@ -1669,7 +1669,7 @@
     function customizeCells() {
         // add Dynel's hover text to table headers
         d3
-            .select('th.answer_query_cnt')
+            .select('th.answer_query_ct')
             .attr('title', 'Site has closed issue, but DM needs to close or requery.');
         d3
             .select('th.is_frozen')
