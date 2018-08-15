@@ -80,7 +80,7 @@
             },
             "default": [
                 "sitename",
-                "FreezeFlg",
+                "SubjFreezeFlg",
                 "status",
                 "subset1",
                 "subset2",
