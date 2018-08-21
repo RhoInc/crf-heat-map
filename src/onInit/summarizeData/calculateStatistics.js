@@ -21,7 +21,7 @@ export default function calculateStatistics() {
                         ? summary.nForms
                             ? count / summary.nForms
                             : 'N/A'
-                        : ['DATA_PAGE_VERIFIED'].indexOf(value_col) > -1
+                        : ['verified'].indexOf(value_col) > -1
                             ? summary.nNeedsVerification
                                 ? count / summary.nNeedsVerification
                                 : 'N/A'
