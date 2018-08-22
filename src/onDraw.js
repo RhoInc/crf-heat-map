@@ -20,5 +20,7 @@ export default function onDraw() {
     var t1 = performance.now();
     console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
 
+//2762 milliseconds- 2901 milliseconds
+
     this.parent.containers.loading.classed('chm-hidden', true);
 }

@@ -14,6 +14,12 @@ export default function summarizeData() {
                 .slice(0, i + 1)
                 .map(id_col1 => d[id_col1])
                 .join('|');
+            d.nest_1 = this.config.id_cols // add nest to data
+                .slice(0, i + 1)
+                .map(id_col1 => d[id_col1])[0]
+            d.nest_2 = this.config.id_cols
+                .slice(0, i + 1)
+                .map(id_col1 => d[id_col1])[1]
         });
 
         calculateStatistics.call(this);
