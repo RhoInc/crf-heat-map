@@ -12,7 +12,7 @@ export default function rendererSettings() {
                 default_nesting: true
             },
             {
-                value_col: 'folderinstance',
+                value_col: 'folderinstancename',
                 label: 'Folder',
                 default_nesting: false
             },
@@ -24,7 +24,7 @@ export default function rendererSettings() {
         ],
         value_cols: [
             'is_partial_entry',
-            'DATA_PAGE_VERIFIED',
+            'verified',
             'ready_for_freeze',
             'is_frozen',
             'is_signed',
@@ -32,7 +32,7 @@ export default function rendererSettings() {
             'open_query_ct',
             'answer_query_ct'
         ],
-        filter_cols: ['sitename', 'SubjFreezeFlg', 'status', 'subset1', 'subset2', 'subset3'],
+        filter_cols: ['sitename', 'subjfreezeflg', 'status', 'subset1', 'subset2', 'subset3'],
         display_cell_annotations: true,
         expand_all: false
     };
