@@ -787,7 +787,7 @@ function controlInputs() {
         label: 'Site'
     }, {
         type: 'subsetter',
-        value_col: 'SubjFreezeFlg',
+        value_col: 'subjfreezeflg',
         label: 'Subject Freeze Status'
     }, {
         type: 'subsetter',
