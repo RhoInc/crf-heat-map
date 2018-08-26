@@ -6,6 +6,8 @@ export default function addRowDisplayToggle() {
         this.rows.classed('chm-hidden', false);
     }
 
+
+
     var expandable_rows = this.rows
         .filter(function(d) {
             return d.id.split('|').length < config.id_cols.length;
@@ -13,13 +15,43 @@ export default function addRowDisplayToggle() {
         .select('td');
 
     //get children for each row
-    expandable_rows.each(function(d) {
-        d.children = chart.rows.filter(
-            di =>
-                di.id.indexOf(d.id + '|') > -1 &&
-                d.id.split('|').length === di.id.split('|').length - 1
-        );
-    });
+
+    console.log(performance.now())
+
+// var i;
+// for (i = 0; i < expandable_rows[0].length; i++) {
+//
+// chart.rows.filter(
+//         di =>
+//             di.id.indexOf(expandable_rows[0][i].__data__.id + '|') > -1 &&
+//             expandable_rows[0][i].__data__.id.split('|').length === di.id.split('|').length - 1
+//     );
+// }
+
+
+// expandable_rows.each(function(d) {
+//     d.children = chart.rows.filter(
+//         di =>
+//             di.id.indexOf(d.id + '|') > -1 &&
+//             d.id.split('|').length === di.id.split('|').length - 1
+//     );
+//     console.log(d)
+// });
+
+console.log(performance.now())
+
+console.log()
+
+    // expandable_rows.each(function(d) {
+    //     d.children = chart.rows.filter(
+    //         di =>
+    //             di.id.indexOf(d.id + '|') > -1 &&
+    //             d.id.split('|').length === di.id.split('|').length - 1
+    //     );
+    // });
+
+
+    console.log(performance.now())
 
     expandable_rows.on('click', function(d) {
         console.log('click');
@@ -30,7 +62,16 @@ export default function addRowDisplayToggle() {
             .classed('chm-table-row--collapsed', collapsed) //toggle the class
             .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
+            d.children = chart.rows.filter(
+                  di =>
+                      di.id.indexOf(d.id + '|') > -1 &&
+                      d.id.split('|').length === di.id.split('|').length - 1
+              );
+
         function iterativeCollapse(d) {
+
+
+
             if (d.children) {
                 d.children
                     .classed('chm-hidden chm-table-row--collapsed', true)

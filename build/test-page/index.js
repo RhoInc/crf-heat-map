@@ -7,8 +7,8 @@ if (window.origin !== 'https://rhoinc.github.io') {
 }
 
 d3.csv(
-    'https://rawgit.com/RhoInc/crf-heat-map/master/build/test-page/dmc_DataPage.csv',
-    //'./dmc_DataPage.csv', // to improve speed use local data file in development
+    //'https://rawgit.com/RhoInc/crf-heat-map/master/build/test-page/dmc_DataPage.csv',
+    './dmc_DataPage.csv', // to improve speed use local data file in development
     function(d) {
         return d;
     },
