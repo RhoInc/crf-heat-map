@@ -6,20 +6,26 @@ export default function addRowDisplayToggle() {
         this.rows.classed('chm-hidden', false);
     }
 
+    var rows = this.rows[0];
+
+    chart.data.raw.forEach(function(d, i) {
+        d['index'] = i;
+    });
+
     var expandable_rows = this.rows
+        .data(chart.data.raw)
         .filter(function(d) {
             return d.id.split('|').length < config.id_cols.length;
         })
         .select('td');
 
-    //get children for each row
-    expandable_rows.each(function(d) {
-        d.children = chart.rows.filter(
-            di =>
-                di.id.indexOf(d.id + '|') > -1 &&
-                d.id.split('|').length === di.id.split('|').length - 1
-        );
+    var childNest = d3.nest();
+
+    childNest.key(function(d) {
+        return d[config.id_cols[0]];
     });
+
+    var b = childNest.rollup(d => d).map(chart.data.raw); //filtered_data?
 
     expandable_rows.on('click', function(d) {
         console.log('click');
@@ -30,12 +36,17 @@ export default function addRowDisplayToggle() {
             .classed('chm-table-row--collapsed', collapsed) //toggle the class
             .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
+        var child
         function iterativeCollapse(d) {
-            if (d.children) {
-                d.children
+
+         child = b[d[config.id_cols[0]]].map(d => (d[config.id_cols[1]] ? rows[d['index']] : null)) //grab the appropriate row from rows using index
+          child.shift()
+          console.log(child)
+            if (child) {
+                  d3.selectAll(child)
                     .classed('chm-hidden chm-table-row--collapsed', true)
                     .classed('chm-table-row--expanded', false);
-                d.children.each(function(di) {
+                child.each(function(di) {
                     iterativeCollapse(di);
                 });
             }
@@ -44,7 +55,8 @@ export default function addRowDisplayToggle() {
         if (collapsed) {
             iterativeCollapse(d); //hide the whole tree
         } else {
-            d.children.classed('chm-hidden', false); //show just the immediate children
+          child = b[d[config.id_cols[0]]].map(d => (d[config.id_cols[1]] ? rows[d['index']] : null))
+            d3.selectAll(child).classed('chm-hidden', false); //show just the immediate children
         }
     });
 }
