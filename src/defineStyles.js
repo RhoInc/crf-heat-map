@@ -207,6 +207,9 @@ export default function defineStyles() {
                 '#chm-table table {' +
                     '    display: table;' +
                     '}',
+                  '.wc-table {' +
+                        '    display: block;' +
+                        '}',
                 '.wc-table table thead tr th {' +
                     '    cursor: default;' +
                     '}',

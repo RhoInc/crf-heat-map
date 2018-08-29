@@ -1,6 +1,7 @@
 import redraw from '../onLayout/customizeFilters/redraw';
 
 export default function createNestControls() {
+
     const context = this;
     const config = this.settings.synced;
 
