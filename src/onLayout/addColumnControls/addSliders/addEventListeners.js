@@ -9,13 +9,7 @@ export default function onInput(filter) {
     if (isIE) {
         //Attach an event listener to sliders.
         filter.sliders = filter.div.selectAll('.range-value').on('change', function(d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
+
             const sliders = this.parentNode.parentNode.getElementsByTagName('input');
             const slider1 = parseFloat(sliders[0].value);
             const slider2 = parseFloat(sliders[1].value);
@@ -43,13 +37,6 @@ export default function onInput(filter) {
         });
 
         filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
             const sliders = this.parentNode.parentNode.getElementsByTagName('input');
             const slider1 = parseFloat(sliders[0].value);
             const slider2 = parseFloat(sliders[1].value);
@@ -75,13 +62,18 @@ export default function onInput(filter) {
         });
     } else {
         filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
+
+const loadingdiv = d3.select("#chm-loading")
+
+loadingdiv.classed('chm-hidden', false);
+
+const loading = setInterval(() => {
+    const loadingIndicated = loadingdiv.style('display') !== 'none';
+
+    if (loadingIndicated) {
+        clearInterval(loading);
+        loadingdiv.classed('chm-hidden', true);
+
             const sliders = this.parentNode.getElementsByTagName('input');
             const slider1 = parseFloat(sliders[0].value);
             const slider2 = parseFloat(sliders[1].value);
@@ -94,19 +86,19 @@ export default function onInput(filter) {
                 d.upper = slider1;
             }
 
+
+
             update.call(context, d);
             filterData.call(context);
             context.draw(context.data.raw);
+
+          }
+          }, 25);
+
         });
 
         filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
+
             const sliders = this.parentNode.getElementsByTagName('input');
             const slider1 = parseFloat(sliders[0].value);
             const slider2 = parseFloat(sliders[1].value);

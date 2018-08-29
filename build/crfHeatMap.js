@@ -466,6 +466,7 @@ function redraw() {
 }
 
 function createNestControls() {
+
     var context = this;
     var config = this.settings.synced;
 
@@ -923,8 +924,23 @@ function customizeCheckboxes() {
     this.controls.wrap.selectAll('.control-group').filter(function (d) {
         return d.type === 'checkbox';
     }).select('.changer').on('change', function (d) {
-        context.config[d.option] = this.checked;
-        context.draw(context.data.raw);
+        var _this = this;
+
+        var loadingdiv = d3.select("#chm-loading");
+
+        loadingdiv.classed('chm-hidden', false);
+
+        var loading = setInterval(function () {
+            var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+            if (loadingIndicated) {
+                clearInterval(loading);
+                loadingdiv.classed('chm-hidden', true);
+
+                context.config[d.option] = _this.checked;
+                context.draw(context.data.raw);
+            }
+        }, 25);
     });
 }
 
@@ -1029,13 +1045,7 @@ function onInput(filter) {
     if (isIE) {
         //Attach an event listener to sliders.
         filter.sliders = filter.div.selectAll('.range-value').on('change', function (d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
+
             var sliders = this.parentNode.parentNode.getElementsByTagName('input');
             var slider1 = parseFloat(sliders[0].value);
             var slider2 = parseFloat(sliders[1].value);
@@ -1063,13 +1073,6 @@ function onInput(filter) {
         });
 
         filter.sliders = filter.div.selectAll('.range-value').on('input', function (d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
             var sliders = this.parentNode.parentNode.getElementsByTagName('input');
             var slider1 = parseFloat(sliders[0].value);
             var slider2 = parseFloat(sliders[1].value);
@@ -1095,38 +1098,40 @@ function onInput(filter) {
         });
     } else {
         filter.sliders = filter.div.selectAll('.range-slider').on('change', function (d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
-            var sliders = this.parentNode.getElementsByTagName('input');
-            var slider1 = parseFloat(sliders[0].value);
-            var slider2 = parseFloat(sliders[1].value);
+            var _this = this;
 
-            if (slider1 <= slider2) {
-                d.lower = slider1;
-                d.upper = slider2;
-            } else {
-                d.lower = slider2;
-                d.upper = slider1;
-            }
+            var loadingdiv = d3.select("#chm-loading");
 
-            update.call(context, d);
-            filterData.call(context);
-            context.draw(context.data.raw);
+            loadingdiv.classed('chm-hidden', false);
+
+            var loading = setInterval(function () {
+                var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                if (loadingIndicated) {
+                    clearInterval(loading);
+                    loadingdiv.classed('chm-hidden', true);
+
+                    var sliders = _this.parentNode.getElementsByTagName('input');
+                    var slider1 = parseFloat(sliders[0].value);
+                    var slider2 = parseFloat(sliders[1].value);
+
+                    if (slider1 <= slider2) {
+                        d.lower = slider1;
+                        d.upper = slider2;
+                    } else {
+                        d.lower = slider2;
+                        d.upper = slider1;
+                    }
+
+                    update.call(context, d);
+                    filterData.call(context);
+                    context.draw(context.data.raw);
+                }
+            }, 25);
         });
 
         filter.sliders = filter.div.selectAll('.range-slider').on('input', function (d) {
-            //Expand rows and check 'Expand All'.
-            // context.config.expand_all = true;
-            // context.controls.wrap
-            //     .selectAll('.control-group')
-            //     .filter(f => f.option === 'expand_all')
-            //     .select('input')
-            //     .property('checked', true);
+
             var sliders = this.parentNode.getElementsByTagName('input');
             var slider1 = parseFloat(sliders[0].value);
             var slider2 = parseFloat(sliders[1].value);
