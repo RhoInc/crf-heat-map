@@ -376,6 +376,7 @@
                                         : console.log('Missed one: ' + value_col);
                 });
                 summary.nest_level = d[0].nest_level;
+                summary.parents = d[0].parents;
                 return summary;
             })
             .entries(this.data.initial_filtered);
@@ -388,6 +389,8 @@
                 d[value_col] = d.values[value_col];
             });
             d.nest_level = d.values.nest_level;
+            d.parents = d.values.parents;
+
             delete d.values;
         });
 
@@ -414,6 +417,28 @@
                         return d[id_col1];
                     })
                     .join('|');
+
+                d.parents = [];
+                if (d.nest_level == 2) {
+                    d.parents.push(
+                        _this.config.id_cols
+                            .slice(0, 2)
+                            .map(function(id_col1) {
+                                return d[id_col1];
+                            })
+                            .join('|')
+                    );
+                }
+                if (d.nest_level == 1) {
+                    d.parents.push(
+                        _this.config.id_cols
+                            .slice(0, 1)
+                            .map(function(id_col1) {
+                                return d[id_col1];
+                            })
+                            .join('|')
+                    );
+                }
             });
 
             calculateStatistics.call(_this);
@@ -1056,6 +1081,9 @@
             '.wc-table table tbody tr:hover td:first-child {' +
                 '    border-left: 1px solid black;' +
                 '}',
+            '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
+                '    background: #999;' +
+                '}',
 
             /* ID cells */
 
@@ -1508,15 +1536,46 @@
     function filterData() {
         var _this = this;
 
-        this.data.raw = this.data.summarized;
+        this.data.summarized.forEach(function(d) {
+            d.filtered = false;
+            d.visible_child = false;
+        });
+
+        //First, get all the rows that match the filters
         this.columnControls.filters.forEach(function(filter) {
-            _this.data.raw = _this.data.raw.filter(function(d) {
-                return (
-                    (filter.lower <= d[filter.variable] && d[filter.variable] <= filter.upper) ||
-                    (filter.upper === 1 && d[filter.variable] === 'N/A')
-                );
+            _this.data.summarized.forEach(function(d) {
+                var filtered_low = +d[filter.variable] < +filter.lower;
+                var filtered_high = +d[filter.variable] > +filter.upper;
+                //filtered_missing = d[filter.variable] === 'N/A'
+                if (filtered_low || filtered_high) {
+                    d.filtered = true;
+                }
             });
         });
+
+        //now, identify hidden parent rows that have visible rowChildren
+        //for rows that are visible (filtered = false)
+        var visible_row_parents = this.data.summarized
+            .filter(function(f) {
+                return !f.filtered;
+            })
+            .map(function(f) {
+                return f.parents;
+            });
+        var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
+
+        //identifiy the parent rows
+        this.data.summarized = this.data.summarized.map(function(m) {
+            m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
+            return m;
+        });
+
+        //and set filtered_parent = true if filted = true
+
+        this.data.raw = this.data.summarized.filter(function(f) {
+            return !f.filtered || f.visible_child;
+        });
+        console.log(this.data.raw);
     }
 
     function onInput(filter) {
@@ -1845,8 +1904,8 @@
                 currentNest = currentNest[level];
             });
             var childIds = currentNest.ids;
-            var rowChildren = chart.filter(function(f) {
-                return childIds.indexOf(f.id);
+            var rowChildren = chart.rows.filter(function(f) {
+                return childIds.indexOf(f.id) > -1;
             });
             if (collapsed) {
                 rowChildren
@@ -2193,6 +2252,12 @@
         }
     }
 
+    function flagParentRows() {
+        this.rows.classed('grayParent', function(d) {
+            return d.filtered & d.visible_child;
+        });
+    }
+
     function onDraw() {
         var config = this.config;
         var chart = this;
@@ -2222,6 +2287,7 @@
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
             dataExport.call(this);
+            flagParentRows.call(this);
         }
 
         //end performance test

@@ -316,6 +316,9 @@ export default function defineStyles() {
                 '.wc-table table tbody tr:hover td:first-child {' +
                     '    border-left: 1px solid black;' +
                     '}',
+                  '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
+                  '    background: #999;' +
+                  '}',
 
                 /* ID cells */
 

@@ -15,6 +15,24 @@ export default function summarizeData() {
                 .slice(0, i + 1)
                 .map(id_col1 => d[id_col1])
                 .join('|');
+
+            d.parents = [];
+            if (d.nest_level == 2) {
+                d.parents.push(
+                    this.config.id_cols
+                        .slice(0, 2)
+                        .map(id_col1 => d[id_col1])
+                        .join('|')
+                );
+            }
+            if (d.nest_level == 1) {
+                d.parents.push(
+                    this.config.id_cols
+                        .slice(0, 1)
+                        .map(id_col1 => d[id_col1])
+                        .join('|')
+                );
+            }
         });
 
         calculateStatistics.call(this);

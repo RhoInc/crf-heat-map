@@ -51,7 +51,7 @@ export default function addRowDisplayToggle() {
             currentNest = currentNest[level];
         });
         var childIds = currentNest.ids;
-        var rowChildren = chart.filter(f => childIds.indexOf(f.id));
+        var rowChildren = chart.rows.filter(f => childIds.indexOf(f.id) > -1);
         if (collapsed) {
             rowChildren
                 .classed('chm-hidden chm-table-row--collapsed', true)

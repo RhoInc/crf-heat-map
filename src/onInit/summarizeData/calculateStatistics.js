@@ -34,6 +34,7 @@ export default function calculateStatistics() {
                                     : console.log(`Missed one: ${value_col}`);
             });
             summary.nest_level = d[0].nest_level;
+            summary.parents = d[0].parents;
             return summary;
         })
         .entries(this.data.initial_filtered);
@@ -46,6 +47,8 @@ export default function calculateStatistics() {
             d[value_col] = d.values[value_col];
         });
         d.nest_level = d.values.nest_level;
+        d.parents = d.values.parents;
+
         delete d.values;
     });
 

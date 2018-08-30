@@ -3,6 +3,7 @@ import customizeCells from './onDraw/customizeCells';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
 import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
 import dataExport from './onDraw/dataExport';
+import flagParentRows from './onDraw/flagParentRows';
 
 export default function onDraw() {
     const config = this.config;
@@ -33,6 +34,7 @@ export default function onDraw() {
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);
         dataExport.call(this);
+        flagParentRows.call(this);
     }
 
     //end performance test
