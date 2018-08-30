@@ -7,7 +7,23 @@ export default function customizeCheckboxes() {
         .filter(d => d.type === 'checkbox')
         .select('.changer')
         .on('change', function(d) {
-            context.config[d.option] = this.checked;
-            context.draw(context.data.raw);
-        });
+          var changer_this = this
+
+var loadingdiv = d3.select("#chm-loading");
+
+      loadingdiv.classed('chm-hidden', false);
+
+var loading = setInterval(function () {
+
+           var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+             if (loadingIndicated) {
+               clearInterval(loading);
+              loadingdiv.classed('chm-hidden', true);
+
+               context.config[d.option] = changer_this.checked;
+               context.draw(context.data.raw);
+            }
+        }, 25);
+})
 }
