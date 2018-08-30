@@ -33,7 +33,7 @@ export default function calculateStatistics() {
                                     ? count
                                     : console.log(`Missed one: ${value_col}`);
             });
-
+            summary.nest_level = d[0].nest_level;
             return summary;
         })
         .entries(this.data.initial_filtered);
@@ -45,6 +45,7 @@ export default function calculateStatistics() {
         this.config.value_cols.forEach(value_col => {
             d[value_col] = d.values[value_col];
         });
+        d.nest_level = d.values.nest_level;
         delete d.values;
     });
 
