@@ -318,6 +318,7 @@ export default function defineStyles() {
                     '}',
                   '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
                   '    background: #999;' +
+                  '    font-size: 0;' +
                   '}',
 
                 /* ID cells */
