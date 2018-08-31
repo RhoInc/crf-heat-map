@@ -416,7 +416,7 @@
                     .map(function(id_col1) {
                         return d[id_col1];
                     })
-                    .join('|');
+                    .join('  |');
 
                 d.parents = [];
                 if (d.nest_level == 2) {
@@ -426,7 +426,7 @@
                             .map(function(id_col1) {
                                 return d[id_col1];
                             })
-                            .join('|')
+                            .join('  |')
                     );
                 }
                 if (d.nest_level == 1) {
@@ -436,7 +436,7 @@
                             .map(function(id_col1) {
                                 return d[id_col1];
                             })
-                            .join('|')
+                            .join('  |')
                     );
                 }
             });
@@ -1789,13 +1789,13 @@
         this.rows
             .classed('chm-table-row', true)
             .classed('chm-table-row--expandable', function(d) {
-                return d.id.split('|').length < _this.config.id_cols.length;
+                return d.id.split('  |').length < _this.config.id_cols.length;
             })
             .classed('chm-table-row--collapsed', function(d) {
-                return d.id.split('|').length < _this.config.id_cols.length;
+                return d.id.split('  |').length < _this.config.id_cols.length;
             })
             .classed('chm-hidden', function(d) {
-                return d.id.indexOf('|') > -1;
+                return d.id.indexOf('  |') > -1;
             });
     }
 
@@ -1818,7 +1818,7 @@
                         cellClass +
                         ' chm-cell--id' +
                         ' chm-cell--id--level' +
-                        d.text.split('|').length;
+                        d.text.split('  |').length;
                 else {
                     cellClass = cellClass + ' chm-cell--heat';
                     var level = void 0;
@@ -1853,7 +1853,7 @@
             })
             .text(function(d) {
                 return d.col === 'id'
-                    ? d.text.split('|')[d.text.split('|').length - 1]
+                    ? d.text.split('  |')[d.text.split('  |').length - 1]
                     : d.col.indexOf('query') < 0
                         ? d.text === 'N/A'
                             ? d.text
@@ -1914,7 +1914,7 @@
                 .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
             var currentNest = childNest;
-            d.id.split('|').forEach(function(level) {
+            d.id.split('  |').forEach(function(level) {
                 currentNest = currentNest[level];
             });
             var childIds;
@@ -2017,7 +2017,7 @@
         this.export.data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
-                var id_val = d.id.split('|')[j];
+                var id_val = d.id.split('  |')[j];
                 d[id_col] = id_val || 'Total';
             });
 
@@ -2286,6 +2286,7 @@
     function onDraw() {
         var config = this.config;
         var chart = this;
+        console.log(this.data.raw);
 
         var t0 = performance.now();
         //begin performance test
@@ -2293,7 +2294,7 @@
         // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
         var id;
         chart.data.raw.forEach(function(d) {
-            id = d['id'].split('|');
+            id = d['id'].split('  |');
             if (id[2]) {
                 d[config.id_cols[2]] = id[2];
                 d[config.id_cols[1]] = id[1];
@@ -2359,8 +2360,6 @@
     }
 
     //utility functions
-    //styles, configuration, and webcharts
-    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {

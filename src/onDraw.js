@@ -8,6 +8,7 @@ import flagParentRows from './onDraw/flagParentRows';
 export default function onDraw() {
     const config = this.config;
     const chart = this;
+    console.log(this.data.raw);
 
     var t0 = performance.now();
     //begin performance test
@@ -15,7 +16,7 @@ export default function onDraw() {
     // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
     var id;
     chart.data.raw.forEach(function(d) {
-        id = d['id'].split('|');
+        id = d['id'].split('  |');
         if (id[2]) {
             d[config.id_cols[2]] = id[2];
             d[config.id_cols[1]] = id[1];

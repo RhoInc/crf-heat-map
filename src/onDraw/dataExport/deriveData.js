@@ -43,7 +43,7 @@ export default function deriveData() {
     this.export.data.forEach((d, i, thisArray) => {
         //Split ID variable into as many columns as nests currently in place.
         this.export.nests.forEach((id_col, j) => {
-            const id_val = d.id.split('|')[j];
+            const id_val = d.id.split('  |')[j];
             d[id_col] = id_val || 'Total';
         });
 

@@ -43,7 +43,7 @@ export default function addRowDisplayToggle() {
             .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
         var currentNest = childNest;
-        d.id.split('|').forEach(function(level) {
+        d.id.split('  |').forEach(function(level) {
             currentNest = currentNest[level];
         });
         var childIds;
