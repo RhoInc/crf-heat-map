@@ -2006,7 +2006,7 @@
                 acc[cur] = {
                     site: subjectDatum.sitename,
                     status: subjectDatum.status,
-                    freeze: subjectDatum.SubjFreezeFlg
+                    freeze: subjectDatum.subjfreezeflg
                 };
                 return acc;
             }, {});
@@ -2360,6 +2360,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {

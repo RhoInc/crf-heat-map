@@ -32,7 +32,7 @@ export default function deriveData() {
             acc[cur] = {
                 site: subjectDatum.sitename,
                 status: subjectDatum.status,
-                freeze: subjectDatum.SubjFreezeFlg
+                freeze: subjectDatum.subjfreezeflg
             };
             return acc;
         }, {});
