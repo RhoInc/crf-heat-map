@@ -317,8 +317,8 @@ export default function defineStyles() {
                     '    border-left: 1px solid black;' +
                     '}',
                   '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
-                  '    background: #999;' +
-                  '    font-size: 0;' +
+                  '    background: #CCCCCC;' +
+                  '    color: black;' +
                   '}',
 
                 /* ID cells */
