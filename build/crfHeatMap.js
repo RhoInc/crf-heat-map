@@ -1198,7 +1198,7 @@
             sortable: false,
             pagination: false,
             exportable: true,
-            exports: ['csv']
+            exports: ['csv', 'xlsx']
         };
     }
 

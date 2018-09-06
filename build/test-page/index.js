@@ -16,12 +16,8 @@ d3.csv(
         if (error)
             console.log(error);
 
-        var settings = {
-            exports: ['csv', 'xlsx'],
-        };
         var instance = crfHeatMap(
-            '#container',
-            settings
+            '#container'
         );
 
         instance.init(data);
