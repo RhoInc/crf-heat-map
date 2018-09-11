@@ -3,6 +3,7 @@ import customizeCells from './onDraw/customizeCells';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
 import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
 import dataExport from './onDraw/dataExport';
+import flagParentRows from './onDraw/flagParentRows';
 
 export default function onDraw() {
     const config = this.config;
@@ -14,7 +15,7 @@ export default function onDraw() {
     // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
     var id;
     chart.data.raw.forEach(function(d) {
-        id = d['id'].split('|');
+        id = d['id'].split('  |');
         if (id[2]) {
             d[config.id_cols[2]] = id[2];
             d[config.id_cols[1]] = id[1];
@@ -33,6 +34,7 @@ export default function onDraw() {
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);
         dataExport.call(this);
+        flagParentRows.call(this);
     }
 
     //end performance test

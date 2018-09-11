@@ -27,14 +27,10 @@ export default function addRowDisplayToggle() {
 
     var childNest = iterateNest(chart.data.raw, 0);
 
-    chart.data.raw.forEach(function(d, i) {
-        d['index'] = i;
-    });
-
     var expandable_rows = this.rows
         .data(chart.data.raw)
         .filter(function(d) {
-            return d.nest_level < config.id_cols.length;
+            return d.nest_level < config.id_cols.length - 1;
         })
         .select('td');
 
@@ -47,11 +43,22 @@ export default function addRowDisplayToggle() {
             .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
         var currentNest = childNest;
-        d.id.split('|').forEach(function(level) {
+        d.id.split('  |').forEach(function(level) {
             currentNest = currentNest[level];
         });
-        var childIds = currentNest.ids;
-        var rowChildren = chart.filter(f => childIds.indexOf(f.id));
+        var childIds;
+        // when collapsing, if the nest's children have children, loop throough and build array with those included
+        if (collapsed && Object.keys(currentNest).length > 1) {
+            childIds = [];
+            Object.keys(currentNest).forEach(function(level) {
+                Object.values(currentNest[level]).length > 1 // handle different strctures
+                    ? (childIds = childIds.concat(Object.values(currentNest[level])))
+                    : (childIds = childIds.concat(Object.values(currentNest[level])[0]));
+            });
+        } else {
+            childIds = currentNest.ids;
+        }
+        var rowChildren = chart.rows.filter(f => childIds.indexOf(f.id) > -1);
         if (collapsed) {
             rowChildren
                 .classed('chm-hidden chm-table-row--collapsed', true)

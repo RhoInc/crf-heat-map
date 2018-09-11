@@ -14,10 +14,11 @@
   "dependencies": {
     "d3": "^3",
     "local-web-server": "^2.5.6",
-    "webcharts": "^1.10"
+    "webcharts": "^1.10",
+    "xlsx": "^0.13.0"
   },
   "scripts": {
-    "build": "npm run bundle && npm run format && npm run build-md",
+    "build": "npm run bundle && npm run format && npm run build-md && npm run test-page",
     "build-md": "node ./scripts/configuration-markdown.js",
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-build",
@@ -41,8 +42,5 @@
   },
   "bugs": {
     "url": "https://github.com/RhoInc/crf-heat-map/issues"
-  },
-  "optionalDependencies": {
-    "xlsx": "^0.13.0"
   }
 }

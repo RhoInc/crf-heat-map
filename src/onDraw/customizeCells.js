@@ -12,7 +12,10 @@ export default function customizeCells() {
 
             if (d.col === 'id')
                 cellClass =
-                    cellClass + ' chm-cell--id' + ' chm-cell--id--level' + d.text.split('|').length;
+                    cellClass +
+                    ' chm-cell--id' +
+                    ' chm-cell--id--level' +
+                    d.text.split('  |').length;
             else {
                 cellClass = cellClass + ' chm-cell--heat';
                 let level;
@@ -40,7 +43,7 @@ export default function customizeCells() {
         .text(
             d =>
                 d.col === 'id'
-                    ? d.text.split('|')[d.text.split('|').length - 1]
+                    ? d.text.split('  |')[d.text.split('  |').length - 1]
                     : d.col.indexOf('query') < 0
                         ? d.text === 'N/A'
                             ? d.text
