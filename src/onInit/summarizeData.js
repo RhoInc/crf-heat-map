@@ -10,6 +10,7 @@ export default function summarizeData() {
     this.config.id_cols.forEach((id_col, i) => {
         //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
         this.data.initial_filtered.forEach(d => {
+            d.nest_level = i;
             d.id = this.config.id_cols
                 .slice(0, i + 1)
                 .map(id_col1 => d[id_col1])

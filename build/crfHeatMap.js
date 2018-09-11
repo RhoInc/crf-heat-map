@@ -375,7 +375,7 @@
                                         ? count
                                         : console.log('Missed one: ' + value_col);
                 });
-
+                summary.nest_level = d[0].nest_level;
                 return summary;
             })
             .entries(this.data.initial_filtered);
@@ -387,6 +387,7 @@
             _this.config.value_cols.forEach(function(value_col) {
                 d[value_col] = d.values[value_col];
             });
+            d.nest_level = d.values.nest_level;
             delete d.values;
         });
 
@@ -406,6 +407,7 @@
         this.config.id_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
             _this.data.initial_filtered.forEach(function(d) {
+                d.nest_level = i;
                 d.id = _this.config.id_cols
                     .slice(0, i + 1)
                     .map(function(id_col1) {
@@ -501,16 +503,6 @@
 
     function resetFilters() {
         var _this = this;
-
-        //collapse rows and uncheck 'Expand All' Box
-        this.config.expand_all = false;
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(f) {
-                return f.option === 'expand_all';
-            })
-            .select('input')
-            .property('checked', false);
 
         this.columnControls.filters.forEach(function(filter) {
             //Update query maximum.
@@ -976,6 +968,7 @@
 
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '}',
+            '.wc-table {' + '    display: block;' + '}',
             '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
                 '.wc-table table tbody tr td {' +
@@ -1203,7 +1196,7 @@
             },
             {
                 type: 'subsetter',
-                value_col: 'SubjFreezeFlg',
+                value_col: 'subjfreezeflg',
                 label: 'Subject Freeze Status'
             },
             {
@@ -1533,16 +1526,14 @@
 
         if (isIE) {
             //Attach an event listener to sliders.
-            filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
+            filter.sliders = filter.div.selectAll('.range-value').on('change', function(d) {
                 //Expand rows and check 'Expand All'.
-                context.config.expand_all = true;
-                context.controls.wrap
-                    .selectAll('.control-group')
-                    .filter(function(f) {
-                        return f.option === 'expand_all';
-                    })
-                    .select('input')
-                    .property('checked', true);
+                // context.config.expand_all = true;
+                // context.controls.wrap
+                //     .selectAll('.control-group')
+                //     .filter(f => f.option === 'expand_all')
+                //     .select('input')
+                //     .property('checked', true);
                 var sliders = this.parentNode.parentNode.getElementsByTagName('input');
                 var slider1 = parseFloat(sliders[0].value);
                 var slider2 = parseFloat(sliders[1].value);
@@ -1568,17 +1559,47 @@
                 filterData.call(context);
                 context.draw(context.data.raw);
             });
-        } else {
-            filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+
+            filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
                 //Expand rows and check 'Expand All'.
-                context.config.expand_all = true;
-                context.controls.wrap
-                    .selectAll('.control-group')
-                    .filter(function(f) {
-                        return f.option === 'expand_all';
-                    })
-                    .select('input')
-                    .property('checked', true);
+                // context.config.expand_all = true;
+                // context.controls.wrap
+                //     .selectAll('.control-group')
+                //     .filter(f => f.option === 'expand_all')
+                //     .select('input')
+                //     .property('checked', true);
+                var sliders = this.parentNode.parentNode.getElementsByTagName('input');
+                var slider1 = parseFloat(sliders[0].value);
+                var slider2 = parseFloat(sliders[1].value);
+
+                if (slider1 <= slider2) {
+                    if (d.variable.indexOf('query') < 0) {
+                        d.lower = slider1 / 100;
+                        d.upper = slider2 / 100;
+                    } else {
+                        d.lower = slider1;
+                        d.upper = slider2;
+                    }
+                } else {
+                    if (d.variable.indexOf('query') < 0) {
+                        d.lower = slider2 / 100;
+                        d.upper = slider1 / 100;
+                    } else {
+                        d.lower = slider2;
+                        d.upper = slider1;
+                    }
+                }
+                update.call(context, d);
+            });
+        } else {
+            filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
+                //Expand rows and check 'Expand All'.
+                // context.config.expand_all = true;
+                // context.controls.wrap
+                //     .selectAll('.control-group')
+                //     .filter(f => f.option === 'expand_all')
+                //     .select('input')
+                //     .property('checked', true);
                 var sliders = this.parentNode.getElementsByTagName('input');
                 var slider1 = parseFloat(sliders[0].value);
                 var slider2 = parseFloat(sliders[1].value);
@@ -1594,6 +1615,29 @@
                 update.call(context, d);
                 filterData.call(context);
                 context.draw(context.data.raw);
+            });
+
+            filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+                //Expand rows and check 'Expand All'.
+                // context.config.expand_all = true;
+                // context.controls.wrap
+                //     .selectAll('.control-group')
+                //     .filter(f => f.option === 'expand_all')
+                //     .select('input')
+                //     .property('checked', true);
+                var sliders = this.parentNode.getElementsByTagName('input');
+                var slider1 = parseFloat(sliders[0].value);
+                var slider2 = parseFloat(sliders[1].value);
+
+                if (slider1 <= slider2) {
+                    d.lower = slider1;
+                    d.upper = slider2;
+                } else {
+                    d.lower = slider2;
+                    d.upper = slider1;
+                }
+
+                update.call(context, d);
             });
         }
     }
@@ -1749,24 +1793,46 @@
             this.rows.classed('chm-hidden', false);
         }
 
+        var max_id_level = chart.config.id_cols.length - 2;
+
+        function iterateNest(d, id_level) {
+            return d3
+                .nest()
+                .key(function(d) {
+                    return d[config.id_cols[id_level]];
+                })
+                .rollup(function(rows) {
+                    if (id_level + 1 <= max_id_level) {
+                        var obj = iterateNest(rows, id_level + 1);
+                    } else {
+                        obj = {};
+                    }
+                    obj.ids = rows
+                        .filter(function(f) {
+                            return f.nest_level == id_level + 1;
+                        })
+                        .map(function(m) {
+                            return m.id;
+                        });
+                    return obj;
+                })
+                .map(d);
+        }
+
+        var childNest = iterateNest(chart.data.raw, 0);
+
+        chart.data.raw.forEach(function(d, i) {
+            d['index'] = i;
+        });
+
         var expandable_rows = this.rows
+            .data(chart.data.raw)
             .filter(function(d) {
-                return d.id.split('|').length < config.id_cols.length;
+                return d.nest_level < config.id_cols.length;
             })
             .select('td');
 
-        //get children for each row
-        expandable_rows.each(function(d) {
-            d.children = chart.rows.filter(function(di) {
-                return (
-                    di.id.indexOf(d.id + '|') > -1 &&
-                    d.id.split('|').length === di.id.split('|').length - 1
-                );
-            });
-        });
-
         expandable_rows.on('click', function(d) {
-            console.log('click');
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('chm-table-row--collapsed');
 
@@ -1774,21 +1840,20 @@
                 .classed('chm-table-row--collapsed', collapsed) //toggle the class
                 .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
-            function iterativeCollapse(d) {
-                if (d.children) {
-                    d.children
-                        .classed('chm-hidden chm-table-row--collapsed', true)
-                        .classed('chm-table-row--expanded', false);
-                    d.children.each(function(di) {
-                        iterativeCollapse(di);
-                    });
-                }
-            }
-
+            var currentNest = childNest;
+            d.id.split('|').forEach(function(level) {
+                currentNest = currentNest[level];
+            });
+            var childIds = currentNest.ids;
+            var rowChildren = chart.filter(function(f) {
+                return childIds.indexOf(f.id);
+            });
             if (collapsed) {
-                iterativeCollapse(d); //hide the whole tree
+                rowChildren
+                    .classed('chm-hidden chm-table-row--collapsed', true)
+                    .classed('chm-table-row--expanded', false);
             } else {
-                d.children.classed('chm-hidden', false); //show just the immediate children
+                rowChildren.classed('chm-hidden', false); //show just the immediate children
             }
         });
     }
@@ -2129,8 +2194,27 @@
     }
 
     function onDraw() {
+        var config = this.config;
+        var chart = this;
+
         var t0 = performance.now();
         //begin performance test
+
+        // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
+        var id;
+        chart.data.raw.forEach(function(d) {
+            id = d['id'].split('|');
+            if (id[2]) {
+                d[config.id_cols[2]] = id[2];
+                d[config.id_cols[1]] = id[1];
+                d[config.id_cols[0]] = id[0];
+            } else if (id[1]) {
+                d[config.id_cols[1]] = id[1];
+                d[config.id_cols[0]] = id[0];
+            } else {
+                d[config.id_cols[0]] = id[0];
+            }
+        });
 
         if (this.data.summarized.length) {
             customizeRows.call(this);
