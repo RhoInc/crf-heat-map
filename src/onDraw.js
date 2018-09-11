@@ -8,7 +8,6 @@ import flagParentRows from './onDraw/flagParentRows';
 export default function onDraw() {
     const config = this.config;
     const chart = this;
-    console.log(this.data.raw);
 
     var t0 = performance.now();
     //begin performance test

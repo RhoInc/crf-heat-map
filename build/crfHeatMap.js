@@ -1141,24 +1141,34 @@
 
     function rendererSettings() {
         return {
+            site_col: 'sitename',
+            id_col: 'subjectnameoridentifier',
+            visit_col: 'folderinstancename',
+            form_col: 'ecrfpagename',
+            id_freeze_col: 'subjfreezeflg',
+            id_status_col: 'status',
             nestings: [
                 {
-                    value_col: 'sitename',
+                    settings_col: 'site_col',
+                    value_col: null, // set in syncSettings()
                     label: 'Site',
                     default_nesting: true
                 },
                 {
-                    value_col: 'subjectnameoridentifier',
+                    settings_col: 'id_col',
+                    value_col: null, // set in syncSettings()
                     label: 'Subject ID',
                     default_nesting: true
                 },
                 {
-                    value_col: 'folderinstancename',
+                    settings_col: 'visit_col',
+                    value_col: null, // set in syncSettings(0
                     label: 'Folder',
                     default_nesting: false
                 },
                 {
-                    value_col: 'ecrfpagename',
+                    settings_col: 'form_col',
+                    value_col: null, // set in syncSettings()
                     label: 'Form',
                     default_nesting: false
                 }
@@ -1173,7 +1183,7 @@
                 'open_query_ct',
                 'answer_query_ct'
             ],
-            filter_cols: ['sitename', 'subjfreezeflg', 'status', 'subset1', 'subset2', 'subset3'],
+            filter_cols: ['subset1', 'subset2', 'subset3'], // set in syncSettings()
             display_cell_annotations: true,
             expand_all: false
         };
@@ -1203,6 +1213,22 @@
     }
 
     function syncSettings(settings) {
+        //Sync nestings with data variable settings.
+        var settingsKeys = Object.keys(settings);
+        var settingsCols = settingsKeys.filter(function(settingsKey) {
+            return /_col$/.test(settingsKey);
+        });
+        settings.nestings.forEach(function(nesting) {
+            nesting.value_col =
+                nesting.value_col ||
+                settings[
+                    settingsCols.find(function(settingsCol) {
+                        return settingsCol === nesting.settings_col;
+                    })
+                ];
+        });
+
+        //Define initial nesting variables.
         settings.id_cols = settings.nestings
             .filter(function(d) {
                 return d.default_nesting === true;
@@ -1211,44 +1237,22 @@
                 return f.value_col;
             })
             .slice(0, 3);
+
+        //Define table column variables.
         settings.cols = d3.merge([['id'], settings.value_cols]);
+
+        //Define filter variables.
+        settings.filter_cols = Array.isArray(settings.filter_cols)
+            ? [settings.site_col, settings.id_freeze_col, settings.id_status_col].concat(
+                  settings.filter_cols
+              )
+            : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
 
         return settings;
     }
 
     function controlInputs() {
         return [
-            {
-                type: 'subsetter',
-                value_col: 'sitename',
-                label: 'Site'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'subjfreezeflg',
-                label: 'Subject Freeze Status'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'status',
-                label: 'Subject Status',
-                multiple: true
-            },
-            {
-                type: 'subsetter',
-                value_col: 'subset1',
-                label: 'Subsets: 1'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'subset2',
-                label: '2'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'subset3',
-                label: '3'
-            },
             {
                 type: 'checkbox',
                 option: 'display_cell_annotations',
@@ -1264,6 +1268,22 @@
 
     function syncControlInputs(settings) {
         var defaultControls = controlInputs();
+        var labels = {};
+        labels[settings.site_col] = 'Site';
+        labels[settings.id_freeze_col] = 'Subject Freeze Status';
+        labels[settings.id_status_col] = 'Subject Status';
+        settings.filter_cols.forEach(function(filter_col, i) {
+            var filter = {
+                type: 'subsetter',
+                value_col: filter_col,
+                label: labels[filter_col]
+                    ? labels[filter_col]
+                    : /^subset\d$/.test(filter_col)
+                        ? filter_col.replace(/^s/, 'S').replace(/(\d)/, ' $1')
+                        : filter_col.label || filter_col.value_col || filter_col
+            };
+            defaultControls.splice(i, 0, filter);
+        });
 
         if (Array.isArray(settings.filters) && settings.filters.length > 0) {
             var otherFilters = settings.filters.map(function(filter) {
@@ -1591,7 +1611,6 @@
         this.data.raw = this.data.summarized.filter(function(f) {
             return !f.filtered || f.visible_child;
         });
-        console.log(this.data.raw);
     }
 
     function onInput(filter) {
@@ -1901,7 +1920,7 @@
         var expandable_rows = this.rows
             .data(chart.data.raw)
             .filter(function(d) {
-                return d.nest_level < config.id_cols.length;
+                return d.nest_level < config.id_cols.length - 1;
             })
             .select('td');
 
@@ -1980,7 +1999,7 @@
         //Define columns.
         this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-        var subject_id_col_index = this.config.id_cols.indexOf('subjectnameoridentifier');
+        var subject_id_col_index = this.config.id_cols.indexOf(this.config.id_col);
         var subject_id_col = subject_id_col_index > -1;
 
         //Capture subject-level information.
@@ -1995,18 +2014,18 @@
             var subjects = d3
                 .set(
                     table.data.initial.map(function(d) {
-                        return d['subjectnameoridentifier'];
+                        return d[_this.config.id_col];
                     })
                 )
                 .values();
             var subjectMap = subjects.reduce(function(acc, cur) {
                 var subjectDatum = _this.data.initial.find(function(d) {
-                    return d['subjectnameoridentifier'] === cur;
+                    return d[_this.config.id_col] === cur;
                 });
                 acc[cur] = {
-                    site: subjectDatum.sitename,
-                    status: subjectDatum.status,
-                    freeze: subjectDatum.subjfreezeflg
+                    site: subjectDatum[_this.config.site_col],
+                    status: subjectDatum[_this.config.id_status_col],
+                    freeze: subjectDatum[_this.config.id_freeze_col]
                 };
                 return acc;
             }, {});
@@ -2024,7 +2043,7 @@
             // Now "join" subject level information to export data
             if (subject_id_col) {
                 var subjectID =
-                    d['Nest ' + (subject_id_col_index + 1) + ': subjectnameoridentifier'];
+                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
             }
         });
@@ -2279,14 +2298,13 @@
 
     function flagParentRows() {
         this.rows.classed('grayParent', function(d) {
-            return d.filtered & d.visible_child;
+            return d.filtered && d.visible_child;
         });
     }
 
     function onDraw() {
         var config = this.config;
         var chart = this;
-        console.log(this.data.raw);
 
         var t0 = performance.now();
         //begin performance test

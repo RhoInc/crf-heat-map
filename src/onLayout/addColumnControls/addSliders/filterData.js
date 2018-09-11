@@ -30,5 +30,4 @@ export default function filterData() {
     //and set filtered_parent = true if filted = true
 
     this.data.raw = this.data.summarized.filter(f => !f.filtered || f.visible_child);
-    console.log(this.data.raw);
 }

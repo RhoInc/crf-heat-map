@@ -30,7 +30,7 @@ export default function addRowDisplayToggle() {
     var expandable_rows = this.rows
         .data(chart.data.raw)
         .filter(function(d) {
-            return d.nest_level < config.id_cols.length;
+            return d.nest_level < config.id_cols.length - 1;
         })
         .select('td');
 
