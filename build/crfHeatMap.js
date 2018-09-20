@@ -1822,9 +1822,14 @@
         // add Dynel's hover text to table headers
         d3
             .select('th.answer_query_ct')
-            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
+            .append('span')
+            .html(' &#9432')
+            .attr('title', 'Site has responded to issue, DM needs to review.');
+
         d3
             .select('th.is_frozen')
+            .append('span')
+            .html(' &#9432')
             .attr('title', 'Data is clean and there are no outstanding issues.');
 
         this.cells = this.tbody.selectAll('td');
@@ -1876,7 +1881,7 @@
                     : d.col.indexOf('query') < 0
                         ? d.text === 'N/A'
                             ? d.text
-                            : d3.format('%')(d.text)
+                            : String(Math.floor(d.text * 100)) + '%'
                         : d.text;
             });
     }
@@ -2111,7 +2116,7 @@
                     _this.config.value_cols.indexOf(col) > -1 &&
                     col.indexOf('query') < 0 &&
                     ['N/A', ''].indexOf(d[col]) < 0
-                        ? Math.round(d[col] * 100)
+                        ? Math.floor(d[col] * 100)
                         : d[col];
 
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
@@ -2159,7 +2164,7 @@
                 return _this.config.value_cols.indexOf(col) > -1 &&
                     col.indexOf('query') < 0 &&
                     ['N/A', ''].indexOf(d[col]) < 0
-                    ? d[col]
+                    ? Math.floor(d[col] * 100) / 100
                     : d[col];
             });
         }); // convert data from array of objects to array of arrays.
@@ -2378,8 +2383,6 @@
     }
 
     //utility functions
-    //styles, configuration, and webcharts
-    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
