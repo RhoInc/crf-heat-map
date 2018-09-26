@@ -333,6 +333,8 @@
     function calculateStatistics() {
         var _this = this;
 
+        var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
         //Nest data by the ID variable defined above and calculate statistics for each summary variable.
         var nest = d3
             .nest()
@@ -395,7 +397,11 @@
         });
 
         //Add summarized data to array of summaries.
-        this.data.summaries.push(nest);
+        if (onInit) {
+            this.data.summaries.push(nest);
+        } else {
+            return nest;
+        }
     }
 
     function summarizeData() {
@@ -869,6 +875,7 @@
             '.chm-column {' + '    display: inline-block;' + '}',
             '.chm-column > * {' + '    width: 100%;' + '}',
             '.chm-row {' + '    display: inline-block;' + '}',
+            '.summary {' + 'border-bottom:2px solid;' + '}',
             '.chm-row > * {' + '    display: inline-block;' + '}',
             '.chm-row--1 {' +
                 '    height: 6em;' +
@@ -1818,6 +1825,45 @@
             });
     }
 
+    function addStudySummary() {
+        var tempChart = this;
+
+        tempChart.data.initial_filtered.forEach(function(d) {
+            return (d['id'] = 'Overall');
+        });
+
+        // calculate statistics across whole study
+        var stats = calculateStatistics.call(tempChart, false);
+
+        var summaryData = [
+            {
+                col: 'id',
+                text: 'Overall'
+            }
+        ];
+
+        // transform to proper format
+        this.config.value_cols.forEach(function(value_col, index) {
+            summaryData[index + 1] = {
+                col: value_col,
+                text: stats[0][value_col]
+            };
+        });
+
+        // add study summary row to top of table and bind data
+        this.tbody.insert('tr', ':first-child').classed('summary', true);
+
+        this.tbody
+            .select('tr')
+            .selectAll('td')
+            .data(summaryData)
+            .enter()
+            .append('td')
+            .text(function(d) {
+                return d.text;
+            });
+    }
+
     function customizeCells() {
         // add Dynel's hover text to table headers
         d3
@@ -2332,6 +2378,7 @@
 
         if (this.data.summarized.length) {
             customizeRows.call(this);
+            addStudySummary.call(this);
             customizeCells.call(this);
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
@@ -2383,6 +2430,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
