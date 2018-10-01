@@ -1888,7 +1888,7 @@
         };
 
         // add info bubbles and either info text, if defined, or the name of variable
-        d3
+        chart.wrap
             .select('tr')
             .selectAll('th:not(.id)')
             .data(chart.initial_config.value_cols)
@@ -2397,6 +2397,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {

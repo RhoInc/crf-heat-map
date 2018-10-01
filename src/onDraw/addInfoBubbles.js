@@ -1,7 +1,7 @@
 export default function addInfoBubbles() {
     const chart = this;
 
-    var infoMapping = {
+    const infoMapping = {
         is_partial_entry: 'there',
         verified: 'text',
         ready_for_freeze: 'text',
@@ -13,7 +13,7 @@ export default function addInfoBubbles() {
     };
 
     // add info bubbles and either info text, if defined, or the name of variable
-    d3
+    chart.wrap
         .select('tr')
         .selectAll('th:not(.id)')
         .data(chart.initial_config.value_cols)
