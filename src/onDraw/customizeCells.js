@@ -2,8 +2,15 @@ export default function customizeCells() {
     // add Dynel's hover text to table headers
     d3
         .select('th.answer_query_ct')
-        .attr('title', 'Site has closed issue, but DM needs to close or requery.');
-    d3.select('th.is_frozen').attr('title', 'Data is clean and there are no outstanding issues.');
+        .append('span')
+        .html(' &#9432')
+        .attr('title', 'Site has responded to issue, DM needs to review.');
+
+    d3
+        .select('th.is_frozen')
+        .append('span')
+        .html(' &#9432')
+        .attr('title', 'Data is clean and there are no outstanding issues.');
 
     this.cells = this.tbody.selectAll('td');
     this.cells
@@ -47,7 +54,7 @@ export default function customizeCells() {
                     : d.col.indexOf('query') < 0
                         ? d.text === 'N/A'
                             ? d.text
-                            : d3.format('%')(d.text)
+                            : String(Math.floor(d.text * 100)) + '%'
                         : d.text
         );
 }

@@ -34,6 +34,9 @@ export default function defineStyles() {
         '.chm-row {' +
             '    display: inline-block;' +
             '}',
+        '.summary {' +
+                'border-bottom:2px solid;' +
+                '}',
         '.chm-row > * {' +
             '    display: inline-block;' +
             '}',

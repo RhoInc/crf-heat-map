@@ -47,7 +47,7 @@ export default function csv() {
                 this.config.value_cols.indexOf(col) > -1 &&
                 col.indexOf('query') < 0 &&
                 ['N/A', ''].indexOf(d[col]) < 0
-                    ? Math.round(d[col] * 100)
+                    ? Math.floor(d[col] * 100)
                     : d[col];
 
             if (typeof value === 'string') value = value.replace(/"/g, '""');

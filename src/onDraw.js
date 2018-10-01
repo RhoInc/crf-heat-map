@@ -1,4 +1,5 @@
 import customizeRows from './onDraw/customizeRows';
+import addStudySummary from './onDraw/addStudySummary';
 import customizeCells from './onDraw/customizeCells';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
 import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
@@ -30,6 +31,7 @@ export default function onDraw() {
 
     if (this.data.summarized.length) {
         customizeRows.call(this);
+        addStudySummary.call(this);
         customizeCells.call(this);
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);

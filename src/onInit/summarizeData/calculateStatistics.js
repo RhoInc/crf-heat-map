@@ -1,4 +1,4 @@
-export default function calculateStatistics() {
+export default function calculateStatistics(onInit = true) {
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
     const nest = d3
         .nest()
@@ -53,5 +53,9 @@ export default function calculateStatistics() {
     });
 
     //Add summarized data to array of summaries.
-    this.data.summaries.push(nest);
+    if (onInit) {
+        this.data.summaries.push(nest);
+    } else {
+        return nest;
+    }
 }
