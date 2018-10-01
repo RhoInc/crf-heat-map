@@ -1865,19 +1865,6 @@
     }
 
     function customizeCells() {
-        // add Dynel's hover text to table headers
-        d3
-            .select('th.answer_query_ct')
-            .append('span')
-            .html(' &#9432')
-            .attr('title', 'Site has responded to issue, DM needs to review.');
-
-        d3
-            .select('th.is_frozen')
-            .append('span')
-            .html(' &#9432')
-            .attr('title', 'Data is clean and there are no outstanding issues.');
-
         this.cells = this.tbody.selectAll('td');
         this.cells
             .attr('class', function(d) {
@@ -1929,6 +1916,32 @@
                             ? d.text
                             : String(Math.floor(d.text * 100)) + '%'
                         : d.text;
+            });
+    }
+
+    function addInfoBubbles() {
+        var chart = this;
+
+        var infoMapping = {
+            is_partial_entry: 'there',
+            verified: 'text',
+            ready_for_freeze: 'text',
+            is_frozen: 'Data is clean and there are no outstanding issues.- yo',
+            is_signed: 'text',
+            is_locked: 'text',
+            open_query_ct: 'text',
+            answer_query_ct: 'Site has responded to issue, DM needs to review.'
+        };
+
+        // add info bubbles and either info text, if defined, or the name of variable
+        chart.wrap
+            .select('tr')
+            .selectAll('th:not(.id)')
+            .data(chart.initial_config.value_cols)
+            .append('span')
+            .html(' &#9432')
+            .attr('title', function(d) {
+                return d in infoMapping ? infoMapping[d] : d;
             });
     }
 
@@ -2380,6 +2393,7 @@
             customizeRows.call(this);
             addStudySummary.call(this);
             customizeCells.call(this);
+            addInfoBubbles.call(this);
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
             dataExport.call(this);

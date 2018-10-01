@@ -1,17 +1,4 @@
 export default function customizeCells() {
-    // add Dynel's hover text to table headers
-    d3
-        .select('th.answer_query_ct')
-        .append('span')
-        .html(' &#9432')
-        .attr('title', 'Site has responded to issue, DM needs to review.');
-
-    d3
-        .select('th.is_frozen')
-        .append('span')
-        .html(' &#9432')
-        .attr('title', 'Data is clean and there are no outstanding issues.');
-
     this.cells = this.tbody.selectAll('td');
     this.cells
         .attr('class', d => {

@@ -1,6 +1,7 @@
 import customizeRows from './onDraw/customizeRows';
 import addStudySummary from './onDraw/addStudySummary';
 import customizeCells from './onDraw/customizeCells';
+import addInfoBubbles from './onDraw/addInfoBubbles';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
 import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
 import dataExport from './onDraw/dataExport';
@@ -33,6 +34,7 @@ export default function onDraw() {
         customizeRows.call(this);
         addStudySummary.call(this);
         customizeCells.call(this);
+        addInfoBubbles.call(this);
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);
         dataExport.call(this);
