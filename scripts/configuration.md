@@ -3,7 +3,7 @@ The most straightforward way to customize the CRF Heat Map is by using a configu
 In addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality.  These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js).  All defaults can be overwritten by the passed configuration object.
 
 # Renderer-specific settings
-The sections below describe each crf-heat-map setting as of version 1.1.3.
+The sections below describe each crf-heat-map setting as of version 1.1.0.
 
 ## settings.nestings
 `array`
@@ -79,7 +79,7 @@ expands all nests so that no rows are hidden
 **default:** `false`
 
 # Webcharts settings
-The object below contains each Webcharts setting as of version 1.1.3.
+The object below contains each Webcharts setting as of version 1.1.0.
 
 ```
 {    return {        cols: null,        headers: [            'ID',            'Entered',            'Source Data Verified',            'Ready for Freeze',            'Frozen',            'Signed',            'Locked',            'Open',            'Answered'        ],        applyCSS: true,        searchable: false,        sortable: false,        pagination: false,        exportable: true,        exports: ['csv', 'xlsx']    };}}
