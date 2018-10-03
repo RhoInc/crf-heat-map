@@ -5,6 +5,60 @@ In addition to the standard Webcharts settings several custom settings not avail
 # Renderer-specific settings
 The sections below describe each crf-heat-map setting as of version 1.1.0.
 
+## settings.site_col
+`string`
+
+Specifies variable for use as site ID
+
+**default:** `"sitename"`
+
+
+
+## settings.id_col
+`string`
+
+Specifies variable for use as subject ID
+
+**default:** `"subjectnameoridentifier"`
+
+
+
+## settings.visit_col
+`string`
+
+Specifies variable for use as Visit ID
+
+**default:** `"folderinstancename"`
+
+
+
+## settings.form_col
+`string`
+
+Specifies variable for use as Form ID
+
+**default:** `"ecrfpagename"`
+
+
+
+## settings.id_freeze_col
+`string`
+
+Specifies variable for subject-level freeze status
+
+**default:** `"subjfreezeflg"`
+
+
+
+## settings.id_status_col
+`string`
+
+Specifies variable for subject status
+
+**default:** `"status"`
+
+
+
 ## settings.nestings
 `array`
 
@@ -14,6 +68,13 @@ an array of objects specifying the variables to nest the data by for calculation
 ```
 undefined
 ```
+
+### settings.nestings[].settings_col
+`string`
+
+Settings Column
+
+**default:** none
 
 ### settings.nestings[].value_col
 `string`
