@@ -14,7 +14,8 @@ export default function syncControlInputs(settings) {
                 ? labels[filter_col]
                 : /^subset\d$/.test(filter_col)
                     ? filter_col.replace(/^s/, 'S').replace(/(\d)/, ' $1')
-                    : filter_col.label || filter_col.value_col || filter_col
+                    : filter_col.label || filter_col.value_col || filter_col,
+            multiple: filter_col == settings.id_status_col ? true : false
         };
         defaultControls.splice(i, 0, filter);
     });
