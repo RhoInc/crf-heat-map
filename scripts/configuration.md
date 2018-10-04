@@ -143,5 +143,5 @@ expands all nests so that no rows are hidden
 The object below contains each Webcharts setting as of version 1.1.0.
 
 ```
-{    return {        cols: null,        headers: [            'ID',            'Entered',            'Source Data Verified',            'Ready for Freeze',            'Frozen',            'Signed',            'Locked',            'Open',            'Answered'        ],        applyCSS: true,        searchable: false,        sortable: false,        pagination: false,        exportable: true,        exports: ['csv', 'xlsx']    };}}
+{    return {        cols: null,        headers: [            'ID',            'Entered',            'Source Data Verified',            'Ready for Freeze',            'Frozen',            'Signed',            'Locked',            'Open',            'Answered'        ],        applyCSS: true,        searchable: false,        sortable: false,        pagination: false,        exportable: true,        exports: ['csv', 'xlsx'],        dynamicPositioning: false    };}}
 ```

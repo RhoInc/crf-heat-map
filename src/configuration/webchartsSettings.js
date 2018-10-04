@@ -17,6 +17,7 @@ export default function webchartsSettings() {
         sortable: false,
         pagination: false,
         exportable: true,
-        exports: ['csv', 'xlsx']
+        exports: ['csv', 'xlsx'],
+        dynamicPositioning: false
     };
 }

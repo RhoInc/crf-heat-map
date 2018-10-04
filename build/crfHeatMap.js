@@ -1215,7 +1215,8 @@
             sortable: false,
             pagination: false,
             exportable: true,
-            exports: ['csv', 'xlsx']
+            exports: ['csv', 'xlsx'],
+            dynamicPositioning: false
         };
     }
 
@@ -2446,6 +2447,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
