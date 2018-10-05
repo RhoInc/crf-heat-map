@@ -1,4 +1,4 @@
-export default function calculateStatistics() {
+export default function calculateStatistics(onInit = true) {
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
     const nest = d3
         .nest()
@@ -33,7 +33,8 @@ export default function calculateStatistics() {
                                     ? count
                                     : console.log(`Missed one: ${value_col}`);
             });
-
+            summary.nest_level = d[0].nest_level;
+            summary.parents = d[0].parents;
             return summary;
         })
         .entries(this.data.initial_filtered);
@@ -45,9 +46,16 @@ export default function calculateStatistics() {
         this.config.value_cols.forEach(value_col => {
             d[value_col] = d.values[value_col];
         });
+        d.nest_level = d.values.nest_level;
+        d.parents = d.values.parents;
+
         delete d.values;
     });
 
     //Add summarized data to array of summaries.
-    this.data.summaries.push(nest);
+    if (onInit) {
+        this.data.summaries.push(nest);
+    } else {
+        return nest;
+    }
 }

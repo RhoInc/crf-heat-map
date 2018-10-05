@@ -14,7 +14,7 @@ export default function deriveData() {
     //Define columns.
     this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-    const subject_id_col_index = this.config.id_cols.indexOf('subjectnameoridentifier');
+    const subject_id_col_index = this.config.id_cols.indexOf(this.config.id_col);
     const subject_id_col = subject_id_col_index > -1;
 
     //Capture subject-level information.
@@ -26,13 +26,13 @@ export default function deriveData() {
         this.export.cols.push('site', 'status', 'freeze');
 
         // build look up for subject
-        var subjects = d3.set(table.data.initial.map(d => d['subjectnameoridentifier'])).values();
+        var subjects = d3.set(table.data.initial.map(d => d[this.config.id_col])).values();
         var subjectMap = subjects.reduce((acc, cur) => {
-            var subjectDatum = this.data.initial.find(d => d['subjectnameoridentifier'] === cur);
+            var subjectDatum = this.data.initial.find(d => d[this.config.id_col] === cur);
             acc[cur] = {
-                site: subjectDatum.sitename,
-                status: subjectDatum.status,
-                freeze: subjectDatum.SubjFreezeFlg
+                site: subjectDatum[this.config.site_col],
+                status: subjectDatum[this.config.id_status_col],
+                freeze: subjectDatum[this.config.id_freeze_col]
             };
             return acc;
         }, {});
@@ -43,13 +43,13 @@ export default function deriveData() {
     this.export.data.forEach((d, i, thisArray) => {
         //Split ID variable into as many columns as nests currently in place.
         this.export.nests.forEach((id_col, j) => {
-            const id_val = d.id.split('|')[j];
+            const id_val = d.id.split('  |')[j];
             d[id_col] = id_val || 'Total';
         });
 
         // Now "join" subject level information to export data
         if (subject_id_col) {
-            const subjectID = d[`Nest ${subject_id_col_index + 1}: subjectnameoridentifier`];
+            const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.id_col}`];
             Object.assign(d, subjectMap[subjectID]);
         }
     });

@@ -1,19 +1,44 @@
 import customizeRows from './onDraw/customizeRows';
+import addStudySummary from './onDraw/addStudySummary';
 import customizeCells from './onDraw/customizeCells';
+import addInfoBubbles from './onDraw/addInfoBubbles';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
 import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
 import dataExport from './onDraw/dataExport';
+import flagParentRows from './onDraw/flagParentRows';
 
 export default function onDraw() {
+    const config = this.config;
+    const chart = this;
+
     var t0 = performance.now();
     //begin performance test
 
+    // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
+    var id;
+    chart.data.raw.forEach(function(d) {
+        id = d['id'].split('  |');
+        if (id[2]) {
+            d[config.id_cols[2]] = id[2];
+            d[config.id_cols[1]] = id[1];
+            d[config.id_cols[0]] = id[0];
+        } else if (id[1]) {
+            d[config.id_cols[1]] = id[1];
+            d[config.id_cols[0]] = id[0];
+        } else {
+            d[config.id_cols[0]] = id[0];
+        }
+    });
+
     if (this.data.summarized.length) {
         customizeRows.call(this);
+        addStudySummary.call(this);
         customizeCells.call(this);
+        addInfoBubbles.call(this);
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);
         dataExport.call(this);
+        flagParentRows.call(this);
     }
 
     //end performance test

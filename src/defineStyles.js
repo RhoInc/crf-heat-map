@@ -34,6 +34,9 @@ export default function defineStyles() {
         '.chm-row {' +
             '    display: inline-block;' +
             '}',
+        '.summary {' +
+                'border-bottom:2px solid;' +
+                '}',
         '.chm-row > * {' +
             '    display: inline-block;' +
             '}',
@@ -207,6 +210,9 @@ export default function defineStyles() {
                 '#chm-table table {' +
                     '    display: table;' +
                     '}',
+                  '.wc-table {' +
+                        '    display: block;' +
+                        '}',
                 '.wc-table table thead tr th {' +
                     '    cursor: default;' +
                     '}',
@@ -313,6 +319,10 @@ export default function defineStyles() {
                 '.wc-table table tbody tr:hover td:first-child {' +
                     '    border-left: 1px solid black;' +
                     '}',
+                  '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
+                  '    background: #CCCCCC;' +
+                  '    color: black;' +
+                  '}',
 
                 /* ID cells */
 

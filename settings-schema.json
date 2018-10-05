@@ -2,9 +2,45 @@
     "title": "settings",
     "description": "JSON schema for the configuration of the CRF Heat Map",
     "overview": "The most straightforward way to customize the CRF Heat Map is by using a configuration object whose properties describe the behavior and appearance of the table.  Since the CRF Heat Map is a Webcharts `table` object, many default Webcharts settings are set in the [webchartsSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/webchartsSettings.js) as [described below](#webcharts-settings).  Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality.  These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js).  All defaults can be overwritten by the passed configuration object.",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "type": "object",
     "properties": {
+      "site_col" : {
+        "title": "Site Column",
+        "description": "Specifies variable for use as site ID",
+        "type": "string",
+        "default": "sitename"
+      },
+      "id_col" : {
+        "title": "Subject ID Column",
+        "description": "Specifies variable for use as subject ID",
+        "type": "string",
+        "default": "subjectnameoridentifier"
+      },
+      "visit_col" : {
+        "title": "Visit Column",
+        "description": "Specifies variable for use as Visit ID",
+        "type": "string",
+        "default": "folderinstancename"
+      },
+      "form_col" : {
+        "title": "Form Column",
+        "description": "Specifies variable for use as Form ID",
+        "type": "string",
+        "default": "ecrfpagename"
+      },
+      "id_freeze_col" : {
+        "title": "Subject Freeze Column",
+        "description": "Specifies variable for subject-level freeze status",
+        "type": "string",
+        "default": "subjfreezeflg"
+      },
+      "id_status_col" : {
+        "title": "Subject Status Column",
+        "description": "Specifies variable for subject status",
+        "type": "string",
+        "default": "status"
+      },
         "nestings": {
             "title": "Data Nesting",
             "description": "an array of objects specifying the variables to nest the data by for calculations",
@@ -12,6 +48,10 @@
             "items": {
                 "type": "object",
                 "properties":{
+                  "settings_col":{
+                      "title":"Settings Column",
+                      "type":"string"
+                  },
                     "value_col":{
                         "title":"Value Column",
                         "type":"string"
@@ -28,22 +68,26 @@
             },
             "default": [
                 {
-                    "value_col": "sitename",
+                    "settings_col": "site_col",
+                    "value_col" : null,
                     "label": "Site",
                     "default_nesting": true
                 },
                 {
-                    "value_col": "subjectnameoridentifier",
+                    "settings_col": "id_col",
+                    "value_col" : null,
                     "label": "Subject ID",
                     "default_nesting": true
                 },
                 {
-                    "value_col": "folderinstancename",
+                    "settings_col": "visit_col",
+                    "value_col" : null,
                     "label": "Folder",
                     "default_nesting": false
                 },
                 {
-                    "value_col": "ecrfpagename",
+                    "settings_col": "form_col",
+                    "value_col" : null,
                     "label": "Form",
                     "default_nesting": false
                 }
@@ -79,9 +123,6 @@
                 "type": "string"
             },
             "default": [
-                "sitename",
-                "subjfreezeflg",
-                "status",
                 "subset1",
                 "subset2",
                 "subset3"

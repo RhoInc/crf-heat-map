@@ -333,6 +333,8 @@
     function calculateStatistics() {
         var _this = this;
 
+        var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
         //Nest data by the ID variable defined above and calculate statistics for each summary variable.
         var nest = d3
             .nest()
@@ -375,7 +377,8 @@
                                         ? count
                                         : console.log('Missed one: ' + value_col);
                 });
-
+                summary.nest_level = d[0].nest_level;
+                summary.parents = d[0].parents;
                 return summary;
             })
             .entries(this.data.initial_filtered);
@@ -387,11 +390,18 @@
             _this.config.value_cols.forEach(function(value_col) {
                 d[value_col] = d.values[value_col];
             });
+            d.nest_level = d.values.nest_level;
+            d.parents = d.values.parents;
+
             delete d.values;
         });
 
         //Add summarized data to array of summaries.
-        this.data.summaries.push(nest);
+        if (onInit) {
+            this.data.summaries.push(nest);
+        } else {
+            return nest;
+        }
     }
 
     function summarizeData() {
@@ -406,12 +416,35 @@
         this.config.id_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
             _this.data.initial_filtered.forEach(function(d) {
+                d.nest_level = i;
                 d.id = _this.config.id_cols
                     .slice(0, i + 1)
                     .map(function(id_col1) {
                         return d[id_col1];
                     })
-                    .join('|');
+                    .join('  |');
+
+                d.parents = [];
+                if (d.nest_level == 2) {
+                    d.parents.push(
+                        _this.config.id_cols
+                            .slice(0, 2)
+                            .map(function(id_col1) {
+                                return d[id_col1];
+                            })
+                            .join('  |')
+                    );
+                }
+                if (d.nest_level == 1) {
+                    d.parents.push(
+                        _this.config.id_cols
+                            .slice(0, 1)
+                            .map(function(id_col1) {
+                                return d[id_col1];
+                            })
+                            .join('  |')
+                    );
+                }
             });
 
             calculateStatistics.call(_this);
@@ -501,16 +534,6 @@
 
     function resetFilters() {
         var _this = this;
-
-        //collapse rows and uncheck 'Expand All' Box
-        this.config.expand_all = false;
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(f) {
-                return f.option === 'expand_all';
-            })
-            .select('input')
-            .property('checked', false);
 
         this.columnControls.filters.forEach(function(filter) {
             //Update query maximum.
@@ -852,6 +875,7 @@
             '.chm-column {' + '    display: inline-block;' + '}',
             '.chm-column > * {' + '    width: 100%;' + '}',
             '.chm-row {' + '    display: inline-block;' + '}',
+            '.summary {' + 'border-bottom:2px solid;' + '}',
             '.chm-row > * {' + '    display: inline-block;' + '}',
             '.chm-row--1 {' +
                 '    height: 6em;' +
@@ -976,6 +1000,7 @@
 
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '}',
+            '.wc-table {' + '    display: block;' + '}',
             '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
                 '.wc-table table tbody tr td {' +
@@ -1063,6 +1088,10 @@
             '.wc-table table tbody tr:hover td:first-child {' +
                 '    border-left: 1px solid black;' +
                 '}',
+            '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
+                '    background: #CCCCCC;' +
+                '    color: black;' +
+                '}',
 
             /* ID cells */
 
@@ -1119,24 +1148,34 @@
 
     function rendererSettings() {
         return {
+            site_col: 'sitename',
+            id_col: 'subjectnameoridentifier',
+            visit_col: 'folderinstancename',
+            form_col: 'ecrfpagename',
+            id_freeze_col: 'subjfreezeflg',
+            id_status_col: 'status',
             nestings: [
                 {
-                    value_col: 'sitename',
+                    settings_col: 'site_col',
+                    value_col: null, // set in syncSettings()
                     label: 'Site',
                     default_nesting: true
                 },
                 {
-                    value_col: 'subjectnameoridentifier',
+                    settings_col: 'id_col',
+                    value_col: null, // set in syncSettings()
                     label: 'Subject ID',
                     default_nesting: true
                 },
                 {
-                    value_col: 'folderinstancename',
+                    settings_col: 'visit_col',
+                    value_col: null, // set in syncSettings(0
                     label: 'Folder',
                     default_nesting: false
                 },
                 {
-                    value_col: 'ecrfpagename',
+                    settings_col: 'form_col',
+                    value_col: null, // set in syncSettings()
                     label: 'Form',
                     default_nesting: false
                 }
@@ -1151,7 +1190,7 @@
                 'open_query_ct',
                 'answer_query_ct'
             ],
-            filter_cols: ['sitename', 'subjfreezeflg', 'status', 'subset1', 'subset2', 'subset3'],
+            filter_cols: ['subset1', 'subset2', 'subset3'], // set in syncSettings()
             display_cell_annotations: true,
             expand_all: false
         };
@@ -1176,11 +1215,28 @@
             sortable: false,
             pagination: false,
             exportable: true,
-            exports: ['csv']
+            exports: ['csv', 'xlsx'],
+            dynamicPositioning: false
         };
     }
 
     function syncSettings(settings) {
+        //Sync nestings with data variable settings.
+        var settingsKeys = Object.keys(settings);
+        var settingsCols = settingsKeys.filter(function(settingsKey) {
+            return /_col$/.test(settingsKey);
+        });
+        settings.nestings.forEach(function(nesting) {
+            nesting.value_col =
+                nesting.value_col ||
+                settings[
+                    settingsCols.find(function(settingsCol) {
+                        return settingsCol === nesting.settings_col;
+                    })
+                ];
+        });
+
+        //Define initial nesting variables.
         settings.id_cols = settings.nestings
             .filter(function(d) {
                 return d.default_nesting === true;
@@ -1189,44 +1245,22 @@
                 return f.value_col;
             })
             .slice(0, 3);
+
+        //Define table column variables.
         settings.cols = d3.merge([['id'], settings.value_cols]);
+
+        //Define filter variables.
+        settings.filter_cols = Array.isArray(settings.filter_cols)
+            ? [settings.site_col, settings.id_freeze_col, settings.id_status_col].concat(
+                  settings.filter_cols
+              )
+            : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
 
         return settings;
     }
 
     function controlInputs() {
         return [
-            {
-                type: 'subsetter',
-                value_col: 'sitename',
-                label: 'Site'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'SubjFreezeFlg',
-                label: 'Subject Freeze Status'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'status',
-                label: 'Subject Status',
-                multiple: true
-            },
-            {
-                type: 'subsetter',
-                value_col: 'subset1',
-                label: 'Subsets: 1'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'subset2',
-                label: '2'
-            },
-            {
-                type: 'subsetter',
-                value_col: 'subset3',
-                label: '3'
-            },
             {
                 type: 'checkbox',
                 option: 'display_cell_annotations',
@@ -1242,6 +1276,23 @@
 
     function syncControlInputs(settings) {
         var defaultControls = controlInputs();
+        var labels = {};
+        labels[settings.site_col] = 'Site';
+        labels[settings.id_freeze_col] = 'Subject Freeze Status';
+        labels[settings.id_status_col] = 'Subject Status';
+        settings.filter_cols.forEach(function(filter_col, i) {
+            var filter = {
+                type: 'subsetter',
+                value_col: filter_col,
+                label: labels[filter_col]
+                    ? labels[filter_col]
+                    : /^subset\d$/.test(filter_col)
+                        ? filter_col.replace(/^s/, 'S').replace(/(\d)/, ' $1')
+                        : filter_col.label || filter_col.value_col || filter_col,
+                multiple: filter_col == settings.id_status_col ? true : false
+            };
+            defaultControls.splice(i, 0, filter);
+        });
 
         if (Array.isArray(settings.filters) && settings.filters.length > 0) {
             var otherFilters = settings.filters.map(function(filter) {
@@ -1380,8 +1431,23 @@
             })
             .select('.changer')
             .on('change', function(d) {
-                context.config[d.option] = this.checked;
-                context.draw(context.data.raw);
+                var changer_this = this;
+
+                var loadingdiv = d3.select('#chm-loading');
+
+                loadingdiv.classed('chm-hidden', false);
+
+                var loading = setInterval(function() {
+                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                    if (loadingIndicated) {
+                        clearInterval(loading);
+                        loadingdiv.classed('chm-hidden', true);
+
+                        context.config[d.option] = changer_this.checked;
+                        context.draw(context.data.raw);
+                    }
+                }, 25);
             });
     }
 
@@ -1515,14 +1581,44 @@
     function filterData() {
         var _this = this;
 
-        this.data.raw = this.data.summarized;
+        this.data.summarized.forEach(function(d) {
+            d.filtered = false;
+            d.visible_child = false;
+        });
+
+        //First, get all the rows that match the filters
         this.columnControls.filters.forEach(function(filter) {
-            _this.data.raw = _this.data.raw.filter(function(d) {
-                return (
-                    (filter.lower <= d[filter.variable] && d[filter.variable] <= filter.upper) ||
-                    (filter.upper === 1 && d[filter.variable] === 'N/A')
-                );
+            _this.data.summarized.forEach(function(d) {
+                var filtered_low = +d[filter.variable] < +filter.lower;
+                var filtered_high = +d[filter.variable] > +filter.upper;
+                //filtered_missing = d[filter.variable] === 'N/A'
+                if (filtered_low || filtered_high) {
+                    d.filtered = true;
+                }
             });
+        });
+
+        //now, identify hidden parent rows that have visible rowChildren
+        //for rows that are visible (filtered = false)
+        var visible_row_parents = this.data.summarized
+            .filter(function(f) {
+                return !f.filtered;
+            })
+            .map(function(f) {
+                return f.parents;
+            });
+        var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
+
+        //identifiy the parent rows
+        this.data.summarized = this.data.summarized.map(function(m) {
+            m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
+            return m;
+        });
+
+        //and set filtered_parent = true if filted = true
+
+        this.data.raw = this.data.summarized.filter(function(f) {
+            return !f.filtered || f.visible_child;
         });
     }
 
@@ -1533,16 +1629,49 @@
 
         if (isIE) {
             //Attach an event listener to sliders.
+            filter.sliders = filter.div.selectAll('.range-value').on('change', function(d) {
+                var _this = this;
+
+                var loadingdiv = d3.select('#chm-loading');
+
+                loadingdiv.classed('chm-hidden', false);
+
+                var loading = setInterval(function() {
+                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                    if (loadingIndicated) {
+                        clearInterval(loading);
+                        loadingdiv.classed('chm-hidden', true);
+
+                        var sliders = _this.parentNode.parentNode.getElementsByTagName('input');
+                        var slider1 = parseFloat(sliders[0].value);
+                        var slider2 = parseFloat(sliders[1].value);
+
+                        if (slider1 <= slider2) {
+                            if (d.variable.indexOf('query') < 0) {
+                                d.lower = slider1 / 100;
+                                d.upper = slider2 / 100;
+                            } else {
+                                d.lower = slider1;
+                                d.upper = slider2;
+                            }
+                        } else {
+                            if (d.variable.indexOf('query') < 0) {
+                                d.lower = slider2 / 100;
+                                d.upper = slider1 / 100;
+                            } else {
+                                d.lower = slider2;
+                                d.upper = slider1;
+                            }
+                        }
+                        update.call(context, d);
+                        filterData.call(context);
+                        context.draw(context.data.raw);
+                    }
+                }, 25);
+            });
+
             filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
-                //Expand rows and check 'Expand All'.
-                context.config.expand_all = true;
-                context.controls.wrap
-                    .selectAll('.control-group')
-                    .filter(function(f) {
-                        return f.option === 'expand_all';
-                    })
-                    .select('input')
-                    .property('checked', true);
                 var sliders = this.parentNode.parentNode.getElementsByTagName('input');
                 var slider1 = parseFloat(sliders[0].value);
                 var slider2 = parseFloat(sliders[1].value);
@@ -1565,20 +1694,42 @@
                     }
                 }
                 update.call(context, d);
-                filterData.call(context);
-                context.draw(context.data.raw);
             });
         } else {
+            filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
+                var _this2 = this;
+
+                var loadingdiv = d3.select('#chm-loading');
+
+                loadingdiv.classed('chm-hidden', false);
+
+                var loading = setInterval(function() {
+                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                    if (loadingIndicated) {
+                        clearInterval(loading);
+                        loadingdiv.classed('chm-hidden', true);
+
+                        var sliders = _this2.parentNode.getElementsByTagName('input');
+                        var slider1 = parseFloat(sliders[0].value);
+                        var slider2 = parseFloat(sliders[1].value);
+
+                        if (slider1 <= slider2) {
+                            d.lower = slider1;
+                            d.upper = slider2;
+                        } else {
+                            d.lower = slider2;
+                            d.upper = slider1;
+                        }
+
+                        update.call(context, d);
+                        filterData.call(context);
+                        context.draw(context.data.raw);
+                    }
+                }, 25);
+            });
+
             filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-                //Expand rows and check 'Expand All'.
-                context.config.expand_all = true;
-                context.controls.wrap
-                    .selectAll('.control-group')
-                    .filter(function(f) {
-                        return f.option === 'expand_all';
-                    })
-                    .select('input')
-                    .property('checked', true);
                 var sliders = this.parentNode.getElementsByTagName('input');
                 var slider1 = parseFloat(sliders[0].value);
                 var slider2 = parseFloat(sliders[1].value);
@@ -1592,8 +1743,6 @@
                 }
 
                 update.call(context, d);
-                filterData.call(context);
-                context.draw(context.data.raw);
             });
         }
     }
@@ -1668,25 +1817,56 @@
         this.rows
             .classed('chm-table-row', true)
             .classed('chm-table-row--expandable', function(d) {
-                return d.id.split('|').length < _this.config.id_cols.length;
+                return d.id.split('  |').length < _this.config.id_cols.length;
             })
             .classed('chm-table-row--collapsed', function(d) {
-                return d.id.split('|').length < _this.config.id_cols.length;
+                return d.id.split('  |').length < _this.config.id_cols.length;
             })
             .classed('chm-hidden', function(d) {
-                return d.id.indexOf('|') > -1;
+                return d.id.indexOf('  |') > -1;
+            });
+    }
+
+    function addStudySummary() {
+        var tempChart = this;
+
+        tempChart.data.initial_filtered.forEach(function(d) {
+            return (d['id'] = 'Overall');
+        });
+
+        // calculate statistics across whole study
+        var stats = calculateStatistics.call(tempChart, false);
+
+        var summaryData = [
+            {
+                col: 'id',
+                text: 'Overall'
+            }
+        ];
+
+        // transform to proper format
+        this.config.value_cols.forEach(function(value_col, index) {
+            summaryData[index + 1] = {
+                col: value_col,
+                text: stats[0][value_col]
+            };
+        });
+
+        // add study summary row to top of table and bind data
+        this.tbody.insert('tr', ':first-child').classed('summary', true);
+
+        this.tbody
+            .select('tr')
+            .selectAll('td')
+            .data(summaryData)
+            .enter()
+            .append('td')
+            .text(function(d) {
+                return d.text;
             });
     }
 
     function customizeCells() {
-        // add Dynel's hover text to table headers
-        d3
-            .select('th.answer_query_ct')
-            .attr('title', 'Site has closed issue, but DM needs to close or requery.');
-        d3
-            .select('th.is_frozen')
-            .attr('title', 'Data is clean and there are no outstanding issues.');
-
         this.cells = this.tbody.selectAll('td');
         this.cells
             .attr('class', function(d) {
@@ -1697,7 +1877,7 @@
                         cellClass +
                         ' chm-cell--id' +
                         ' chm-cell--id--level' +
-                        d.text.split('|').length;
+                        d.text.split('  |').length;
                 else {
                     cellClass = cellClass + ' chm-cell--heat';
                     var level = void 0;
@@ -1732,12 +1912,39 @@
             })
             .text(function(d) {
                 return d.col === 'id'
-                    ? d.text.split('|')[d.text.split('|').length - 1]
+                    ? d.text.split('  |')[d.text.split('  |').length - 1]
                     : d.col.indexOf('query') < 0
                         ? d.text === 'N/A'
                             ? d.text
-                            : d3.format('%')(d.text)
+                            : String(Math.floor(d.text * 100)) + '%'
                         : d.text;
+            });
+    }
+
+    function addInfoBubbles() {
+        var chart = this;
+
+        var infoMapping = {
+            is_partial_entry: 'Data have been submitted in the EDC system.',
+            verified: 'All required fields have source data verification complete in EDC.',
+            ready_for_freeze:
+                'All required cleaning is complete (e.g. SDV, queries resolved) and data are ready to be frozen in EDC.',
+            is_frozen: 'Data have been frozen in the EDC system.',
+            is_signed: 'Data have been signed in the EDC system.',
+            is_locked: 'Data have been locked in the EDC system.',
+            open_query_ct: 'Site has not responded to issue.',
+            answer_query_ct: 'Site has responded to issue, DM needs to review.'
+        };
+
+        // add info bubbles and either info text, if defined, or the name of variable
+        chart.wrap
+            .select('tr')
+            .selectAll('th:not(.id)')
+            .data(chart.initial_config.value_cols)
+            .append('span')
+            .html(' &#9432')
+            .attr('title', function(d) {
+                return d in infoMapping ? infoMapping[d] : d;
             });
     }
 
@@ -1749,24 +1956,42 @@
             this.rows.classed('chm-hidden', false);
         }
 
+        var max_id_level = chart.config.id_cols.length - 2;
+
+        function iterateNest(d, id_level) {
+            return d3
+                .nest()
+                .key(function(d) {
+                    return d[config.id_cols[id_level]];
+                })
+                .rollup(function(rows) {
+                    if (id_level + 1 <= max_id_level) {
+                        var obj = iterateNest(rows, id_level + 1);
+                    } else {
+                        obj = {};
+                    }
+                    obj.ids = rows
+                        .filter(function(f) {
+                            return f.nest_level == id_level + 1;
+                        })
+                        .map(function(m) {
+                            return m.id;
+                        });
+                    return obj;
+                })
+                .map(d);
+        }
+
+        var childNest = iterateNest(chart.data.raw, 0);
+
         var expandable_rows = this.rows
+            .data(chart.data.raw)
             .filter(function(d) {
-                return d.id.split('|').length < config.id_cols.length;
+                return d.nest_level < config.id_cols.length - 1;
             })
             .select('td');
 
-        //get children for each row
-        expandable_rows.each(function(d) {
-            d.children = chart.rows.filter(function(di) {
-                return (
-                    di.id.indexOf(d.id + '|') > -1 &&
-                    d.id.split('|').length === di.id.split('|').length - 1
-                );
-            });
-        });
-
         expandable_rows.on('click', function(d) {
-            console.log('click');
             var row = d3.select(this.parentNode);
             var collapsed = !row.classed('chm-table-row--collapsed');
 
@@ -1774,21 +1999,31 @@
                 .classed('chm-table-row--collapsed', collapsed) //toggle the class
                 .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
-            function iterativeCollapse(d) {
-                if (d.children) {
-                    d.children
-                        .classed('chm-hidden chm-table-row--collapsed', true)
-                        .classed('chm-table-row--expanded', false);
-                    d.children.each(function(di) {
-                        iterativeCollapse(di);
-                    });
-                }
-            }
-
-            if (collapsed) {
-                iterativeCollapse(d); //hide the whole tree
+            var currentNest = childNest;
+            d.id.split('  |').forEach(function(level) {
+                currentNest = currentNest[level];
+            });
+            var childIds;
+            // when collapsing, if the nest's children have children, loop throough and build array with those included
+            if (collapsed && Object.keys(currentNest).length > 1) {
+                childIds = [];
+                Object.keys(currentNest).forEach(function(level) {
+                    Object.values(currentNest[level]).length > 1 // handle different strctures
+                        ? (childIds = childIds.concat(Object.values(currentNest[level])))
+                        : (childIds = childIds.concat(Object.values(currentNest[level])[0]));
+                });
             } else {
-                d.children.classed('chm-hidden', false); //show just the immediate children
+                childIds = currentNest.ids;
+            }
+            var rowChildren = chart.rows.filter(function(f) {
+                return childIds.indexOf(f.id) > -1;
+            });
+            if (collapsed) {
+                rowChildren
+                    .classed('chm-hidden chm-table-row--collapsed', true)
+                    .classed('chm-table-row--expanded', false);
+            } else {
+                rowChildren.classed('chm-hidden', false); //show just the immediate children
             }
         });
     }
@@ -1831,7 +2066,7 @@
         //Define columns.
         this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-        var subject_id_col_index = this.config.id_cols.indexOf('subjectnameoridentifier');
+        var subject_id_col_index = this.config.id_cols.indexOf(this.config.id_col);
         var subject_id_col = subject_id_col_index > -1;
 
         //Capture subject-level information.
@@ -1846,18 +2081,18 @@
             var subjects = d3
                 .set(
                     table.data.initial.map(function(d) {
-                        return d['subjectnameoridentifier'];
+                        return d[_this.config.id_col];
                     })
                 )
                 .values();
             var subjectMap = subjects.reduce(function(acc, cur) {
                 var subjectDatum = _this.data.initial.find(function(d) {
-                    return d['subjectnameoridentifier'] === cur;
+                    return d[_this.config.id_col] === cur;
                 });
                 acc[cur] = {
-                    site: subjectDatum.sitename,
-                    status: subjectDatum.status,
-                    freeze: subjectDatum.SubjFreezeFlg
+                    site: subjectDatum[_this.config.site_col],
+                    status: subjectDatum[_this.config.id_status_col],
+                    freeze: subjectDatum[_this.config.id_freeze_col]
                 };
                 return acc;
             }, {});
@@ -1868,14 +2103,14 @@
         this.export.data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
-                var id_val = d.id.split('|')[j];
+                var id_val = d.id.split('  |')[j];
                 d[id_col] = id_val || 'Total';
             });
 
             // Now "join" subject level information to export data
             if (subject_id_col) {
                 var subjectID =
-                    d['Nest ' + (subject_id_col_index + 1) + ': subjectnameoridentifier'];
+                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
             }
         });
@@ -1943,7 +2178,7 @@
                     _this.config.value_cols.indexOf(col) > -1 &&
                     col.indexOf('query') < 0 &&
                     ['N/A', ''].indexOf(d[col]) < 0
-                        ? Math.round(d[col] * 100)
+                        ? Math.floor(d[col] * 100)
                         : d[col];
 
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
@@ -1991,7 +2226,7 @@
                 return _this.config.value_cols.indexOf(col) > -1 &&
                     col.indexOf('query') < 0 &&
                     ['N/A', ''].indexOf(d[col]) < 0
-                    ? d[col]
+                    ? Math.floor(d[col] * 100) / 100
                     : d[col];
             });
         }); // convert data from array of objects to array of arrays.
@@ -2128,16 +2363,44 @@
         }
     }
 
+    function flagParentRows() {
+        this.rows.classed('grayParent', function(d) {
+            return d.filtered && d.visible_child;
+        });
+    }
+
     function onDraw() {
+        var config = this.config;
+        var chart = this;
+
         var t0 = performance.now();
         //begin performance test
 
+        // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
+        var id;
+        chart.data.raw.forEach(function(d) {
+            id = d['id'].split('  |');
+            if (id[2]) {
+                d[config.id_cols[2]] = id[2];
+                d[config.id_cols[1]] = id[1];
+                d[config.id_cols[0]] = id[0];
+            } else if (id[1]) {
+                d[config.id_cols[1]] = id[1];
+                d[config.id_cols[0]] = id[0];
+            } else {
+                d[config.id_cols[0]] = id[0];
+            }
+        });
+
         if (this.data.summarized.length) {
             customizeRows.call(this);
+            addStudySummary.call(this);
             customizeCells.call(this);
+            addInfoBubbles.call(this);
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
             dataExport.call(this);
+            flagParentRows.call(this);
         }
 
         //end performance test

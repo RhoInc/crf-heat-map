@@ -1,23 +1,33 @@
 export default function rendererSettings() {
     return {
+        site_col: 'sitename',
+        id_col: 'subjectnameoridentifier',
+        visit_col: 'folderinstancename',
+        form_col: 'ecrfpagename',
+        id_freeze_col: 'subjfreezeflg',
+        id_status_col: 'status',
         nestings: [
             {
-                value_col: 'sitename',
+                settings_col: 'site_col',
+                value_col: null, // set in syncSettings()
                 label: 'Site',
                 default_nesting: true
             },
             {
-                value_col: 'subjectnameoridentifier',
+                settings_col: 'id_col',
+                value_col: null, // set in syncSettings()
                 label: 'Subject ID',
                 default_nesting: true
             },
             {
-                value_col: 'folderinstancename',
+                settings_col: 'visit_col',
+                value_col: null, // set in syncSettings(0
                 label: 'Folder',
                 default_nesting: false
             },
             {
-                value_col: 'ecrfpagename',
+                settings_col: 'form_col',
+                value_col: null, // set in syncSettings()
                 label: 'Form',
                 default_nesting: false
             }
@@ -32,7 +42,7 @@ export default function rendererSettings() {
             'open_query_ct',
             'answer_query_ct'
         ],
-        filter_cols: ['sitename', 'subjfreezeflg', 'status', 'subset1', 'subset2', 'subset3'],
+        filter_cols: ['subset1', 'subset2', 'subset3'], // set in syncSettings()
         display_cell_annotations: true,
         expand_all: false
     };

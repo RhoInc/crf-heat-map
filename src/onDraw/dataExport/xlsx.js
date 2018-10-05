@@ -11,7 +11,7 @@ export default function xlsx() {
                 this.config.value_cols.indexOf(col) > -1 &&
                 col.indexOf('query') < 0 &&
                 ['N/A', ''].indexOf(d[col]) < 0
-                    ? d[col]
+                    ? Math.floor(d[col] * 100) / 100
                     : d[col]
         )
     ); // convert data from array of objects to array of arrays.

@@ -1,7 +1,7 @@
 {
   "name": "crf-heat-map",
   "description": "Heat Map showing database form status at different levels",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/crf-heat-map#readme",
@@ -14,7 +14,8 @@
   "dependencies": {
     "d3": "^3",
     "local-web-server": "^2.5.6",
-    "webcharts": "^1.10"
+    "webcharts": "^1.10",
+    "xlsx": "^0.13.0"
   },
   "scripts": {
     "build": "npm run bundle && npm run format && npm run build-md && npm run test-page",
@@ -41,8 +42,5 @@
   },
   "bugs": {
     "url": "https://github.com/RhoInc/crf-heat-map/issues"
-  },
-  "optionalDependencies": {
-    "xlsx": "^0.13.0"
   }
 }
