@@ -1305,9 +1305,9 @@
                     description: 'Site has responded to issue, DM needs to review.'
                 }
             ],
-            filter_cols: ['subset1', 'subset2', 'subset3'], // set in syncSettings()
+            filter_cols: ['subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
-            expand_all: false
+            expand_all: true
         };
     }
 
@@ -2253,6 +2253,10 @@
     function csv() {
         var _this = this;
 
+        var context = this;
+        var value_cols = this.config.value_cols.map(function(d) {
+            return d.col;
+        });
         var CSVarray = [];
 
         var table = this;
@@ -2302,8 +2306,8 @@
             //add rows to CSV array
             var row = _this.export.cols.map(function(col, i) {
                 var value =
-                    _this.config.value_cols.indexOf(col) > -1 &&
-                    col.indexOf('query') < 0 &&
+                    value_cols.indexOf(col) > -1 &&
+                    context.typeDict[col] == 'crfs' &&
                     ['N/A', ''].indexOf(d[col]) < 0
                         ? Math.floor(d[col] * 100)
                         : d[col];
@@ -2342,6 +2346,10 @@
     function xlsx() {
         var _this = this;
 
+        var context = this;
+        var value_cols = this.config.value_cols.map(function(d) {
+            return d.col;
+        });
         var sheetName = 'CRF Summary';
         var options = {
             bookType: 'xlsx',
@@ -2350,8 +2358,8 @@
         };
         var arrayOfArrays = this.export.data.map(function(d) {
             return _this.export.cols.map(function(col) {
-                return _this.config.value_cols.indexOf(col) > -1 &&
-                    col.indexOf('query') < 0 &&
+                return value_cols.indexOf(col) > -1 &&
+                    context.typeDict[col] == 'crfs' &&
                     ['N/A', ''].indexOf(d[col]) < 0
                     ? Math.floor(d[col] * 100) / 100
                     : d[col];
@@ -2376,7 +2384,7 @@
             };
         });
         var pctCols = cols.filter(function(col) {
-            return _this.config.value_cols.indexOf(col.name) > -1 && col.name.indexOf('query') < 0;
+            return value_cols.indexOf(col.name) > -1 && context.typeDict[col.name] == 'crfs';
         });
         var pctCells = Object.keys(sheet).filter(function(key) {
             return (
@@ -2402,12 +2410,7 @@
         //Define column widths in spreadsheet.
         workbook.Sheets[sheetName]['!cols'] = this.export.cols.map(function(col, i) {
             return {
-                wpx:
-                    _this.config.value_cols.indexOf(col) > -1
-                        ? 75
-                        : i < _this.config.id_cols.length
-                            ? 125
-                            : 100
+                wpx: value_cols.indexOf(col) > -1 ? 75 : i < _this.config.id_cols.length ? 125 : 100
             };
         });
 

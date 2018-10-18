@@ -85,8 +85,8 @@ export default function rendererSettings() {
                 description: 'Site has responded to issue, DM needs to review.'
             }
         ],
-        filter_cols: ['subset1', 'subset2', 'subset3'], // set in syncSettings()
+        filter_cols: ['subset1', 'subset2', 'subset3'],
         display_cell_annotations: true,
-        expand_all: false
+        expand_all: true
     };
 }

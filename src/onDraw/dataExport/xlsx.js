@@ -1,4 +1,6 @@
 export default function xlsx() {
+    const context = this;
+    const value_cols = this.config.value_cols.map(d => d.col);
     const sheetName = 'CRF Summary';
     const options = {
         bookType: 'xlsx',
@@ -8,8 +10,8 @@ export default function xlsx() {
     const arrayOfArrays = this.export.data.map(d =>
         this.export.cols.map(
             col =>
-                this.config.value_cols.indexOf(col) > -1 &&
-                col.indexOf('query') < 0 &&
+                value_cols.indexOf(col) > -1 &&
+                context.typeDict[col] == 'crfs' &&
                 ['N/A', ''].indexOf(d[col]) < 0
                     ? Math.floor(d[col] * 100) / 100
                     : d[col]
@@ -34,7 +36,7 @@ export default function xlsx() {
         };
     });
     const pctCols = cols.filter(
-        col => this.config.value_cols.indexOf(col.name) > -1 && col.name.indexOf('query') < 0
+        col => value_cols.indexOf(col.name) > -1 && context.typeDict[col.name] == 'crfs'
     );
     const pctCells = Object.keys(sheet).filter(
         key => pctCols.map(col => col.column).indexOf(key.replace(/\d+/, '')) > -1
@@ -51,12 +53,7 @@ export default function xlsx() {
     //Define column widths in spreadsheet.
     workbook.Sheets[sheetName]['!cols'] = this.export.cols.map((col, i) => {
         return {
-            wpx:
-                this.config.value_cols.indexOf(col) > -1
-                    ? 75
-                    : i < this.config.id_cols.length
-                        ? 125
-                        : 100
+            wpx: value_cols.indexOf(col) > -1 ? 75 : i < this.config.id_cols.length ? 125 : 100
         };
     });
 
