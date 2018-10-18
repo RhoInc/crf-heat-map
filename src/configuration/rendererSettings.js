@@ -32,15 +32,17 @@ export default function rendererSettings() {
                 default_nesting: false
             }
         ],
+
+
         value_cols: [
-            'is_partial_entry',
-            'verified',
-            'ready_for_freeze',
-            'is_frozen',
-            'is_signed',
-            'is_locked',
-            'open_query_ct',
-            'answer_query_ct'
+            {col: 'is_partial_entry', type: 'crfs', label: 'Entered'},
+            {col: 'verified', type : 'crfs', denominator : 'needs_verification', label: 'Source Data Verified'},
+            {col: 'ready_for_freeze', type : 'crfs', label: 'Ready for Freeze'},
+            {col: 'is_frozen', type : 'crfs', label: 'Frozen'},
+            {col: 'is_signed', type : 'crfs', denominator : 'needs_signature', label: 'Signed'},
+            {col: 'is_locked', type : 'crfs', label: 'Locked'},
+            {col: 'open_query_ct', type : 'queries', label: 'Open'},
+            {col: 'answer_query_ct', type : 'queries', label: 'Answered'}
         ],
         filter_cols: ['subset1', 'subset2', 'subset3'], // set in syncSettings()
         display_cell_annotations: true,

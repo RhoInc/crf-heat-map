@@ -1,4 +1,27 @@
 export default function calculateStatistics(onInit = true) {
+    const context = this
+
+
+    // throw error if any query columns have denominators
+    if (context.initial_config.value_cols
+    .filter(a => a.denominator && a.type == "queries").length != 0) {
+      throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'. ";
+    }
+
+    const crfsDenominator = context.initial_config.value_cols
+    .filter(a => a.denominator && a.type == "crfs")
+
+    const crfsNoDenominator = context.initial_config.value_cols
+    .filter(a => !a.denominator && a.type == "crfs")
+
+    const queries = context.initial_config.value_cols
+    .filter(a => !a.denominator && a.type == "queries")
+
+console.log(crfsDenominator)
+console.log(crfsNoDenominator)
+console.log(queries)
+
+
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
     const nest = d3
         .nest()
@@ -6,32 +29,31 @@ export default function calculateStatistics(onInit = true) {
         .rollup(d => {
             //Define denominators.
             const summary = {
-                nForms: d.length,
-                nNeedsVerification: d.filter(di => di.needs_verification === '1').length,
-                nNeedsSignature: d.filter(di => di.needs_signature === '1').length
+                nForms: d.length
+                //nNeedsVerification: d.filter(di => di.needs_verification === '1').length,
+                //nNeedsSignature: d.filter(di => di.needs_signature === '1').length
             };
+
+            crfsDenominator
+            .forEach(c => summary['n' + c.denominator] = d.filter(di => di[c.denominator] === '1').length)
 
             //Define summarized values, either rates or counts.
             this.config.value_cols.forEach(value_col => {
-                const count = d3.sum(d, di => di[value_col]);
-                summary[value_col] =
-                    ['is_partial_entry', 'ready_for_freeze', 'is_frozen', 'is_locked'].indexOf(
-                        value_col
+                const count = d3.sum(d, di => di[value_col.col]);
+                summary[value_col.col] =
+                    crfsNoDenominator.indexOf(
+                        value_col.col
                     ) > -1
                         ? summary.nForms
                             ? count / summary.nForms
                             : 'N/A'
-                        : ['verified'].indexOf(value_col) > -1
-                            ? summary.nNeedsVerification
-                                ? count / summary.nNeedsVerification
+                        : crfsDenominator.indexOf(value_col.col) > -1
+                            ? summary['n' + value_col.denominator]
+                                ? count / summary['n' + value_col.denominator]
                                 : 'N/A'
-                            : ['is_signed'].indexOf(value_col) > -1
-                                ? summary.nNeedsSignature
-                                    ? count / summary.nNeedsSignature
-                                    : 'N/A'
-                                : ['open_query_ct', 'answer_query_ct'].indexOf(value_col) > -1
+                                : queries.indexOf(value_col.col) > -1
                                     ? count
-                                    : console.log(`Missed one: ${value_col}`);
+                                    : console.log(`Missed one: ${value_col.col}`);
             });
             summary.nest_level = d[0].nest_level;
             summary.parents = d[0].parents;
@@ -44,7 +66,7 @@ export default function calculateStatistics(onInit = true) {
         d.id = d.key;
         delete d.key;
         this.config.value_cols.forEach(value_col => {
-            d[value_col] = d.values[value_col];
+            d[value_col] = d.values[value_col.col];
         });
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;

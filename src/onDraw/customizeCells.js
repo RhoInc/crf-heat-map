@@ -2,6 +2,8 @@ export default function customizeCells() {
     this.cells = this.tbody.selectAll('td');
     this.cells
         .attr('class', d => {
+console.log(d)
+
             let cellClass = 'chm-cell';
 
             if (d.col === 'id')

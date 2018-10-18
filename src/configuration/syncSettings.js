@@ -15,7 +15,7 @@ export default function syncSettings(settings) {
         .slice(0, 3);
 
     //Define table column variables.
-    settings.cols = d3.merge([['id'], settings.value_cols]);
+    settings.cols = d3.merge([['id'], settings.value_cols.map(d => d.col)]);
 
     //Define filter variables.
     settings.filter_cols = Array.isArray(settings.filter_cols)
@@ -23,6 +23,12 @@ export default function syncSettings(settings) {
               settings.filter_cols
           )
         : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
+
+    // add labels specified in rendererSettings as headers
+    settings.headers = settings.value_cols.map(d => d.label)
+
+    //add ID header
+    settings.headers.unshift('ID')
 
     return settings;
 }
