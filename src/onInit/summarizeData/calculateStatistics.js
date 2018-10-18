@@ -1,26 +1,26 @@
 export default function calculateStatistics(onInit = true) {
-    const context = this
-
+    const context = this;
+    console.log(this);
 
     // throw error if any query columns have denominators
-    if (context.initial_config.value_cols
-    .filter(a => a.denominator && a.type == "queries").length != 0) {
-      throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'. ";
+    if (
+        context.initial_config.value_cols.filter(a => a.denominator && a.type == 'queries')
+            .length != 0
+    ) {
+        throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'. ";
     }
 
-    const crfsDenominator = context.initial_config.value_cols
-    .filter(a => a.denominator && a.type == "crfs")
+    const crfsDenominator = context.initial_config.value_cols.filter(
+        a => a.denominator && a.type == 'crfs'
+    );
 
-    const crfsNoDenominator = context.initial_config.value_cols
-    .filter(a => !a.denominator && a.type == "crfs")
+    const crfsNoDenominator = context.initial_config.value_cols.filter(
+        a => !a.denominator && a.type == 'crfs'
+    );
 
-    const queries = context.initial_config.value_cols
-    .filter(a => !a.denominator && a.type == "queries")
-
-console.log(crfsDenominator)
-console.log(crfsNoDenominator)
-console.log(queries)
-
+    const queries = context.initial_config.value_cols.filter(
+        a => !a.denominator && a.type == 'queries'
+    );
 
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
     const nest = d3
@@ -30,30 +30,31 @@ console.log(queries)
             //Define denominators.
             const summary = {
                 nForms: d.length
-                //nNeedsVerification: d.filter(di => di.needs_verification === '1').length,
-                //nNeedsSignature: d.filter(di => di.needs_signature === '1').length
             };
 
-            crfsDenominator
-            .forEach(c => summary['n' + c.denominator] = d.filter(di => di[c.denominator] === '1').length)
+            //calculate count for denominator
+            crfsDenominator.forEach(
+                c =>
+                    (summary['n' + c.denominator] = d.filter(
+                        di => di[c.denominator] === '1'
+                    ).length)
+            );
 
             //Define summarized values, either rates or counts.
-            this.config.value_cols.forEach(value_col => {
+            context.initial_config.value_cols.forEach(value_col => {
                 const count = d3.sum(d, di => di[value_col.col]);
                 summary[value_col.col] =
-                    crfsNoDenominator.indexOf(
-                        value_col.col
-                    ) > -1
+                    crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
                         ? summary.nForms
                             ? count / summary.nForms
                             : 'N/A'
-                        : crfsDenominator.indexOf(value_col.col) > -1
+                        : crfsDenominator.map(m => m.col).indexOf(value_col.col) > -1
                             ? summary['n' + value_col.denominator]
                                 ? count / summary['n' + value_col.denominator]
                                 : 'N/A'
-                                : queries.indexOf(value_col.col) > -1
-                                    ? count
-                                    : console.log(`Missed one: ${value_col.col}`);
+                            : queries.map(m => m.col).indexOf(value_col.col) > -1
+                                ? count
+                                : console.log(`Missed one: ${value_col.col}`);
             });
             summary.nest_level = d[0].nest_level;
             summary.parents = d[0].parents;
@@ -66,7 +67,7 @@ console.log(queries)
         d.id = d.key;
         delete d.key;
         this.config.value_cols.forEach(value_col => {
-            d[value_col] = d.values[value_col.col];
+            d[value_col.col] = d.values[value_col.col];
         });
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;

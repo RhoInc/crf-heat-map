@@ -109,6 +109,41 @@ binary CRF flags and query frequencies that capture some status related to the c
 undefined
 ```
 
+### settings.value_cols[].col
+`string`
+
+Variable Name
+
+**default:** none
+
+### settings.value_cols[].type
+`string`
+
+Variable Type
+
+**default:** none
+
+### settings.value_cols[].denominator
+`string`
+
+Denominator for Proportion Calculation
+
+**default:** none
+
+### settings.value_cols[].label
+`string`
+
+Table Header Label
+
+**default:** none
+
+### settings.value_cols[].description
+`string`
+
+Description for Info Bubbles
+
+**default:** none
+
 
 
 ## settings.filter_cols
@@ -143,5 +178,5 @@ expands all nests so that no rows are hidden
 The object below contains each Webcharts setting as of version 1.2.0.
 
 ```
-{    return {        cols: null,        headers: [            'ID',            'Entered',            'Source Data Verified',            'Ready for Freeze',            'Frozen',            'Signed',            'Locked',            'Open',            'Answered'        ],        applyCSS: true,        searchable: false,        sortable: false,        pagination: false,        exportable: true,        exports: ['csv', 'xlsx'],        dynamicPositioning: false    };}}
+{    return {        cols: null,        headers: null, // set in rendererSettings        applyCSS: true,        searchable: false,        sortable: false,        pagination: false,        exportable: true,        exports: ['csv', 'xlsx'],        dynamicPositioning: false    };}}
 ```

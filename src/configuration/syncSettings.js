@@ -25,10 +25,10 @@ export default function syncSettings(settings) {
         : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
 
     // add labels specified in rendererSettings as headers
-    settings.headers = settings.value_cols.map(d => d.label)
+    settings.headers = settings.value_cols.map(d => d.label);
 
     //add ID header
-    settings.headers.unshift('ID')
+    settings.headers.unshift('ID');
 
     return settings;
 }
