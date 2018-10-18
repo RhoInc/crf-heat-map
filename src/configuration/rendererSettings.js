@@ -87,6 +87,6 @@ export default function rendererSettings() {
         ],
         filter_cols: ['subset1', 'subset2', 'subset3'],
         display_cell_annotations: true,
-        expand_all: true
+        expand_all: false
     };
 }

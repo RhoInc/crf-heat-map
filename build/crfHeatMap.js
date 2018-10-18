@@ -1307,7 +1307,7 @@
             ],
             filter_cols: ['subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
-            expand_all: true
+            expand_all: false
         };
     }
 
@@ -2579,6 +2579,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
