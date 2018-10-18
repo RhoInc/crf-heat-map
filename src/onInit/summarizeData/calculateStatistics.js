@@ -1,6 +1,5 @@
 export default function calculateStatistics(onInit = true) {
     const context = this;
-    console.log(this);
 
     // throw error if any query columns have denominators
     if (
@@ -78,6 +77,13 @@ export default function calculateStatistics(onInit = true) {
     //Add summarized data to array of summaries.
     if (onInit) {
         this.data.summaries.push(nest);
+
+        // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
+        context.typeDict = d3
+            .nest()
+            .key(d => d.col)
+            .rollup(rows => rows[0].type)
+            .map(context.initial_config.value_cols);
     } else {
         return nest;
     }

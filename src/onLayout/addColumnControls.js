@@ -12,7 +12,10 @@ export default function addColumnControls() {
                 variable: variable,
                 min: 0,
                 lower: 0,
-                max: variable.indexOf('query') < 0 ? 1 : d3.max(this.data.raw, di => di[variable])
+                max:
+                    context.typeDict[variable] == 'crfs'
+                        ? 1
+                        : d3.max(this.data.raw, di => di[variable])
             };
             filter.upper = filter.max;
 

@@ -336,7 +336,6 @@
         var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
         var context = this;
-        console.log(this);
 
         // throw error if any query columns have denominators
         if (
@@ -430,6 +429,17 @@
         //Add summarized data to array of summaries.
         if (onInit) {
             this.data.summaries.push(nest);
+
+            // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
+            context.typeDict = d3
+                .nest()
+                .key(function(d) {
+                    return d.col;
+                })
+                .rollup(function(rows) {
+                    return rows[0].type;
+                })
+                .map(context.initial_config.value_cols);
         } else {
             return nest;
         }
@@ -495,6 +505,8 @@
     function update(filter) {
         var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+        var context = this;
+
         var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
         if (isIE) {
             //update lower slider and annotation
@@ -503,7 +515,7 @@
                     .attr({
                         min: filter.min,
                         max: function max(d) {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 return filter.max * 100;
                             } else {
                                 return filter.upper;
@@ -518,7 +530,7 @@
                     .attr({
                         min: filter.min,
                         max: function max(d) {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 return filter.max * 100;
                             } else {
                                 return filter.upper;
@@ -526,7 +538,9 @@
                         }
                     })
                     .property('value', function(d) {
-                        return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
+                        return context.typeDict[d.variable] == 'crfs'
+                            ? filter.upper * 100
+                            : filter.upper;
                     });
         } else {
             //update lower slider and annotation
@@ -539,10 +553,10 @@
                     .property('value', filter.lower);
             filter.lowerAnnotation.text(
                 '' +
-                    (filter.variable.indexOf('query') < 0
+                    (context.typeDict[filter.variable] == 'crfs'
                         ? Math.round(filter.lower * 100)
                         : filter.lower) +
-                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
             );
 
             //update upper slider and annotation
@@ -555,10 +569,10 @@
                     .property('value', filter.upper);
             filter.upperAnnotation.text(
                 '' +
-                    (filter.variable.indexOf('query') < 0
+                    (context.typeDict[filter.variable] == 'crfs'
                         ? Math.round(filter.upper * 100)
                         : filter.upper) +
-                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
             );
         }
     }
@@ -892,6 +906,26 @@
     var paddingLeft = 6;
 
     function defineStyles() {
+        // calculate how many crf & query columns there are to dynamically determine width of legend
+        var queriesCount = this.settings.defaults.value_cols.filter(function(a) {
+            return a.type == 'queries';
+        }).length;
+
+        var crfsCount = this.settings.defaults.value_cols.filter(function(a) {
+            return a.type == 'crfs';
+        }).length;
+
+        // make single column legends little bigger to fit legend
+        if (queriesCount == 1) {
+            queriesCount = queriesCount + 0.5;
+            crfsCount = crfsCount - 0.5;
+        }
+
+        if (crfsCount == 1) {
+            crfsCount = crfsCount + 0.5;
+            queriesCount = queriesCount - 0.5;
+        }
+
         var styles = [
             'body {' + '    overflow-y: scroll;' + '}',
             'body #crf-heat-map {' +
@@ -1011,8 +1045,14 @@
                 '}',
             '.chm-legend {' + '    padding-top: 17px;' + '    display: inline-block;' + '}',
             '.chm-legend > * {' + '}',
-            '#chm-crf-legend {' + '    float: left;' + '    width: 74.9%;' + '}',
-            '#chm-query-legend {' + '    float: right;' + '    width: 24.9%;' + '}',
+            '#chm-crf-legend {' +
+                '    float: left;' +
+                ('    width: ' + 12.5 * crfsCount + '%;') +
+                '}',
+            '#chm-query-legend {' +
+                '    float: right;' +
+                ('    width: ' + 12.5 * queriesCount + '%;') +
+                '}',
             '.chm-legend-title {' + '    font-size: 20px;' + '    font-weight: bold;' + '}',
             '#chm-query-legend .chm-legend-title {' + '    text-align: right;' + '}',
             '.chm-legend-div {' +
@@ -1301,6 +1341,18 @@
                 ];
         });
 
+        //ensure consistent case in value_col specs to avoid any errors - mixed feelings on this
+        settings.value_cols.forEach(function(obj) {
+            return (obj = Object.keys(obj).reduce(function(n, k) {
+                return (obj[k] = obj[k].toLowerCase()), n;
+            }, {}));
+        });
+
+        // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
+        settings.value_cols.sort(function(a, b) {
+            return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
+        });
+
         //Define initial nesting variables.
         settings.id_cols = settings.nestings
             .filter(function(d) {
@@ -1330,6 +1382,11 @@
         settings.headers = settings.value_cols.map(function(d) {
             return d.label;
         });
+
+        // throw an error if there are more than 8 columns (due to current css set up)
+        if (settings.headers.length > 8) {
+            throw "A maximum of eight statistic columns is allowed. There are more than 8 value_col entries in rendererSettings currently. Don't be so greedy.";
+        }
 
         //add ID header
         settings.headers.unshift('ID');
@@ -1564,6 +1621,8 @@
     }
 
     function layout(filter) {
+        var context = this;
+
         var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
         if (isIE) {
             //add containing div to header cell
@@ -1590,7 +1649,7 @@
                 .append('span')
                 .classed('chm-text', true)
                 .text(function(d) {
-                    return d.variable.indexOf('query') < 0 ? '%' : '';
+                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
                 });
 
             filter.div
@@ -1618,7 +1677,7 @@
                 .append('span')
                 .classed('chm-text', true)
                 .text(function(d) {
-                    return d.variable.indexOf('query') < 0 ? '%' : '';
+                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
                 });
         } else {
             //add containing div to header cell
@@ -1633,7 +1692,7 @@
                 .classed('range-slider filter-slider--lower', true)
                 .attr({
                     type: 'range',
-                    step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
                     min: 0
                 });
 
@@ -1647,7 +1706,7 @@
                 .classed('range-slider filter-slider--upper', true)
                 .attr({
                     type: 'range',
-                    step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
                     min: 0
                 });
             filter.upperAnnotation = filter.div
@@ -1726,7 +1785,7 @@
                         var slider2 = parseFloat(sliders[1].value);
 
                         if (slider1 <= slider2) {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 d.lower = slider1 / 100;
                                 d.upper = slider2 / 100;
                             } else {
@@ -1734,7 +1793,7 @@
                                 d.upper = slider2;
                             }
                         } else {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 d.lower = slider2 / 100;
                                 d.upper = slider1 / 100;
                             } else {
@@ -1755,7 +1814,7 @@
                 var slider2 = parseFloat(sliders[1].value);
 
                 if (slider1 <= slider2) {
-                    if (d.variable.indexOf('query') < 0) {
+                    if (context.typeDict[d.variable] == 'crfs') {
                         d.lower = slider1 / 100;
                         d.upper = slider2 / 100;
                     } else {
@@ -1763,7 +1822,7 @@
                         d.upper = slider2;
                     }
                 } else {
-                    if (d.variable.indexOf('query') < 0) {
+                    if (context.typeDict[d.variable] == 'crfs') {
                         d.lower = slider2 / 100;
                         d.upper = slider1 / 100;
                     } else {
@@ -1856,7 +1915,7 @@
                         min: 0,
                         lower: 0,
                         max:
-                            variable.indexOf('query') < 0
+                            context.typeDict[variable] == 'crfs'
                                 ? 1
                                 : d3.max(_this.data.raw, function(di) {
                                       return di[variable];
@@ -1945,6 +2004,8 @@
     }
 
     function customizeCells() {
+        var context = this;
+
         this.cells = this.tbody.selectAll('td');
         this.cells
             .attr('class', function(d) {
@@ -1959,7 +2020,7 @@
                 else {
                     cellClass = cellClass + ' chm-cell--heat';
                     var level = void 0;
-                    if (d.col.indexOf('query') > -1)
+                    if (context.typeDict[d.col] == 'queries')
                         level =
                             d.text === 0
                                 ? 5
@@ -1991,7 +2052,7 @@
             .text(function(d) {
                 return d.col === 'id'
                     ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : d.col.indexOf('query') < 0
+                    : context.typeDict[d.col] == 'crfs'
                         ? d.text === 'N/A'
                             ? d.text
                             : String(Math.floor(d.text * 100)) + '%'
@@ -2515,8 +2576,6 @@
     }
 
     //utility functions
-    //styles, configuration, and webcharts
-    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
