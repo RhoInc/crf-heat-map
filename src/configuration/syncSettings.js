@@ -8,11 +8,6 @@ export default function syncSettings(settings) {
             settings[settingsCols.find(settingsCol => settingsCol === nesting.settings_col)];
     });
 
-    //ensure consistent case in value_col specs to avoid any errors - mixed feelings on this
-    settings.value_cols.forEach(
-        obj => (obj = Object.keys(obj).reduce((n, k) => ((obj[k] = obj[k].toLowerCase()), n), {}))
-    );
-
     // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
     settings.value_cols.sort(function(a, b) {
         return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;

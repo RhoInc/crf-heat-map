@@ -1341,13 +1341,6 @@
                 ];
         });
 
-        //ensure consistent case in value_col specs to avoid any errors - mixed feelings on this
-        settings.value_cols.forEach(function(obj) {
-            return (obj = Object.keys(obj).reduce(function(n, k) {
-                return (obj[k] = obj[k].toLowerCase()), n;
-            }, {}));
-        });
-
         // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
         settings.value_cols.sort(function(a, b) {
             return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
