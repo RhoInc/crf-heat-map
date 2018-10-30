@@ -7,11 +7,11 @@ export const border = 1;
 export default function defineStyles() {
 
   // calculate how many crf & query columns there are to dynamically determine width of legend
-  var queriesCount = this.settings.defaults.value_cols.filter(
+  var queriesCount = this.settings.synced.value_cols.filter(
       a => a.type == 'queries'
   ).length;
 
-  var crfsCount = this.settings.defaults.value_cols.filter(
+  var crfsCount = this.settings.synced.value_cols.filter(
       a => a.type == 'crfs'
   ).length;
 
