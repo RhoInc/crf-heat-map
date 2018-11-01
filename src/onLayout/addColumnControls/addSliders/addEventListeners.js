@@ -25,7 +25,7 @@ export default function onInput(filter) {
                     const slider2 = parseFloat(sliders[1].value);
 
                     if (slider1 <= slider2) {
-                        if (d.variable.indexOf('query') < 0) {
+                        if (context.typeDict[d.variable] == 'crfs') {
                             d.lower = slider1 / 100;
                             d.upper = slider2 / 100;
                         } else {
@@ -33,7 +33,7 @@ export default function onInput(filter) {
                             d.upper = slider2;
                         }
                     } else {
-                        if (d.variable.indexOf('query') < 0) {
+                        if (context.typeDict[d.variable] == 'crfs') {
                             d.lower = slider2 / 100;
                             d.upper = slider1 / 100;
                         } else {
@@ -54,7 +54,7 @@ export default function onInput(filter) {
             const slider2 = parseFloat(sliders[1].value);
 
             if (slider1 <= slider2) {
-                if (d.variable.indexOf('query') < 0) {
+                if (context.typeDict[d.variable] == 'crfs') {
                     d.lower = slider1 / 100;
                     d.upper = slider2 / 100;
                 } else {
@@ -62,7 +62,7 @@ export default function onInput(filter) {
                     d.upper = slider2;
                 }
             } else {
-                if (d.variable.indexOf('query') < 0) {
+                if (context.typeDict[d.variable] == 'crfs') {
                     d.lower = slider2 / 100;
                     d.upper = slider1 / 100;
                 } else {

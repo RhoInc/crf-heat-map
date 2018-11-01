@@ -10,9 +10,6 @@
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
             value: function assign(target, varArgs) {
-                // .length of function is 2
-                'use strict';
-
                 if (target == null) {
                     // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
@@ -143,122 +140,6 @@
                       : typeof obj;
               };
 
-    var asyncGenerator = (function() {
-        function AwaitValue(value) {
-            this.value = value;
-        }
-
-        function AsyncGenerator(gen) {
-            var front, back;
-
-            function send(key, arg) {
-                return new Promise(function(resolve, reject) {
-                    var request = {
-                        key: key,
-                        arg: arg,
-                        resolve: resolve,
-                        reject: reject,
-                        next: null
-                    };
-
-                    if (back) {
-                        back = back.next = request;
-                    } else {
-                        front = back = request;
-                        resume(key, arg);
-                    }
-                });
-            }
-
-            function resume(key, arg) {
-                try {
-                    var result = gen[key](arg);
-                    var value = result.value;
-
-                    if (value instanceof AwaitValue) {
-                        Promise.resolve(value.value).then(
-                            function(arg) {
-                                resume('next', arg);
-                            },
-                            function(arg) {
-                                resume('throw', arg);
-                            }
-                        );
-                    } else {
-                        settle(result.done ? 'return' : 'normal', result.value);
-                    }
-                } catch (err) {
-                    settle('throw', err);
-                }
-            }
-
-            function settle(type, value) {
-                switch (type) {
-                    case 'return':
-                        front.resolve({
-                            value: value,
-                            done: true
-                        });
-                        break;
-
-                    case 'throw':
-                        front.reject(value);
-                        break;
-
-                    default:
-                        front.resolve({
-                            value: value,
-                            done: false
-                        });
-                        break;
-                }
-
-                front = front.next;
-
-                if (front) {
-                    resume(front.key, front.arg);
-                } else {
-                    back = null;
-                }
-            }
-
-            this._invoke = send;
-
-            if (typeof gen.return !== 'function') {
-                this.return = undefined;
-            }
-        }
-
-        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
-            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
-                return this;
-            };
-        }
-
-        AsyncGenerator.prototype.next = function(arg) {
-            return this._invoke('next', arg);
-        };
-
-        AsyncGenerator.prototype.throw = function(arg) {
-            return this._invoke('throw', arg);
-        };
-
-        AsyncGenerator.prototype.return = function(arg) {
-            return this._invoke('return', arg);
-        };
-
-        return {
-            wrap: function(fn) {
-                return function() {
-                    return new AsyncGenerator(fn.apply(this, arguments));
-                };
-            },
-            await: function(value) {
-                return new AwaitValue(value);
-            }
-        };
-    })();
-
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
@@ -335,6 +216,29 @@
 
         var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
+        var context = this;
+
+        // throw error if any query columns have denominators
+        if (
+            context.initial_config.value_cols.filter(function(a) {
+                return a.denominator && a.type == 'queries';
+            }).length != 0
+        ) {
+            throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'. ";
+        }
+
+        var crfsDenominator = context.initial_config.value_cols.filter(function(a) {
+            return a.denominator && a.type == 'crfs';
+        });
+
+        var crfsNoDenominator = context.initial_config.value_cols.filter(function(a) {
+            return !a.denominator && a.type == 'crfs';
+        });
+
+        var queries = context.initial_config.value_cols.filter(function(a) {
+            return !a.denominator && a.type == 'queries';
+        });
+
         //Nest data by the ID variable defined above and calculate statistics for each summary variable.
         var nest = d3
             .nest()
@@ -344,38 +248,45 @@
             .rollup(function(d) {
                 //Define denominators.
                 var summary = {
-                    nForms: d.length,
-                    nNeedsVerification: d.filter(function(di) {
-                        return di.needs_verification === '1';
-                    }).length,
-                    nNeedsSignature: d.filter(function(di) {
-                        return di.needs_signature === '1';
-                    }).length
+                    nForms: d.length
                 };
 
+                //calculate count for denominator
+                crfsDenominator.forEach(function(c) {
+                    return (summary['n' + c.denominator] = d.filter(function(di) {
+                        return di[c.denominator] === '1';
+                    }).length);
+                });
+
                 //Define summarized values, either rates or counts.
-                _this.config.value_cols.forEach(function(value_col) {
+                context.initial_config.value_cols.forEach(function(value_col) {
                     var count = d3.sum(d, function(di) {
-                        return di[value_col];
+                        return di[value_col.col];
                     });
-                    summary[value_col] =
-                        ['is_partial_entry', 'ready_for_freeze', 'is_frozen', 'is_locked'].indexOf(
-                            value_col
-                        ) > -1
+                    summary[value_col.col] =
+                        crfsNoDenominator
+                            .map(function(m) {
+                                return m.col;
+                            })
+                            .indexOf(value_col.col) > -1
                             ? summary.nForms
                                 ? count / summary.nForms
                                 : 'N/A'
-                            : ['verified'].indexOf(value_col) > -1
-                                ? summary.nNeedsVerification
-                                    ? count / summary.nNeedsVerification
+                            : crfsDenominator
+                                  .map(function(m) {
+                                      return m.col;
+                                  })
+                                  .indexOf(value_col.col) > -1
+                                ? summary['n' + value_col.denominator]
+                                    ? count / summary['n' + value_col.denominator]
                                     : 'N/A'
-                                : ['is_signed'].indexOf(value_col) > -1
-                                    ? summary.nNeedsSignature
-                                        ? count / summary.nNeedsSignature
-                                        : 'N/A'
-                                    : ['open_query_ct', 'answer_query_ct'].indexOf(value_col) > -1
-                                        ? count
-                                        : console.log('Missed one: ' + value_col);
+                                : queries
+                                      .map(function(m) {
+                                          return m.col;
+                                      })
+                                      .indexOf(value_col.col) > -1
+                                    ? count
+                                    : console.log('Missed one: ' + value_col.col);
                 });
                 summary.nest_level = d[0].nest_level;
                 summary.parents = d[0].parents;
@@ -388,7 +299,7 @@
             d.id = d.key;
             delete d.key;
             _this.config.value_cols.forEach(function(value_col) {
-                d[value_col] = d.values[value_col];
+                d[value_col.col] = d.values[value_col.col];
             });
             d.nest_level = d.values.nest_level;
             d.parents = d.values.parents;
@@ -399,6 +310,17 @@
         //Add summarized data to array of summaries.
         if (onInit) {
             this.data.summaries.push(nest);
+
+            // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
+            context.typeDict = d3
+                .nest()
+                .key(function(d) {
+                    return d.col;
+                })
+                .rollup(function(rows) {
+                    return rows[0].type;
+                })
+                .map(context.initial_config.value_cols);
         } else {
             return nest;
         }
@@ -464,6 +386,8 @@
     function update(filter) {
         var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+        var context = this;
+
         var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
         if (isIE) {
             //update lower slider and annotation
@@ -472,7 +396,7 @@
                     .attr({
                         min: filter.min,
                         max: function max(d) {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 return filter.max * 100;
                             } else {
                                 return filter.upper;
@@ -487,7 +411,7 @@
                     .attr({
                         min: filter.min,
                         max: function max(d) {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 return filter.max * 100;
                             } else {
                                 return filter.upper;
@@ -495,7 +419,9 @@
                         }
                     })
                     .property('value', function(d) {
-                        return d.variable.indexOf('query') < 0 ? filter.upper * 100 : filter.upper;
+                        return context.typeDict[d.variable] == 'crfs'
+                            ? filter.upper * 100
+                            : filter.upper;
                     });
         } else {
             //update lower slider and annotation
@@ -508,10 +434,10 @@
                     .property('value', filter.lower);
             filter.lowerAnnotation.text(
                 '' +
-                    (filter.variable.indexOf('query') < 0
+                    (context.typeDict[filter.variable] == 'crfs'
                         ? Math.round(filter.lower * 100)
                         : filter.lower) +
-                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
             );
 
             //update upper slider and annotation
@@ -524,10 +450,10 @@
                     .property('value', filter.upper);
             filter.upperAnnotation.text(
                 '' +
-                    (filter.variable.indexOf('query') < 0
+                    (context.typeDict[filter.variable] == 'crfs'
                         ? Math.round(filter.upper * 100)
                         : filter.upper) +
-                    (filter.variable.indexOf('query') < 0 ? '%' : '')
+                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
             );
         }
     }
@@ -749,8 +675,8 @@
         }
 
         /**-------------------------------------------------------------------------------------------\
-    Left column
-    \-------------------------------------------------------------------------------------------**/
+        Left column
+        \-------------------------------------------------------------------------------------------**/
 
         this.containers.leftColumn = this.containers.main
             .append('div')
@@ -758,8 +684,8 @@
             .attr('id', 'chm-left-column');
 
         /***--------------------------------------------------------------------------------------\
-      Row 1
-    \--------------------------------------------------------------------------------------***/
+          Row 1
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow1 = this.containers.leftColumn
             .append('div')
@@ -786,8 +712,8 @@
             .text('Loading...');
 
         /***--------------------------------------------------------------------------------------\
-      Row 2
-    \--------------------------------------------------------------------------------------***/
+          Row 2
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow2 = this.containers.leftColumn
             .append('div')
@@ -800,8 +726,8 @@
             .attr('id', 'chm-controls');
 
         /**-------------------------------------------------------------------------------------------\
-    Right column
-    \-------------------------------------------------------------------------------------------**/
+        Right column
+        \-------------------------------------------------------------------------------------------**/
 
         this.containers.rightColumn = this.containers.main
             .append('div')
@@ -809,8 +735,8 @@
             .attr('id', 'chm-right-column');
 
         /***--------------------------------------------------------------------------------------\
-      Row 1
-    \--------------------------------------------------------------------------------------***/
+          Row 1
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow1 = this.containers.rightColumn
             .append('div')
@@ -841,8 +767,8 @@
         drawQueryLegend.call(this);
 
         /***--------------------------------------------------------------------------------------\
-      Row 2
-    \--------------------------------------------------------------------------------------***/
+          Row 2
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow2 = this.containers.rightColumn
             .append('div')
@@ -861,6 +787,26 @@
     var paddingLeft = 6;
 
     function defineStyles() {
+        // calculate how many crf & query columns there are to dynamically determine width of legend
+        var queriesCount = this.settings.synced.value_cols.filter(function(a) {
+            return a.type == 'queries';
+        }).length;
+
+        var crfsCount = this.settings.synced.value_cols.filter(function(a) {
+            return a.type == 'crfs';
+        }).length;
+
+        // make single column legends little bigger to fit legend
+        if (queriesCount == 1) {
+            queriesCount = queriesCount + 0.5;
+            crfsCount = crfsCount - 0.5;
+        }
+
+        if (crfsCount == 1) {
+            crfsCount = crfsCount + 0.5;
+            queriesCount = queriesCount - 0.5;
+        }
+
         var styles = [
             'body {' + '    overflow-y: scroll;' + '}',
             'body #crf-heat-map {' +
@@ -885,8 +831,8 @@
                 '}',
 
             /***--------------------------------------------------------------------------------------\
-      Left column
-    \--------------------------------------------------------------------------------------***/
+          Left column
+        \--------------------------------------------------------------------------------------***/
 
             '#chm-left-column {' +
                 '    float: left;' +
@@ -895,8 +841,8 @@
                 '}',
 
             /****---------------------------------------------------------------------------------\
-      Row 1 - Data Export
-    \---------------------------------------------------------------------------------****/
+          Row 1 - Data Export
+        \---------------------------------------------------------------------------------****/
 
             '#chm-left-column-row-1 {' + '    position: relative;' + '}',
             '#chm-loading {' +
@@ -916,8 +862,8 @@
                 '}',
 
             /****---------------------------------------------------------------------------------\
-      Row 2 - Controls
-    \---------------------------------------------------------------------------------****/
+          Row 2 - Controls
+        \---------------------------------------------------------------------------------****/
 
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
             '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
@@ -938,8 +884,8 @@
             '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
 
             /***--------------------------------------------------------------------------------------\
-      Right column
-    \--------------------------------------------------------------------------------------***/
+          Right column
+        \--------------------------------------------------------------------------------------***/
 
             '#chm-right-column {' +
                 '    float: right;' +
@@ -951,8 +897,8 @@
             '#chm-right-column-row-2 > * {' + '}',
 
             /****---------------------------------------------------------------------------------\
-      Nest controls
-    \---------------------------------------------------------------------------------****/
+          Nest controls
+        \---------------------------------------------------------------------------------****/
 
             '#chm-nest-controls {' +
                 ('    width: ' + firstColumnWidth + '%;') +
@@ -969,8 +915,8 @@
             '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
 
             /****---------------------------------------------------------------------------------\
-      Legend
-    \---------------------------------------------------------------------------------****/
+          Legend
+        \---------------------------------------------------------------------------------****/
 
             '#chm-legend-container {' +
                 ('    width: ' + (100 - firstColumnWidth) + '%;') +
@@ -980,8 +926,14 @@
                 '}',
             '.chm-legend {' + '    padding-top: 17px;' + '    display: inline-block;' + '}',
             '.chm-legend > * {' + '}',
-            '#chm-crf-legend {' + '    float: left;' + '    width: 74.9%;' + '}',
-            '#chm-query-legend {' + '    float: right;' + '    width: 24.9%;' + '}',
+            '#chm-crf-legend {' +
+                '    float: left;' +
+                ('    width: ' + 12.5 * crfsCount + '%;') +
+                '}',
+            '#chm-query-legend {' +
+                '    float: right;' +
+                ('    width: ' + 12.5 * queriesCount + '%;') +
+                '}',
             '.chm-legend-title {' + '    font-size: 20px;' + '    font-weight: bold;' + '}',
             '#chm-query-legend .chm-legend-title {' + '    text-align: right;' + '}',
             '.chm-legend-div {' +
@@ -995,8 +947,8 @@
             '#chm-query-legend .chm-legend-div {' + '    width: 20%;' + '}',
 
             /****---------------------------------------------------------------------------------\
-      Table
-    \---------------------------------------------------------------------------------****/
+          Table
+        \---------------------------------------------------------------------------------****/
 
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '}',
@@ -1181,16 +1133,60 @@
                 }
             ],
             value_cols: [
-                'is_partial_entry',
-                'verified',
-                'ready_for_freeze',
-                'is_frozen',
-                'is_signed',
-                'is_locked',
-                'open_query_ct',
-                'answer_query_ct'
+                {
+                    col: 'is_partial_entry',
+                    type: 'crfs',
+                    label: 'Entered',
+                    description: 'Data have been submitted in the EDC system.'
+                },
+                {
+                    col: 'verified',
+                    type: 'crfs',
+                    denominator: 'needs_verification',
+                    label: 'Source Data Verified',
+                    description:
+                        'All required fields have source data verification complete in EDC.'
+                },
+                {
+                    col: 'ready_for_freeze',
+                    type: 'crfs',
+                    label: 'Ready for Freeze',
+                    description:
+                        'All required cleaning is complete (e.g. SDV, queries resolved) and data are ready to be frozen in EDC.'
+                },
+                {
+                    col: 'is_frozen',
+                    type: 'crfs',
+                    label: 'Frozen',
+                    description: 'Data have been frozen in the EDC system.'
+                },
+                {
+                    col: 'is_signed',
+                    type: 'crfs',
+                    denominator: 'needs_signature',
+                    label: 'Signed',
+                    description: 'Data have been signed in the EDC system.'
+                },
+                {
+                    col: 'is_locked',
+                    type: 'crfs',
+                    label: 'Locked',
+                    description: 'Data have been locked in the EDC system.'
+                },
+                {
+                    col: 'open_query_ct',
+                    type: 'queries',
+                    label: 'Open',
+                    description: 'Site has not responded to issue.'
+                },
+                {
+                    col: 'answer_query_ct',
+                    type: 'queries',
+                    label: 'Answered',
+                    description: 'Site has responded to issue, DM needs to review.'
+                }
             ],
-            filter_cols: ['subset1', 'subset2', 'subset3'], // set in syncSettings()
+            filter_cols: ['subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
             expand_all: false
         };
@@ -1199,17 +1195,7 @@
     function webchartsSettings() {
         return {
             cols: null,
-            headers: [
-                'ID',
-                'Entered',
-                'Source Data Verified',
-                'Ready for Freeze',
-                'Frozen',
-                'Signed',
-                'Locked',
-                'Open',
-                'Answered'
-            ],
+            headers: null, // set in rendererSettings
             applyCSS: true,
             searchable: false,
             sortable: false,
@@ -1236,6 +1222,11 @@
                 ];
         });
 
+        // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
+        settings.value_cols.sort(function(a, b) {
+            return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
+        });
+
         //Define initial nesting variables.
         settings.id_cols = settings.nestings
             .filter(function(d) {
@@ -1247,7 +1238,12 @@
             .slice(0, 3);
 
         //Define table column variables.
-        settings.cols = d3.merge([['id'], settings.value_cols]);
+        settings.cols = d3.merge([
+            ['id'],
+            settings.value_cols.map(function(d) {
+                return d.col;
+            })
+        ]);
 
         //Define filter variables.
         settings.filter_cols = Array.isArray(settings.filter_cols)
@@ -1255,6 +1251,19 @@
                   settings.filter_cols
               )
             : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
+
+        // add labels specified in rendererSettings as headers
+        settings.headers = settings.value_cols.map(function(d) {
+            return d.label;
+        });
+
+        // throw an error if there are more than 8 columns (due to current css set up)
+        if (settings.headers.length > 8) {
+            throw "A maximum of eight statistic columns is allowed. There are more than 8 value_col entries in rendererSettings currently. Don't be so greedy.";
+        }
+
+        //add ID header
+        settings.headers.unshift('ID');
 
         return settings;
     }
@@ -1486,6 +1495,8 @@
     }
 
     function layout(filter) {
+        var context = this;
+
         var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
         if (isIE) {
             //add containing div to header cell
@@ -1512,7 +1523,7 @@
                 .append('span')
                 .classed('chm-text', true)
                 .text(function(d) {
-                    return d.variable.indexOf('query') < 0 ? '%' : '';
+                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
                 });
 
             filter.div
@@ -1540,7 +1551,7 @@
                 .append('span')
                 .classed('chm-text', true)
                 .text(function(d) {
-                    return d.variable.indexOf('query') < 0 ? '%' : '';
+                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
                 });
         } else {
             //add containing div to header cell
@@ -1555,7 +1566,7 @@
                 .classed('range-slider filter-slider--lower', true)
                 .attr({
                     type: 'range',
-                    step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
                     min: 0
                 });
 
@@ -1569,7 +1580,7 @@
                 .classed('range-slider filter-slider--upper', true)
                 .attr({
                     type: 'range',
-                    step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
                     min: 0
                 });
             filter.upperAnnotation = filter.div
@@ -1648,7 +1659,7 @@
                         var slider2 = parseFloat(sliders[1].value);
 
                         if (slider1 <= slider2) {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 d.lower = slider1 / 100;
                                 d.upper = slider2 / 100;
                             } else {
@@ -1656,7 +1667,7 @@
                                 d.upper = slider2;
                             }
                         } else {
-                            if (d.variable.indexOf('query') < 0) {
+                            if (context.typeDict[d.variable] == 'crfs') {
                                 d.lower = slider2 / 100;
                                 d.upper = slider1 / 100;
                             } else {
@@ -1677,7 +1688,7 @@
                 var slider2 = parseFloat(sliders[1].value);
 
                 if (slider1 <= slider2) {
-                    if (d.variable.indexOf('query') < 0) {
+                    if (context.typeDict[d.variable] == 'crfs') {
                         d.lower = slider1 / 100;
                         d.upper = slider2 / 100;
                     } else {
@@ -1685,7 +1696,7 @@
                         d.upper = slider2;
                     }
                 } else {
-                    if (d.variable.indexOf('query') < 0) {
+                    if (context.typeDict[d.variable] == 'crfs') {
                         d.lower = slider2 / 100;
                         d.upper = slider1 / 100;
                     } else {
@@ -1778,7 +1789,7 @@
                         min: 0,
                         lower: 0,
                         max:
-                            variable.indexOf('query') < 0
+                            context.typeDict[variable] == 'crfs'
                                 ? 1
                                 : d3.max(_this.data.raw, function(di) {
                                       return di[variable];
@@ -1847,8 +1858,8 @@
         // transform to proper format
         this.config.value_cols.forEach(function(value_col, index) {
             summaryData[index + 1] = {
-                col: value_col,
-                text: stats[0][value_col]
+                col: value_col.col,
+                text: stats[0][value_col.col]
             };
         });
 
@@ -1867,6 +1878,8 @@
     }
 
     function customizeCells() {
+        var context = this;
+
         this.cells = this.tbody.selectAll('td');
         this.cells
             .attr('class', function(d) {
@@ -1881,7 +1894,7 @@
                 else {
                     cellClass = cellClass + ' chm-cell--heat';
                     var level = void 0;
-                    if (d.col.indexOf('query') > -1)
+                    if (context.typeDict[d.col] == 'queries')
                         level =
                             d.text === 0
                                 ? 5
@@ -1913,7 +1926,7 @@
             .text(function(d) {
                 return d.col === 'id'
                     ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : d.col.indexOf('query') < 0
+                    : context.typeDict[d.col] == 'crfs'
                         ? d.text === 'N/A'
                             ? d.text
                             : String(Math.floor(d.text * 100)) + '%'
@@ -1924,18 +1937,6 @@
     function addInfoBubbles() {
         var chart = this;
 
-        var infoMapping = {
-            is_partial_entry: 'Data have been submitted in the EDC system.',
-            verified: 'All required fields have source data verification complete in EDC.',
-            ready_for_freeze:
-                'All required cleaning is complete (e.g. SDV, queries resolved) and data are ready to be frozen in EDC.',
-            is_frozen: 'Data have been frozen in the EDC system.',
-            is_signed: 'Data have been signed in the EDC system.',
-            is_locked: 'Data have been locked in the EDC system.',
-            open_query_ct: 'Site has not responded to issue.',
-            answer_query_ct: 'Site has responded to issue, DM needs to review.'
-        };
-
         // add info bubbles and either info text, if defined, or the name of variable
         chart.wrap
             .select('tr')
@@ -1944,7 +1945,7 @@
             .append('span')
             .html(' &#9432')
             .attr('title', function(d) {
-                return d in infoMapping ? infoMapping[d] : d;
+                return d.description;
             });
     }
 
@@ -1956,6 +1957,7 @@
             this.rows.classed('chm-hidden', false);
         }
 
+        var rows = this.rows[0];
         var max_id_level = chart.config.id_cols.length - 2;
 
         function iterateNest(d, id_level) {
@@ -2126,6 +2128,10 @@
     function csv() {
         var _this = this;
 
+        var context = this;
+        var value_cols = this.config.value_cols.map(function(d) {
+            return d.col;
+        });
         var CSVarray = [];
 
         var table = this;
@@ -2175,8 +2181,8 @@
             //add rows to CSV array
             var row = _this.export.cols.map(function(col, i) {
                 var value =
-                    _this.config.value_cols.indexOf(col) > -1 &&
-                    col.indexOf('query') < 0 &&
+                    value_cols.indexOf(col) > -1 &&
+                    context.typeDict[col] == 'crfs' &&
                     ['N/A', ''].indexOf(d[col]) < 0
                         ? Math.floor(d[col] * 100)
                         : d[col];
@@ -2215,6 +2221,10 @@
     function xlsx() {
         var _this = this;
 
+        var context = this;
+        var value_cols = this.config.value_cols.map(function(d) {
+            return d.col;
+        });
         var sheetName = 'CRF Summary';
         var options = {
             bookType: 'xlsx',
@@ -2223,8 +2233,8 @@
         };
         var arrayOfArrays = this.export.data.map(function(d) {
             return _this.export.cols.map(function(col) {
-                return _this.config.value_cols.indexOf(col) > -1 &&
-                    col.indexOf('query') < 0 &&
+                return value_cols.indexOf(col) > -1 &&
+                    context.typeDict[col] == 'crfs' &&
                     ['N/A', ''].indexOf(d[col]) < 0
                     ? Math.floor(d[col] * 100) / 100
                     : d[col];
@@ -2249,7 +2259,7 @@
             };
         });
         var pctCols = cols.filter(function(col) {
-            return _this.config.value_cols.indexOf(col.name) > -1 && col.name.indexOf('query') < 0;
+            return value_cols.indexOf(col.name) > -1 && context.typeDict[col.name] == 'crfs';
         });
         var pctCells = Object.keys(sheet).filter(function(key) {
             return (
@@ -2275,12 +2285,7 @@
         //Define column widths in spreadsheet.
         workbook.Sheets[sheetName]['!cols'] = this.export.cols.map(function(col, i) {
             return {
-                wpx:
-                    _this.config.value_cols.indexOf(col) > -1
-                        ? 75
-                        : i < _this.config.id_cols.length
-                            ? 125
-                            : 100
+                wpx: value_cols.indexOf(col) > -1 ? 75 : i < _this.config.id_cols.length ? 125 : 100
             };
         });
 
@@ -2419,7 +2424,9 @@
                     this.settings.synced.nestings.map(function(nesting) {
                         return nesting.value_col + ' (' + nesting.label + ')';
                     }),
-                    this.settings.synced.value_cols,
+                    this.settings.synced.value_cols.map(function(d) {
+                        return d.col;
+                    }),
                     this.settings.synced.filter_cols
                 ])
             )
@@ -2447,8 +2454,7 @@
     }
 
     //utility functions
-    //styles, configuration, and webcharts
-    //table callbacks
+
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {

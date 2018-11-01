@@ -1,17 +1,7 @@
 export default function webchartsSettings() {
     return {
         cols: null,
-        headers: [
-            'ID',
-            'Entered',
-            'Source Data Verified',
-            'Ready for Freeze',
-            'Frozen',
-            'Signed',
-            'Locked',
-            'Open',
-            'Answered'
-        ],
+        headers: null, // set in rendererSettings
         applyCSS: true,
         searchable: false,
         sortable: false,

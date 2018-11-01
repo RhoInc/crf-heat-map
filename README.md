@@ -16,11 +16,14 @@ The CRF Heat Map is fully interactive with user-defined summary combinations, da
 The code to initialize the chart looks like this:
 
 ```javascript
-    d3.csv('dmc_DataPage.csv', function(data) {
-        crfHeatMap('body', {}).init(data);
-    });
+    d3.csv(
+        'https://raw.githubusercontent.com/RhoInc/viz-library/master/data/dataCleaning/dmc_DataPage.csv',
+        function(data) {
+            crfHeatMap('body', {}).init(data);
+        }
+    );
 ```
 
 ## Links
-- [Interactive Example](https://rawgit.com/RhoInc/crf-heat-map/master/build/test-page/index.html)
+- [Interactive Example](http://rhoinc.github.io/crf-heat-map/test-page/)
 - [Configuration](https://github.com/RhoInc/crf-heat-map/wiki/Configuration)

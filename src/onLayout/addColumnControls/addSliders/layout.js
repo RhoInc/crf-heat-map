@@ -26,7 +26,7 @@ export default function layout(filter) {
         rangeValueLowerDiv
             .append('span')
             .classed('chm-text', true)
-            .text(d => (d.variable.indexOf('query') < 0 ? '%' : ''));
+            .text(d => (context.typeDict[d.variable] == 'crfs' ? '%' : ''));
 
         filter.div
             .append('span')
@@ -50,7 +50,7 @@ export default function layout(filter) {
         rangeValueUpperDiv
             .append('span')
             .classed('chm-text', true)
-            .text(d => (d.variable.indexOf('query') < 0 ? '%' : ''));
+            .text(d => (context.typeDict[d.variable] == 'crfs' ? '%' : ''));
     } else {
         //add containing div to header cell
         filter.div = filter.cell
@@ -64,7 +64,7 @@ export default function layout(filter) {
             .classed('range-slider filter-slider--lower', true)
             .attr({
                 type: 'range',
-                step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
                 min: 0
             });
 
@@ -78,7 +78,7 @@ export default function layout(filter) {
             .classed('range-slider filter-slider--upper', true)
             .attr({
                 type: 'range',
-                step: filter.variable.indexOf('query') < 0 ? 0.01 : 1,
+                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
                 min: 0
             });
         filter.upperAnnotation = filter.div
