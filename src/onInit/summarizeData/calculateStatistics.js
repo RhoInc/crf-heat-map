@@ -57,6 +57,7 @@ export default function calculateStatistics(onInit = true) {
             });
             summary.nest_level = d[0].nest_level;
             summary.parents = d[0].parents;
+            summary.folder_ordinal = d[0].folder_ordinal;
             return summary;
         })
         .entries(this.data.initial_filtered);
@@ -70,6 +71,7 @@ export default function calculateStatistics(onInit = true) {
         });
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;
+        d.folder_ordinal = d.values.folder_ordinal;
 
         delete d.values;
     });

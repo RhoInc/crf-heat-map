@@ -409,6 +409,7 @@
                 });
                 summary.nest_level = d[0].nest_level;
                 summary.parents = d[0].parents;
+                summary.folder_ordinal = d[0].folder_ordinal;
                 return summary;
             })
             .entries(this.data.initial_filtered);
@@ -422,6 +423,7 @@
             });
             d.nest_level = d.values.nest_level;
             d.parents = d.values.parents;
+            d.folder_ordinal = d.values.folder_ordinal;
 
             delete d.values;
         });
@@ -448,6 +450,7 @@
     function summarizeData() {
         var _this = this;
 
+        var context = this;
         var t0 = performance.now();
         //begin performance test
 
@@ -486,6 +489,8 @@
                             .join('  |')
                     );
                 }
+
+                //  console.log(d)
             });
 
             calculateStatistics.call(_this);
@@ -493,8 +498,32 @@
 
         //Collapse array of arrays to array of objects.
         this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            return a.id < b.id ? -1 : 1;
+            var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+            if (visitIndex > -1) {
+                var aIds = a.id.split('  |');
+                var bIds = b.id.split('  |');
+                var i;
+                for (i = 0; i < context.config.id_cols.length; i++) {
+                    if (aIds[i] === bIds[i]) {
+                        continue;
+                    } else {
+                        // because the visit_order variable is numeric we want to treat it differently
+                        if (i === visitIndex) {
+                            return typeof aIds[i] == 'undefined'
+                                ? -1
+                                : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
+                                    ? -1
+                                    : 1;
+                        } else {
+                            return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
+                        }
+                    }
+                }
+            } else {
+                return a.id < b.id ? -1 : 1;
+            }
         });
+
         this.data.raw = this.data.summarized;
 
         //end performance test
@@ -1222,6 +1251,7 @@
             site_col: 'sitename',
             id_col: 'subjectnameoridentifier',
             visit_col: 'folderinstancename',
+            visit_order_col: 'folder_ordinal',
             form_col: 'ecrfpagename',
             id_freeze_col: 'subjfreezeflg',
             id_status_col: 'status',

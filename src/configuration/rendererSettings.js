@@ -3,6 +3,7 @@ export default function rendererSettings() {
         site_col: 'sitename',
         id_col: 'subjectnameoridentifier',
         visit_col: 'folderinstancename',
+        visit_order_col: 'folder_ordinal',
         form_col: 'ecrfpagename',
         id_freeze_col: 'subjfreezeflg',
         id_status_col: 'status',

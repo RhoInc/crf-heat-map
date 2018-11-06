@@ -32,6 +32,15 @@ Specifies variable for use as Visit ID
 
 
 
+## settings.visit_order_col
+`string`
+
+Specifies variable for determining order of Visit ID
+
+**default:** `"folder_ordinal"`
+
+
+
 ## settings.form_col
 `string`
 

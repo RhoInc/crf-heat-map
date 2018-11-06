@@ -23,6 +23,12 @@
         "type": "string",
         "default": "folderinstancename"
       },
+      "visit_order_col" : {
+        "title": "Visit Order Column",
+        "description": "Specifies variable for determining order of Visit ID",
+        "type": "string",
+        "default": "folder_ordinal"
+      },
       "form_col" : {
         "title": "Form Column",
         "description": "Specifies variable for use as Form ID",
