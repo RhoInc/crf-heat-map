@@ -2,7 +2,7 @@
     "title": "settings",
     "description": "JSON schema for the configuration of the CRF Heat Map",
     "overview": "The most straightforward way to customize the CRF Heat Map is by using a configuration object whose properties describe the behavior and appearance of the table.  Since the CRF Heat Map is a Webcharts `table` object, many default Webcharts settings are set in the [webchartsSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/webchartsSettings.js) as [described below](#webcharts-settings).  Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality.  These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js).  All defaults can be overwritten by the passed configuration object.",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "type": "object",
     "properties": {
       "site_col" : {
@@ -22,6 +22,12 @@
         "description": "Specifies variable for use as Visit ID",
         "type": "string",
         "default": "folderinstancename"
+      },
+      "visit_order_col" : {
+        "title": "Visit Order Column",
+        "description": "Specifies variable for determining order of Visit ID",
+        "type": "string",
+        "default": "folder_ordinal"
       },
       "form_col" : {
         "title": "Form Column",
@@ -94,23 +100,43 @@
             ]
         },
         "value_cols": {
-            "title": "CRF Flags",
+            "title": "CRF and Query Columns",
             "description": "binary CRF flags and query frequencies that capture some status related to the case report form (CRF)",
             "type": "array",
             "items": {
-                "title": "Variable Name",
-                "description": "the name of the CRF flag or query frequency variable",
-                "type": "string"
+                "type": "object",
+                "properties":{
+                    "col":{
+                      "title":"Variable Name",
+                      "type":"string"
+                    },
+                    "type":{
+                        "title":"Variable Type",
+                        "type":"string"
+                    },
+                    "denominator":{
+                        "title":"Denominator for Proportion Calculation",
+                        "type":"string"
+                    },
+                    "label":{
+                        "title":"Table Header Label",
+                        "type":"string"
+                    },
+                    "description":{
+                        "title":"Description for Info Bubbles",
+                        "type":"string"
+                    }
+                }
             },
             "default": [
-                "is_partial_entry",
-                "verified",
-                "ready_for_freeze",
-                "is_frozen",
-                "is_signed",
-                "is_locked",
-                "open_query_ct",
-                "answer_query_ct"
+                {"col": "is_partial_entry", "type": "crfs", "label": "Entered", "description": "Data have been submitted in the EDC system."},
+                {"col": "verified", "type" : "crfs", "denominator" : "needs_verification", "label": "Source Data Verified", "description" : "All required fields have source data verification complete in EDC."},
+                {"col": "ready_for_freeze", "type" : "crfs", "label": "Ready for Freeze", "description" :   "All required cleaning is complete (e.g. SDV, queries resolved) and data are ready to be frozen in EDC."},
+                {"col": "is_frozen", "type" : "crfs", "label": "Frozen", "description": "Data have been frozen in the EDC system."},
+                {"col": "is_signed", "type" : "crfs", "denominator" : "needs_signature", "label": "Signed", "description" : "Data have been signed in the EDC system."},
+                {"col": "is_locked", "type" : "crfs", "label": "Locked", "description": "Data have been locked in the EDC system."},
+                {"col": "open_query_ct", "type" : "queries", "label": "Open", "description" : "Site has not responded to issue."},
+                {"col": "answer_query_ct", "type" : "queries", "label": "Answered", "description" : "Site has responded to issue, DM needs to review."}
             ]
         },
         "filter_cols": {

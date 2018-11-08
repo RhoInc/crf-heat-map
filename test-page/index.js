@@ -1,13 +1,5 @@
-if (window.origin !== 'https://rhoinc.github.io') {
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = '../crfHeatMap.js';
-    head.appendChild(script);
-}
-
 d3.csv(
-    'https://rawgit.com/RhoInc/crf-heat-map/master/build/test-page/dmc_DataPage.csv',
+    'https://raw.githubusercontent.com/RhoInc/viz-library/master/data/dataCleaning/dmc_DataPage.csv',
     //'./dmc_DataPage.csv', // to improve speed use local data file in development
     function(d) {
         return d;

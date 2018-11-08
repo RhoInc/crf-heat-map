@@ -1,4 +1,6 @@
 export default function csv() {
+    const context = this;
+    const value_cols = this.config.value_cols.map(d => d.col);
     const CSVarray = [];
 
     var table = this;
@@ -44,8 +46,8 @@ export default function csv() {
         //add rows to CSV array
         const row = this.export.cols.map((col, i) => {
             let value =
-                this.config.value_cols.indexOf(col) > -1 &&
-                col.indexOf('query') < 0 &&
+                value_cols.indexOf(col) > -1 &&
+                context.typeDict[col] == 'crfs' &&
                 ['N/A', ''].indexOf(d[col]) < 0
                     ? Math.floor(d[col] * 100)
                     : d[col];

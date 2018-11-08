@@ -5,7 +5,7 @@ export default function checkRequiredVariables() {
                 this.settings.synced.nestings.map(
                     nesting => `${nesting.value_col} (${nesting.label})`
                 ),
-                this.settings.synced.value_cols,
+                this.settings.synced.value_cols.map(d => d.col),
                 this.settings.synced.filter_cols
             ])
         )

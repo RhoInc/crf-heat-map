@@ -18,8 +18,8 @@ export default function addStudySummary() {
     // transform to proper format
     this.config.value_cols.forEach(function(value_col, index) {
         summaryData[index + 1] = {
-            col: value_col,
-            text: stats[0][value_col]
+            col: value_col.col,
+            text: stats[0][value_col.col]
         };
     });
 
