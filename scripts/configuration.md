@@ -183,6 +183,15 @@ expands all nests so that no rows are hidden
 
 **default:** `false`
 
+
+
+## settings.sliders
+`boolean`
+
+Replaces input boxes with sliders for filtering rows
+
+**default:** `false`
+
 # Webcharts settings
 The object below contains each Webcharts setting as of version 1.2.0.
 

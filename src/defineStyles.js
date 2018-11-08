@@ -286,7 +286,12 @@ export default function defineStyles() {
                     '    font-weight: normal;' +
                     '}',
                 '.range-annotation--lower {' + '    text-align: left;' + '}',
-                '.range-annotation--upper {' + '    text-align: right;' + '}',
+                '.range-annotation--upper {' + '    text-align: right;' +
+                    '    width: 50%;' +
+                    '    position: absolute;' +
+                    '    right: 0;' +
+                    '    bottom: 0;' +
+                    '}',
                 '.range-slider::-webkit-slider-thumb {' +
                     '    pointer-events: all;' +
                     '    position: relative;' +
@@ -316,6 +321,12 @@ export default function defineStyles() {
                     '    display: inline-block;' +
                     '    width: 45%;' +
                     '}',
+                  '.range-value-parent {' +
+                      'display: table-cell;' +
+                        '    position: relative;' +
+                        '    width: 100%;' +
+                      '  vertical-align: middle;' +
+                        '}',
                 '.range-value-container > * {' +
                     '    text-align: right;' +
                     '}',

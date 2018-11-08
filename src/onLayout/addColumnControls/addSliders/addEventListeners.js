@@ -1,123 +1,75 @@
 import update from './update';
-import filterData from './filterData';
+import filterData from '../filterData';
 
 export default function onInput(filter) {
     const context = this;
 
-    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+    //Attach an event listener to Sliders
+    filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
+        const loadingdiv = d3.select('#chm-loading');
 
-    if (isIE) {
-        //Attach an event listener to sliders.
-        filter.sliders = filter.div.selectAll('.range-value').on('change', function(d) {
-            const loadingdiv = d3.select('#chm-loading');
+        loadingdiv.classed('chm-hidden', false);
 
-            loadingdiv.classed('chm-hidden', false);
+        const loading = setInterval(() => {
+            const loadingIndicated = loadingdiv.style('display') !== 'none';
 
-            const loading = setInterval(() => {
-                const loadingIndicated = loadingdiv.style('display') !== 'none';
+            if (loadingIndicated) {
+                clearInterval(loading);
+                loadingdiv.classed('chm-hidden', true);
 
-                if (loadingIndicated) {
-                    clearInterval(loading);
-                    loadingdiv.classed('chm-hidden', true);
+                const sliders = this.parentNode.getElementsByTagName('input');
+                const slider1 = parseFloat(sliders[0].value);
+                const slider2 = parseFloat(sliders[1].value);
 
-                    const sliders = this.parentNode.parentNode.getElementsByTagName('input');
-                    const slider1 = parseFloat(sliders[0].value);
-                    const slider2 = parseFloat(sliders[1].value);
-
-                    if (slider1 <= slider2) {
-                        if (context.typeDict[d.variable] == 'crfs') {
-                            d.lower = slider1 / 100;
-                            d.upper = slider2 / 100;
-                        } else {
-                            d.lower = slider1;
-                            d.upper = slider2;
-                        }
-                    } else {
-                        if (context.typeDict[d.variable] == 'crfs') {
-                            d.lower = slider2 / 100;
-                            d.upper = slider1 / 100;
-                        } else {
-                            d.lower = slider2;
-                            d.upper = slider1;
-                        }
-                    }
-                    update.call(context, d);
-                    filterData.call(context);
-                    context.draw(context.data.raw);
-                }
-            }, 25);
-        });
-
-        filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
-            const sliders = this.parentNode.parentNode.getElementsByTagName('input');
-            const slider1 = parseFloat(sliders[0].value);
-            const slider2 = parseFloat(sliders[1].value);
-
-            if (slider1 <= slider2) {
-                if (context.typeDict[d.variable] == 'crfs') {
-                    d.lower = slider1 / 100;
-                    d.upper = slider2 / 100;
-                } else {
+                if (slider1 <= slider2) {
                     d.lower = slider1;
                     d.upper = slider2;
-                }
-            } else {
-                if (context.typeDict[d.variable] == 'crfs') {
-                    d.lower = slider2 / 100;
-                    d.upper = slider1 / 100;
                 } else {
                     d.lower = slider2;
                     d.upper = slider1;
                 }
+
+                update.call(context, d);
+                filterData.call(context);
+                context.draw(context.data.raw);
             }
-            update.call(context, d);
-        });
-    } else {
-        filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
-            const loadingdiv = d3.select('#chm-loading');
+        }, 25);
+    });
 
-            loadingdiv.classed('chm-hidden', false);
+    filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+        const sliders = this.parentNode.getElementsByTagName('input');
+        const slider1 = parseFloat(sliders[0].value);
+        const slider2 = parseFloat(sliders[1].value);
 
-            const loading = setInterval(() => {
-                const loadingIndicated = loadingdiv.style('display') !== 'none';
+        if (slider1 <= slider2) {
+            d.lower = slider1;
+            d.upper = slider2;
+        } else {
+            d.lower = slider2;
+            d.upper = slider1;
+        }
 
-                if (loadingIndicated) {
-                    clearInterval(loading);
-                    loadingdiv.classed('chm-hidden', true);
+        update.call(context, d);
+    });
 
-                    const sliders = this.parentNode.getElementsByTagName('input');
-                    const slider1 = parseFloat(sliders[0].value);
-                    const slider2 = parseFloat(sliders[1].value);
+    //allow users to change filter settings by editing text annotations - not handling the flip case for simplicity
+    filter.upperAnnotation.attr('contenteditable', true).on('blur', function(d) {
+        d.upper =
+            context.typeDict[filter.variable] == 'crfs'
+                ? parseFloat(this.textContent) / 100
+                : parseFloat(this.textContent);
+        filter.upperSlider.property('value', d.upper);
+        filterData.call(context);
+        context.draw(context.data.raw);
+    });
 
-                    if (slider1 <= slider2) {
-                        d.lower = slider1;
-                        d.upper = slider2;
-                    } else {
-                        d.lower = slider2;
-                        d.upper = slider1;
-                    }
-
-                    update.call(context, d);
-                    filterData.call(context);
-                    context.draw(context.data.raw);
-                }
-            }, 25);
-        });
-
-        filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-            const sliders = this.parentNode.getElementsByTagName('input');
-            const slider1 = parseFloat(sliders[0].value);
-            const slider2 = parseFloat(sliders[1].value);
-
-            if (slider1 <= slider2) {
-                d.lower = slider1;
-                d.upper = slider2;
-            } else {
-                d.lower = slider2;
-                d.upper = slider1;
-            }
-
-            update.call(context, d);
-        });
-    }
+    filter.lowerAnnotation.attr('contenteditable', true).on('blur', function(d) {
+        d.lower =
+            context.typeDict[filter.variable] == 'crfs'
+                ? parseFloat(this.textContent) / 100
+                : parseFloat(this.textContent);
+        filter.lowerSlider.property('value', d.lower);
+        filterData.call(context);
+        context.draw(context.data.raw);
+    });
 }

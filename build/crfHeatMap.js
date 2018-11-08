@@ -536,74 +536,77 @@
 
         var context = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-        if (isIE) {
-            //update lower slider and annotation
-            if (reset)
-                filter.lowerSlider
-                    .attr({
-                        min: filter.min,
-                        max: function max(d) {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                return filter.max * 100;
-                            } else {
-                                return filter.upper;
-                            }
-                        }
-                    })
-                    .property('value', filter.lower);
+        //update lower slider and annotation
+        if (reset)
+            filter.lowerSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.lower);
+        filter.lowerAnnotation.text(
+            '' +
+                (context.typeDict[filter.variable] == 'crfs'
+                    ? Math.round(filter.lower * 100)
+                    : filter.lower) +
+                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
+        );
 
-            //update upper slider and annotation
-            if (reset)
-                filter.upperSlider
-                    .attr({
-                        min: filter.min,
-                        max: function max(d) {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                return filter.max * 100;
-                            } else {
-                                return filter.upper;
-                            }
-                        }
-                    })
-                    .property('value', function(d) {
-                        return context.typeDict[d.variable] == 'crfs'
-                            ? filter.upper * 100
-                            : filter.upper;
-                    });
-        } else {
-            //update lower slider and annotation
-            if (reset)
-                filter.lowerSlider
-                    .attr({
-                        min: filter.min,
-                        max: filter.max
-                    })
-                    .property('value', filter.lower);
-            filter.lowerAnnotation.text(
-                '' +
-                    (context.typeDict[filter.variable] == 'crfs'
-                        ? Math.round(filter.lower * 100)
-                        : filter.lower) +
-                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
-            );
+        //update upper slider and annotation
+        if (reset)
+            filter.upperSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.upper);
+        filter.upperAnnotation.text(
+            '' +
+                (context.typeDict[filter.variable] == 'crfs'
+                    ? Math.round(filter.upper * 100)
+                    : filter.upper) +
+                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
+        );
+    }
 
-            //update upper slider and annotation
-            if (reset)
-                filter.upperSlider
-                    .attr({
-                        min: filter.min,
-                        max: filter.max
-                    })
-                    .property('value', filter.upper);
-            filter.upperAnnotation.text(
-                '' +
-                    (context.typeDict[filter.variable] == 'crfs'
-                        ? Math.round(filter.upper * 100)
-                        : filter.upper) +
-                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
-            );
-        }
+    function update$1(filter) {
+        var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        var context = this;
+
+        //update lower input box
+        if (reset)
+            filter.lowerBox
+                .attr({
+                    min: filter.min,
+                    max: function max(d) {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            return filter.max * 100;
+                        } else {
+                            return filter.upper;
+                        }
+                    }
+                })
+                .property('value', filter.lower);
+
+        //update upper input box
+        if (reset)
+            filter.upperBox
+                .attr({
+                    min: filter.min,
+                    max: function max(d) {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            return filter.max * 100;
+                        } else {
+                            return filter.upper;
+                        }
+                    }
+                })
+                .property('value', function(d) {
+                    return context.typeDict[d.variable] == 'crfs'
+                        ? filter.upper * 100
+                        : filter.upper;
+                });
     }
 
     function resetFilters() {
@@ -621,7 +624,9 @@
             filter.upper = filter.max;
 
             //Reset sliders.
-            update.call(_this, filter, true);
+            _this.initial_config.sliders
+                ? update.call(_this, filter, true)
+                : update$1.call(_this, filter, true);
         });
     }
 
@@ -1149,7 +1154,13 @@
                 '    font-weight: normal;' +
                 '}',
             '.range-annotation--lower {' + '    text-align: left;' + '}',
-            '.range-annotation--upper {' + '    text-align: right;' + '}',
+            '.range-annotation--upper {' +
+                '    text-align: right;' +
+                '    width: 50%;' +
+                '    position: absolute;' +
+                '    right: 0;' +
+                '    bottom: 0;' +
+                '}',
             '.range-slider::-webkit-slider-thumb {' +
                 '    pointer-events: all;' +
                 '    position: relative;' +
@@ -1176,6 +1187,12 @@
                 '}',
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
             '.range-value-container {' + '    display: inline-block;' + '    width: 45%;' + '}',
+            '.range-value-parent {' +
+                'display: table-cell;' +
+                '    position: relative;' +
+                '    width: 100%;' +
+                '  vertical-align: middle;' +
+                '}',
             '.range-value-container > * {' + '    text-align: right;' + '}',
             '.range-value-container--lower {' + '    float: left;' + '}',
             '.range-value-container--upper {' + '    float: right;' + '}',
@@ -1337,7 +1354,8 @@
             ],
             filter_cols: ['subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
-            expand_all: false
+            expand_all: false,
+            sliders: false
         };
     }
 
@@ -1612,130 +1630,61 @@
     function addResetButton(th, d) {
         var _this = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+        var resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
+
         var resetButton = {};
         resetButton.container = d3
             .select(th)
             .append('div')
             .classed('reset-button-container', true);
 
-        if (isIE) {
-            resetButton.button = resetButton.container
-                .append('button')
-                .classed('reset-button', true)
-                .text('Reset Ranges') // changed the name for IE
-                .on('click', function() {
-                    _this.data.raw = _this.data.summarized;
-                    resetFilters.call(_this);
-                    _this.draw(_this.data.raw);
-                });
-        } else {
-            resetButton.button = resetButton.container
-                .append('button')
-                .classed('reset-button', true)
-                .text('Reset sliders')
-                .on('click', function() {
-                    _this.data.raw = _this.data.summarized;
-                    resetFilters.call(_this);
-                    _this.draw(_this.data.raw);
-                });
-        }
+        resetButton.button = resetButton.container
+            .append('button')
+            .classed('reset-button', true)
+            .text('Reset ' + resetText)
+            .on('click', function() {
+                _this.data.raw = _this.data.summarized;
+                resetFilters.call(_this);
+                _this.draw(_this.data.raw);
+            });
         this.columnControls.resetButton = resetButton;
     }
 
     function layout(filter) {
         var context = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-        if (isIE) {
-            //add containing div to header cell
-            filter.div = filter.cell
-                .append('div')
-                .datum(filter)
-                .classed('range-slider-container', true);
+        //add containing div to header cell
+        filter.div = filter.cell
+            .append('div')
+            .datum(filter)
+            .classed('range-slider-container', true);
 
-            //lower slider
-            var rangeValueLowerDiv = filter.div
-                .append('div')
-                .classed('range-value-container range-value-container--lower', true);
-            filter.lowerSlider = rangeValueLowerDiv
-                .append('input')
-                .classed('range-value filter-value--lower', true)
-                .attr({
-                    type: 'number',
-                    min: 0,
-                    step: 1,
-                    value: 0
-                });
+        //lower slider
+        filter.lowerSlider = filter.div
+            .append('input')
+            .classed('range-slider filter-slider--lower', true)
+            .attr({
+                type: 'range',
+                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
+                min: 0
+            });
 
-            rangeValueLowerDiv
-                .append('span')
-                .classed('chm-text', true)
-                .text(function(d) {
-                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
-                });
+        filter.lowerAnnotation = filter.div
+            .append('span')
+            .classed('range-annotation range-annotation--lower', true);
 
-            filter.div
-                .append('span')
-                .classed('chm-dash', true)
-                .text(function(d) {
-                    return ' - ';
-                });
-
-            //upper slider
-            var rangeValueUpperDiv = filter.div
-                .append('div')
-                .classed('range-value-container range-value-container--upper', true);
-            filter.upperSlider = rangeValueUpperDiv
-                .append('input')
-                .classed('range-value filter-value--upper', true)
-                .attr({
-                    type: 'number',
-                    min: 0,
-                    step: 1,
-                    value: 100
-                });
-
-            rangeValueUpperDiv
-                .append('span')
-                .classed('chm-text', true)
-                .text(function(d) {
-                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
-                });
-        } else {
-            //add containing div to header cell
-            filter.div = filter.cell
-                .append('div')
-                .datum(filter)
-                .classed('range-slider-container', true);
-
-            //lower slider
-            filter.lowerSlider = filter.div
-                .append('input')
-                .classed('range-slider filter-slider--lower', true)
-                .attr({
-                    type: 'range',
-                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
-                    min: 0
-                });
-
-            filter.lowerAnnotation = filter.div
-                .append('span')
-                .classed('range-annotation range-annotation--lower', true);
-
-            //upper slider
-            filter.upperSlider = filter.div
-                .append('input')
-                .classed('range-slider filter-slider--upper', true)
-                .attr({
-                    type: 'range',
-                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
-                    min: 0
-                });
-            filter.upperAnnotation = filter.div
-                .append('span')
-                .classed('range-annotation range-annotation--upper', true);
-        }
+        //upper slider
+        filter.upperSlider = filter.div
+            .append('input')
+            .classed('range-slider filter-slider--upper', true)
+            .attr({
+                type: 'range',
+                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
+                min: 0
+            });
+        filter.upperAnnotation = filter.div
+            .append('span')
+            .classed('range-annotation range-annotation--upper', true);
     }
 
     function filterData() {
@@ -1785,126 +1734,184 @@
     function onInput(filter) {
         var context = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+        //Attach an event listener to Sliders
+        filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
+            var _this = this;
 
-        if (isIE) {
-            //Attach an event listener to sliders.
-            filter.sliders = filter.div.selectAll('.range-value').on('change', function(d) {
-                var _this = this;
+            var loadingdiv = d3.select('#chm-loading');
 
-                var loadingdiv = d3.select('#chm-loading');
+            loadingdiv.classed('chm-hidden', false);
 
-                loadingdiv.classed('chm-hidden', false);
+            var loading = setInterval(function() {
+                var loadingIndicated = loadingdiv.style('display') !== 'none';
 
-                var loading = setInterval(function() {
-                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+                if (loadingIndicated) {
+                    clearInterval(loading);
+                    loadingdiv.classed('chm-hidden', true);
 
-                    if (loadingIndicated) {
-                        clearInterval(loading);
-                        loadingdiv.classed('chm-hidden', true);
+                    var sliders = _this.parentNode.getElementsByTagName('input');
+                    var slider1 = parseFloat(sliders[0].value);
+                    var slider2 = parseFloat(sliders[1].value);
 
-                        var sliders = _this.parentNode.parentNode.getElementsByTagName('input');
-                        var slider1 = parseFloat(sliders[0].value);
-                        var slider2 = parseFloat(sliders[1].value);
-
-                        if (slider1 <= slider2) {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                d.lower = slider1 / 100;
-                                d.upper = slider2 / 100;
-                            } else {
-                                d.lower = slider1;
-                                d.upper = slider2;
-                            }
-                        } else {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                d.lower = slider2 / 100;
-                                d.upper = slider1 / 100;
-                            } else {
-                                d.lower = slider2;
-                                d.upper = slider1;
-                            }
-                        }
-                        update.call(context, d);
-                        filterData.call(context);
-                        context.draw(context.data.raw);
-                    }
-                }, 25);
-            });
-
-            filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
-                var sliders = this.parentNode.parentNode.getElementsByTagName('input');
-                var slider1 = parseFloat(sliders[0].value);
-                var slider2 = parseFloat(sliders[1].value);
-
-                if (slider1 <= slider2) {
-                    if (context.typeDict[d.variable] == 'crfs') {
-                        d.lower = slider1 / 100;
-                        d.upper = slider2 / 100;
-                    } else {
+                    if (slider1 <= slider2) {
                         d.lower = slider1;
                         d.upper = slider2;
-                    }
-                } else {
-                    if (context.typeDict[d.variable] == 'crfs') {
-                        d.lower = slider2 / 100;
-                        d.upper = slider1 / 100;
                     } else {
                         d.lower = slider2;
                         d.upper = slider1;
                     }
+
+                    update.call(context, d);
+                    filterData.call(context);
+                    context.draw(context.data.raw);
                 }
-                update.call(context, d);
+            }, 25);
+        });
+
+        filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+            var sliders = this.parentNode.getElementsByTagName('input');
+            var slider1 = parseFloat(sliders[0].value);
+            var slider2 = parseFloat(sliders[1].value);
+
+            if (slider1 <= slider2) {
+                d.lower = slider1;
+                d.upper = slider2;
+            } else {
+                d.lower = slider2;
+                d.upper = slider1;
+            }
+
+            update.call(context, d);
+        });
+
+        //allow users to change filter settings by editing text annotations - not handling the flip case for simplicity
+        filter.upperAnnotation.attr('contenteditable', true).on('blur', function(d) {
+            d.upper =
+                context.typeDict[filter.variable] == 'crfs'
+                    ? parseFloat(this.textContent) / 100
+                    : parseFloat(this.textContent);
+            filter.upperSlider.property('value', d.upper);
+            filterData.call(context);
+            context.draw(context.data.raw);
+        });
+
+        filter.lowerAnnotation.attr('contenteditable', true).on('blur', function(d) {
+            d.lower =
+                context.typeDict[filter.variable] == 'crfs'
+                    ? parseFloat(this.textContent) / 100
+                    : parseFloat(this.textContent);
+            filter.lowerSlider.property('value', d.lower);
+            filterData.call(context);
+            context.draw(context.data.raw);
+        });
+    }
+
+    function layout$1(filter) {
+        var context = this;
+
+        //add containing div to header cell
+        filter.div = filter.cell
+            .append('div')
+            .datum(filter)
+            .classed('range-value-parent', true);
+
+        var rangeValueLowerDiv = filter.div
+            .append('div')
+            .classed('range-value-container range-value-container--lower', true);
+
+        //lower Input Box
+        filter.lowerBox = rangeValueLowerDiv
+            .append('input')
+            .classed('range-value filter-value--lower', true)
+            .attr({
+                type: 'number',
+                min: 0,
+                step: 1,
+                value: 0
             });
-        } else {
-            filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
-                var _this2 = this;
 
-                var loadingdiv = d3.select('#chm-loading');
+        rangeValueLowerDiv
+            .append('span')
+            .classed('chm-text', true)
+            .text(function(d) {
+                return context.typeDict[d.variable] == 'crfs' ? '%' : '';
+            });
 
-                loadingdiv.classed('chm-hidden', false);
+        filter.div
+            .append('span')
+            .classed('chm-dash', true)
+            .text(function(d) {
+                return ' - ';
+            });
 
-                var loading = setInterval(function() {
-                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+        var rangeValueUpperDiv = filter.div
+            .append('div')
+            .classed('range-value-container range-value-container--upper', true);
 
-                    if (loadingIndicated) {
-                        clearInterval(loading);
-                        loadingdiv.classed('chm-hidden', true);
+        //upper Input Box
+        filter.upperBox = rangeValueUpperDiv
+            .append('input')
+            .classed('range-value filter-value--upper', true)
+            .attr({
+                type: 'number',
+                min: 0,
+                step: 1,
+                value: 100
+            });
 
-                        var sliders = _this2.parentNode.getElementsByTagName('input');
-                        var slider1 = parseFloat(sliders[0].value);
-                        var slider2 = parseFloat(sliders[1].value);
+        rangeValueUpperDiv
+            .append('span')
+            .classed('chm-text', true)
+            .text(function(d) {
+                return context.typeDict[d.variable] == 'crfs' ? '%' : '';
+            });
+    }
 
-                        if (slider1 <= slider2) {
-                            d.lower = slider1;
-                            d.upper = slider2;
+    function onInput$1(filter) {
+        var context = this;
+
+        //Attach an event listener to Input Boxes.
+        filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function(d) {
+            var _this = this;
+
+            var loadingdiv = d3.select('#chm-loading');
+
+            loadingdiv.classed('chm-hidden', false);
+
+            var loading = setInterval(function() {
+                var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                if (loadingIndicated) {
+                    clearInterval(loading);
+                    loadingdiv.classed('chm-hidden', true);
+
+                    var boxes = _this.parentNode.parentNode.getElementsByTagName('input');
+                    var box1 = parseFloat(boxes[0].value);
+                    var box2 = parseFloat(boxes[1].value);
+
+                    if (box1 <= box2) {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            d.lower = box1 / 100;
+                            d.upper = box2 / 100;
                         } else {
-                            d.lower = slider2;
-                            d.upper = slider1;
+                            d.lower = box1;
+                            d.upper = box2;
                         }
-
-                        update.call(context, d);
-                        filterData.call(context);
-                        context.draw(context.data.raw);
+                    } else {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            d.lower = box2 / 100;
+                            d.upper = box1 / 100;
+                        } else {
+                            d.lower = box2;
+                            d.upper = box1;
+                        }
                     }
-                }, 25);
-            });
-
-            filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-                var sliders = this.parentNode.getElementsByTagName('input');
-                var slider1 = parseFloat(sliders[0].value);
-                var slider2 = parseFloat(sliders[1].value);
-
-                if (slider1 <= slider2) {
-                    d.lower = slider1;
-                    d.upper = slider2;
-                } else {
-                    d.lower = slider2;
-                    d.upper = slider1;
+                    update$1.call(context, d);
+                    filterData.call(context);
+                    context.draw(context.data.raw);
                 }
-
-                update.call(context, d);
-            });
-        }
+            }, 25);
+        });
     }
 
     function addSliders(th, d) {
@@ -1915,9 +1922,15 @@
         filter.cell = d3.select(th);
 
         //Lay out, initialize, and define event listeners for column filter.
-        layout.call(this, filter);
-        update.call(this, filter, true);
-        onInput.call(this, filter);
+        if (this.initial_config.sliders) {
+            layout.call(this, filter);
+            update.call(this, filter, true);
+            onInput.call(this, filter);
+        } else {
+            layout$1.call(this, filter);
+            update$1.call(this, filter, true);
+            onInput$1.call(this, filter);
+        }
     }
 
     function addColumnControls() {
@@ -2602,8 +2615,6 @@
     }
 
     //utility functions
-    //styles, configuration, and webcharts
-    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {

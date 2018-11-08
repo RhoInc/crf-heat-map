@@ -165,6 +165,12 @@
             "description": "expands all nests so that no rows are hidden",
             "type": "boolean",
             "default": false
+        },
+        "sliders": {
+            "title": "Enable Slider Filters",
+            "description": "Replaces input boxes with sliders for filtering rows",
+            "type": "boolean",
+            "default": false
         }
     }
 }
