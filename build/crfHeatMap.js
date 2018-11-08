@@ -2497,10 +2497,7 @@
     }
 
     //utility functions
-<<<<<<< HEAD
-=======
 
->>>>>>> v1.2.0
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
