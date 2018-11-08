@@ -13,7 +13,7 @@ Each site row is expandable and collapsable to show and hide the related subject
 The CRF Heat Map is fully interactive with user-defined summary combinations, data filters, column sliders, and data export.
 
 ## Usage
-The code to initialize the chart looks like this:
+The code to initialize the chart looks like this!
 
 ```javascript
     d3.csv(
