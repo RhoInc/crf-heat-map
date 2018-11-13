@@ -69,7 +69,7 @@ export default function summarizeData() {
         }
     });
 
-    this.data.raw = this.data.summarized;
+    //  this.data.raw = this.data.summarized;
 
     //end performance test
     var t1 = performance.now();

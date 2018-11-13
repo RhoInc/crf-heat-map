@@ -16,7 +16,7 @@ export default function onDraw() {
 
     // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
     var id;
-    chart.data.raw.forEach(function(d) {
+    chart.data.summarized.forEach(function(d) {
         id = d['id'].split('  |');
         if (id[2]) {
             d[config.id_cols[2]] = id[2];
@@ -31,9 +31,12 @@ export default function onDraw() {
     });
 
     if (this.data.summarized.length) {
-        customizeRows.call(this);
+        this.rows = this.tbody.selectAll('tr');
+        customizeRows(this, this.rows);
         addStudySummary.call(this);
-        customizeCells.call(this);
+
+        this.cells = this.tbody.selectAll('td');
+        customizeCells(this, this.cells);
         addInfoBubbles.call(this);
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);

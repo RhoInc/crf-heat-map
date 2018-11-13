@@ -1,3 +1,6 @@
+import customizeRows from './customizeRows';
+import customizeCells from './customizeCells';
+
 export default function addRowDisplayToggle() {
     var chart = this;
     var config = this.config;
@@ -25,17 +28,17 @@ export default function addRowDisplayToggle() {
             .map(d);
     }
 
-    var childNest = iterateNest(chart.data.raw, 0);
+    var childNest = iterateNest(chart.data.summarized, 0);
 
-    var expandable_rows = this.rows
-        .data(chart.data.raw)
-        .filter(function(d) {
-            return d.nest_level < config.id_cols.length - 1;
-        })
-        .select('td');
+    chart.expandable_rows = this.rows.filter(function(d) {
+        return d.nest_level < config.id_cols.length - 1;
+    });
 
-    expandable_rows.on('click', function(d) {
-        var row = d3.select(this.parentNode);
+
+    function onClick(d) {
+        //console.log(childNest)
+        var row = d3.select(this);
+
         var collapsed = !row.classed('chm-table-row--collapsed');
 
         row
@@ -46,6 +49,7 @@ export default function addRowDisplayToggle() {
         d.id.split('  |').forEach(function(level) {
             currentNest = currentNest[level];
         });
+
         var childIds;
         // when collapsing, if the nest's children have children, loop throough and build array with those included
         if (collapsed && Object.keys(currentNest).length > 1) {
@@ -58,13 +62,61 @@ export default function addRowDisplayToggle() {
         } else {
             childIds = currentNest.ids;
         }
+
         var rowChildren = chart.rows.filter(f => childIds.indexOf(f.id) > -1);
         if (collapsed) {
-            rowChildren
-                .classed('chm-hidden chm-table-row--collapsed', true)
-                .classed('chm-table-row--expanded', false);
+            rowChildren.remove();
         } else {
             rowChildren.classed('chm-hidden', false); //show just the immediate children
+
+            var childrenData = chart.data.summarized.filter(a => childIds.includes(a.id));
+            // transform to proper format
+
+            row.classed('selected', true);
+
+            // repeating *s to place children after their parent in the correct order
+            childrenData.forEach((childData, i) =>
+                chart.tbody
+                    .insert('tr', '.selected' + ' + *'.repeat(i + 1))
+                    .classed('chm-table-row', true)
+                    .classed('children', true)
+                    .datum(childData)
+                    .classed('chm-table-row--collapsed', true)
+            );
+
+            var childrenRows = d3.selectAll('.children');
+
+            // transform data to required format
+            const childrenCells = childrenRows.selectAll('td').data(d =>
+                chart.config.cols.map(key => {
+                    return { col: key, text: d[key] };
+                })
+            );
+
+            childrenCells
+                .enter()
+                .append('td')
+                .text(d => d.text);
+
+            // update chart rows property to include newly added rows
+            chart.rows = chart.tbody.selectAll('tr');
+
+            chart.expandable_rows = chart.rows.filter(function(d) {
+                return d.nest_level < config.id_cols.length - 1;
+            });
+
+            childrenRows.classed('children', false);
+
+            // add on click functionality to new children too
+            chart.expandable_rows.on('click', onClick);
+
+            // apply styling
+            customizeRows(chart, childrenRows);
+
+            customizeCells(chart, childrenCells);
+
+            row.classed('selected', false);
         }
-    });
+    }
+    chart.expandable_rows.on('click', onClick);
 }

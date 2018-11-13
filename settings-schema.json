@@ -171,6 +171,12 @@
             "description": "Replaces input boxes with sliders for filtering rows",
             "type": "boolean",
             "default": false
+        },
+        "max_rows_warn": {
+            "title": "Maximum Number of Rows Before Warning User",
+            "description": "If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation",
+            "type": "number",
+            "default": 10000
         }
     }
 }
