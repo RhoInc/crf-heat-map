@@ -192,6 +192,15 @@ Replaces input boxes with sliders for filtering rows
 
 **default:** `false`
 
+
+
+## settings.max_rows_warn
+`number`
+
+If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation
+
+**default:** `10000`
+
 # Webcharts settings
 The object below contains each Webcharts setting as of version 1.2.0.
 

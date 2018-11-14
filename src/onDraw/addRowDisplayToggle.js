@@ -1,5 +1,6 @@
 import customizeRows from './customizeRows';
 import customizeCells from './customizeCells';
+import flagParentRows from './flagParentRows';
 
 export default function addRowDisplayToggle() {
     var chart = this;
@@ -34,9 +35,7 @@ export default function addRowDisplayToggle() {
         return d.nest_level < config.id_cols.length - 1;
     });
 
-
     function onClick(d) {
-        //console.log(childNest)
         var row = d3.select(this);
 
         var collapsed = !row.classed('chm-table-row--collapsed');
@@ -69,8 +68,10 @@ export default function addRowDisplayToggle() {
         } else {
             rowChildren.classed('chm-hidden', false); //show just the immediate children
 
-            var childrenData = chart.data.summarized.filter(a => childIds.includes(a.id));
-            // transform to proper format
+            // get the data for the child rows
+            var childrenData = chart.data.summarized.filter(
+                a => childIds.includes(a.id) && (a.filtered != true || a.visible_child)
+            );
 
             row.classed('selected', true);
 
@@ -93,6 +94,7 @@ export default function addRowDisplayToggle() {
                 })
             );
 
+            // add cells with text to new rows
             childrenCells
                 .enter()
                 .append('td')
@@ -101,11 +103,17 @@ export default function addRowDisplayToggle() {
             // update chart rows property to include newly added rows
             chart.rows = chart.tbody.selectAll('tr');
 
+            // update expandable_rows with the newly drawn rows
             chart.expandable_rows = chart.rows.filter(function(d) {
                 return d.nest_level < config.id_cols.length - 1;
             });
 
+            // remove classes
             childrenRows.classed('children', false);
+            row.classed('selected', false);
+
+            // apply coloring based on filters
+            flagParentRows.call(chart);
 
             // add on click functionality to new children too
             chart.expandable_rows.on('click', onClick);
@@ -114,8 +122,6 @@ export default function addRowDisplayToggle() {
             customizeRows(chart, childrenRows);
 
             customizeCells(chart, childrenCells);
-
-            row.classed('selected', false);
         }
     }
     chart.expandable_rows.on('click', onClick);

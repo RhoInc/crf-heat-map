@@ -14,9 +14,9 @@ export default function addResetButton(th, d) {
         .classed('reset-button', true)
         .text('Reset ' + resetText)
         .on('click', () => {
-            this.data.raw = this.data.summarized;
             resetFilters.call(this);
-            this.draw(this.data.raw);
+            this.draw(this.data.top);
+            this.rows.classed('grayParent', false);
         });
     this.columnControls.resetButton = resetButton;
 }

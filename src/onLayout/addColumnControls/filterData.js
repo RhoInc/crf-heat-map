@@ -22,12 +22,12 @@ export default function filterData() {
     var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
 
     //identifiy the parent rows
-    this.data.summarized = this.data.summarized.map(function(m) {
+    this.data.raw = this.data.summarized.map(function(m) {
         m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
         return m;
     });
 
-    //and set filtered_parent = true if filted = true
+    this.data.raw = this.data.raw.filter(d => d.parents.length == 0); // only want to draw top level;
 
-    this.data.raw = this.data.summarized.filter(f => !f.filtered || f.visible_child);
+    this.data.raw = this.data.raw.filter(f => !f.filtered || f.visible_child);
 }

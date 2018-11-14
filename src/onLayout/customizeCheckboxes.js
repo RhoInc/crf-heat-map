@@ -9,39 +9,44 @@ export default function customizeCheckboxes() {
         .on('change', function(d) {
             var changer_this = this;
 
-            var loadingdiv = d3.select('#chm-loading');
+            var confirmation = true;
+            if (
+                changer_this.checked &&
+                context.data.summarized.length > context.initial_config.max_rows_warn
+            ) {
+                confirmation = confirm(
+                    'This will draw over ' +
+                        String(context.initial_config.max_rows_warn) +
+                        ' rows. Proceed?'
+                );
+            }
 
-            loadingdiv.classed('chm-hidden', false);
+            if (!confirmation) {
+                changer_this.checked = false;
+            } else {
+                var loadingdiv = d3.select('#chm-loading'); // fix this later due to confirm box
 
-            var loading = setInterval(function() {
-                var loadingIndicated = loadingdiv.style('display') !== 'none';
+                loadingdiv.classed('chm-hidden', false);
 
-                if (loadingIndicated) {
-                    clearInterval(loading);
-                    loadingdiv.classed('chm-hidden', true);
+                var loading = setInterval(function() {
+                    var loadingIndicated = loadingdiv.style('display') !== 'none';
 
-                    context.config[d.option] = changer_this.checked;
+                    if (loadingIndicated) {
+                        clearInterval(loading);
+                        loadingdiv.classed('chm-hidden', true);
 
-                    console.log(context)
+                        context.config[d.option] = changer_this.checked;
 
-                    if (changer_this.checked) {
-                      var check = true
-                      if (context.data.summarized.length > context.initial_config.max_rows_warn) {
-                          check = confirm("This action will results in drawing over " + String(context.initial_config.max_rows_warn) + " rows which may require extended loading time. Are you sure you want to do this?");
-                      }
-                      if (check) {
-                      context.draw(context.data.summarized);
-                      context.expandable_rows.classed('chm-table-row--collapsed', false);
-                    } else {
-                      changer_this.checked  = false;
-                      context.config[d.option] = false;
+                        if (changer_this.checked) {
+                            context.draw(context.data.summarized);
+                            context.expandable_rows.classed('chm-table-row--collapsed', false);
+                        } else {
+                            context.draw(context.data.top);
+                            context.expandable_rows.classed('chm-table-row--collapsed', true);
+                        }
                     }
-                    }  else {
-                      context.draw(context.data.summarized.filter(d => d.parents.length == 0));
-                      context.expandable_rows.classed('chm-table-row--collapsed', true);
-                    }
-
-                }
-            }, 25);
+                }, 25);
+            }
+            context.config[d.option] = changer_this.checked;
         });
 }
