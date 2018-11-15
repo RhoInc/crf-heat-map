@@ -1732,11 +1732,16 @@
         //First, get all the rows that match the filters
         this.columnControls.filters.forEach(function(filter) {
             _this.data.summarized.forEach(function(d) {
-                var filtered_low = +d[filter.variable] < +filter.lower;
-                var filtered_high = +d[filter.variable] > +filter.upper;
-                //filtered_missing = d[filter.variable] === 'N/A'
-                if (filtered_low || filtered_high) {
+                // filter N/As (as 100%) too
+                if (d[filter.variable] == 'N/A' && +filter.upper < 1) {
                     d.filtered = true;
+                } else {
+                    var filtered_low = +d[filter.variable] < +filter.lower;
+                    var filtered_high = +d[filter.variable] > +filter.upper;
+                    //filtered_missing = d[filter.variable] === 'N/A'
+                    if (filtered_low || filtered_high) {
+                        d.filtered = true;
+                    }
                 }
             });
         });
@@ -2701,6 +2706,8 @@
     }
 
     //utility functions
+    //styles, configuration, and webcharts
+    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
