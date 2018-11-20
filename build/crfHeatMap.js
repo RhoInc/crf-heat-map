@@ -2061,15 +2061,10 @@
         var chart = this;
         var config = this.config;
 
-<<<<<<< HEAD
         // get all table rows
-=======
-        if (this.config.expand_all) {
-            this.rows.classed('chm-hidden', false);
-        }
-
         var rows = this.rows[0];
->>>>>>> 560853730dc33b1b9762e8ddb155455b6c73b9f8
+
+        // get the highest id level
         var max_id_level = chart.config.id_cols.length - 2;
 
         // loop through levels of nest and develop a dictionary with children for parent keys
@@ -2655,10 +2650,7 @@
     }
 
     //utility functions
-<<<<<<< HEAD
-=======
 
->>>>>>> 560853730dc33b1b9762e8ddb155455b6c73b9f8
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
