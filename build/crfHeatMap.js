@@ -10,9 +10,6 @@
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
             value: function assign(target, varArgs) {
-                // .length of function is 2
-                'use strict';
-
                 if (target == null) {
                     // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
@@ -142,122 +139,6 @@
                       ? 'symbol'
                       : typeof obj;
               };
-
-    var asyncGenerator = (function() {
-        function AwaitValue(value) {
-            this.value = value;
-        }
-
-        function AsyncGenerator(gen) {
-            var front, back;
-
-            function send(key, arg) {
-                return new Promise(function(resolve, reject) {
-                    var request = {
-                        key: key,
-                        arg: arg,
-                        resolve: resolve,
-                        reject: reject,
-                        next: null
-                    };
-
-                    if (back) {
-                        back = back.next = request;
-                    } else {
-                        front = back = request;
-                        resume(key, arg);
-                    }
-                });
-            }
-
-            function resume(key, arg) {
-                try {
-                    var result = gen[key](arg);
-                    var value = result.value;
-
-                    if (value instanceof AwaitValue) {
-                        Promise.resolve(value.value).then(
-                            function(arg) {
-                                resume('next', arg);
-                            },
-                            function(arg) {
-                                resume('throw', arg);
-                            }
-                        );
-                    } else {
-                        settle(result.done ? 'return' : 'normal', result.value);
-                    }
-                } catch (err) {
-                    settle('throw', err);
-                }
-            }
-
-            function settle(type, value) {
-                switch (type) {
-                    case 'return':
-                        front.resolve({
-                            value: value,
-                            done: true
-                        });
-                        break;
-
-                    case 'throw':
-                        front.reject(value);
-                        break;
-
-                    default:
-                        front.resolve({
-                            value: value,
-                            done: false
-                        });
-                        break;
-                }
-
-                front = front.next;
-
-                if (front) {
-                    resume(front.key, front.arg);
-                } else {
-                    back = null;
-                }
-            }
-
-            this._invoke = send;
-
-            if (typeof gen.return !== 'function') {
-                this.return = undefined;
-            }
-        }
-
-        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
-            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
-                return this;
-            };
-        }
-
-        AsyncGenerator.prototype.next = function(arg) {
-            return this._invoke('next', arg);
-        };
-
-        AsyncGenerator.prototype.throw = function(arg) {
-            return this._invoke('throw', arg);
-        };
-
-        AsyncGenerator.prototype.return = function(arg) {
-            return this._invoke('return', arg);
-        };
-
-        return {
-            wrap: function(fn) {
-                return function() {
-                    return new AsyncGenerator(fn.apply(this, arguments));
-                };
-            },
-            await: function(value) {
-                return new AwaitValue(value);
-            }
-        };
-    })();
 
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var propIsEnumerable = Object.prototype.propertyIsEnumerable;
@@ -847,8 +728,8 @@
         }
 
         /**-------------------------------------------------------------------------------------------\
-    Left column
-    \-------------------------------------------------------------------------------------------**/
+        Left column
+        \-------------------------------------------------------------------------------------------**/
 
         this.containers.leftColumn = this.containers.main
             .append('div')
@@ -856,8 +737,8 @@
             .attr('id', 'chm-left-column');
 
         /***--------------------------------------------------------------------------------------\
-      Row 1
-    \--------------------------------------------------------------------------------------***/
+          Row 1
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow1 = this.containers.leftColumn
             .append('div')
@@ -884,8 +765,8 @@
             .text('Loading...');
 
         /***--------------------------------------------------------------------------------------\
-      Row 2
-    \--------------------------------------------------------------------------------------***/
+          Row 2
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow2 = this.containers.leftColumn
             .append('div')
@@ -898,8 +779,8 @@
             .attr('id', 'chm-controls');
 
         /**-------------------------------------------------------------------------------------------\
-    Right column
-    \-------------------------------------------------------------------------------------------**/
+        Right column
+        \-------------------------------------------------------------------------------------------**/
 
         this.containers.rightColumn = this.containers.main
             .append('div')
@@ -907,8 +788,8 @@
             .attr('id', 'chm-right-column');
 
         /***--------------------------------------------------------------------------------------\
-      Row 1
-    \--------------------------------------------------------------------------------------***/
+          Row 1
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow1 = this.containers.rightColumn
             .append('div')
@@ -939,8 +820,8 @@
         drawQueryLegend.call(this);
 
         /***--------------------------------------------------------------------------------------\
-      Row 2
-    \--------------------------------------------------------------------------------------***/
+          Row 2
+        \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow2 = this.containers.rightColumn
             .append('div')
@@ -960,11 +841,11 @@
 
     function defineStyles() {
         // calculate how many crf & query columns there are to dynamically determine width of legend
-        var queriesCount = this.settings.defaults.value_cols.filter(function(a) {
+        var queriesCount = this.settings.synced.value_cols.filter(function(a) {
             return a.type == 'queries';
         }).length;
 
-        var crfsCount = this.settings.defaults.value_cols.filter(function(a) {
+        var crfsCount = this.settings.synced.value_cols.filter(function(a) {
             return a.type == 'crfs';
         }).length;
 
@@ -1003,8 +884,8 @@
                 '}',
 
             /***--------------------------------------------------------------------------------------\
-      Left column
-    \--------------------------------------------------------------------------------------***/
+          Left column
+        \--------------------------------------------------------------------------------------***/
 
             '#chm-left-column {' +
                 '    float: left;' +
@@ -1013,8 +894,8 @@
                 '}',
 
             /****---------------------------------------------------------------------------------\
-      Row 1 - Data Export
-    \---------------------------------------------------------------------------------****/
+          Row 1 - Data Export
+        \---------------------------------------------------------------------------------****/
 
             '#chm-left-column-row-1 {' + '    position: relative;' + '}',
             '#chm-loading {' +
@@ -1034,8 +915,8 @@
                 '}',
 
             /****---------------------------------------------------------------------------------\
-      Row 2 - Controls
-    \---------------------------------------------------------------------------------****/
+          Row 2 - Controls
+        \---------------------------------------------------------------------------------****/
 
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
             '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
@@ -1056,8 +937,8 @@
             '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
 
             /***--------------------------------------------------------------------------------------\
-      Right column
-    \--------------------------------------------------------------------------------------***/
+          Right column
+        \--------------------------------------------------------------------------------------***/
 
             '#chm-right-column {' +
                 '    float: right;' +
@@ -1069,8 +950,8 @@
             '#chm-right-column-row-2 > * {' + '}',
 
             /****---------------------------------------------------------------------------------\
-      Nest controls
-    \---------------------------------------------------------------------------------****/
+          Nest controls
+        \---------------------------------------------------------------------------------****/
 
             '#chm-nest-controls {' +
                 ('    width: ' + firstColumnWidth + '%;') +
@@ -1087,8 +968,8 @@
             '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
 
             /****---------------------------------------------------------------------------------\
-      Legend
-    \---------------------------------------------------------------------------------****/
+          Legend
+        \---------------------------------------------------------------------------------****/
 
             '#chm-legend-container {' +
                 ('    width: ' + (100 - firstColumnWidth) + '%;') +
@@ -1119,8 +1000,8 @@
             '#chm-query-legend .chm-legend-div {' + '    width: 20%;' + '}',
 
             /****---------------------------------------------------------------------------------\
-      Table
-    \---------------------------------------------------------------------------------****/
+          Table
+        \---------------------------------------------------------------------------------****/
 
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '}',
@@ -2180,7 +2061,15 @@
         var chart = this;
         var config = this.config;
 
+<<<<<<< HEAD
         // get all table rows
+=======
+        if (this.config.expand_all) {
+            this.rows.classed('chm-hidden', false);
+        }
+
+        var rows = this.rows[0];
+>>>>>>> 560853730dc33b1b9762e8ddb155455b6c73b9f8
         var max_id_level = chart.config.id_cols.length - 2;
 
         // loop through levels of nest and develop a dictionary with children for parent keys
@@ -2766,6 +2655,10 @@
     }
 
     //utility functions
+<<<<<<< HEAD
+=======
+
+>>>>>>> 560853730dc33b1b9762e8ddb155455b6c73b9f8
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
