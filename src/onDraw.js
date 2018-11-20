@@ -44,6 +44,13 @@ export default function onDraw() {
         flagParentRows.call(this);
     }
 
+    //Make sure 'Expand All' check box is not checked
+    this.controls.wrap
+        .selectAll('.control-group')
+        .filter(d => d.option === 'expand_all')
+        .select('.changer')
+        .property('checked', false);
+
     //end performance test
     var t1 = performance.now();
     console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');

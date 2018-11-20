@@ -29,6 +29,7 @@ export default function onInput(filter) {
                     d.upper = slider1;
                 }
 
+                context.columnControls.filtered = true;
                 update.call(context, d);
                 filterData.call(context);
                 context.draw(context.data.raw);
@@ -58,6 +59,7 @@ export default function onInput(filter) {
             context.typeDict[filter.variable] == 'crfs'
                 ? parseFloat(this.textContent) / 100
                 : parseFloat(this.textContent);
+        context.columnControls.filtered = true;
         filter.upperSlider.property('value', d.upper);
         filterData.call(context);
         context.draw(context.data.raw);
@@ -68,6 +70,7 @@ export default function onInput(filter) {
             context.typeDict[filter.variable] == 'crfs'
                 ? parseFloat(this.textContent) / 100
                 : parseFloat(this.textContent);
+        context.columnControls.filtered = true;
         filter.lowerSlider.property('value', d.lower);
         filterData.call(context);
         context.draw(context.data.raw);

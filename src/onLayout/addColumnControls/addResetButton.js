@@ -1,6 +1,8 @@
 import resetFilters from './addResetButton/resetFilters';
 
 export default function addResetButton(th, d) {
+    const context = this;
+
     const resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
 
     const resetButton = {};
@@ -14,6 +16,7 @@ export default function addResetButton(th, d) {
         .classed('reset-button', true)
         .text('Reset ' + resetText)
         .on('click', () => {
+            context.columnControls.filtered = false;
             resetFilters.call(this);
             this.draw(this.data.top);
             this.rows.classed('grayParent', false);

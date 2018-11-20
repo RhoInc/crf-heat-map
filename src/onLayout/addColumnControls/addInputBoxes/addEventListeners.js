@@ -38,6 +38,7 @@ export default function onInput(filter) {
                         d.upper = box1;
                     }
                 }
+                context.columnControls.filtered = true;
                 update.call(context, d);
                 filterData.call(context);
                 context.draw(context.data.raw);

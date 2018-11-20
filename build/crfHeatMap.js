@@ -496,33 +496,48 @@
             calculateStatistics.call(_this);
         });
 
-        //Collapse array of arrays to array of objects.
-        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
-            if (visitIndex > -1) {
-                var aIds = a.id.split('  |');
-                var bIds = b.id.split('  |');
-                var i;
-                for (i = 0; i < context.config.id_cols.length; i++) {
-                    if (aIds[i] === bIds[i]) {
-                        continue;
-                    } else {
-                        // because the visit_order variable is numeric we want to treat it differently
-                        if (i === visitIndex) {
-                            return typeof aIds[i] == 'undefined'
-                                ? -1
-                                : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
-                                    ? -1
-                                    : 1;
+        // if there is a visit order column specificed in settings and it's present in the data use it to sort the folder rows
+        if (
+            this.initial_config.visit_order_col &&
+            Object.keys(this.data.initial[0]).includes(this.initial_config.visit_order_col)
+        ) {
+            //Collapse array of arrays to array of objects.
+            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
+                var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+                if (visitIndex > -1) {
+                    var aIds = a.id.split('  |');
+                    var bIds = b.id.split('  |');
+                    var i;
+                    for (i = 0; i < context.config.id_cols.length; i++) {
+                        if (aIds[i] === bIds[i]) {
+                            continue;
                         } else {
-                            return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
+                            // because the visit_order variable is numeric we want to treat it differently
+                            if (i === visitIndex) {
+                                return typeof aIds[i] == 'undefined'
+                                    ? -1
+                                    : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
+                                        ? -1
+                                        : 1;
+                            } else {
+                                return typeof aIds[i] === 'undefined'
+                                    ? -1
+                                    : aIds[i] < bIds[i]
+                                        ? -1
+                                        : 1;
+                            }
                         }
                     }
+                } else {
+                    return a.id < b.id ? -1 : 1;
                 }
-            } else {
+            });
+        } else {
+            // otherwise sort alphabetically
+            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
                 return a.id < b.id ? -1 : 1;
-            }
-        });
+            });
+        }
 
         //  this.data.raw = this.data.summarized;
 
@@ -632,9 +647,10 @@
 
     function redraw() {
         summarizeData.call(this);
-        this.data.raw = this.data.summarized.filter(function(d) {
+        this.data.top = this.data.summarized.filter(function(d) {
             return d.parents.length == 0;
         });
+        this.data.raw = this.data.top;
         resetFilters.call(this);
         this.draw(this.data.raw);
     }
@@ -1613,7 +1629,7 @@
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
-                return d.type === 'checkbox';
+                return d.option === 'expand_all';
             })
             .select('.changer')
             .on('change', function(d) {
@@ -1648,8 +1664,18 @@
                             context.config[d.option] = changer_this.checked;
 
                             if (changer_this.checked) {
-                                context.draw(context.data.summarized);
+                                context.data.raw = context.data.summarized;
+                                // need to filter rows when expanding in case some input boxes are in use
+                                if (context.columnControls.filtered) {
+                                    context.data.raw = context.data.raw.filter(function(f) {
+                                        return !f.filtered || f.visible_child;
+                                    });
+                                }
+                                context.draw(context.data.raw);
                                 context.expandable_rows.classed('chm-table-row--collapsed', false);
+                                // I'm making the default when the chart is drawn to collapse all rows and (have the box unchecked)
+                                // however I do want it to be checked when it's supposed to so flipping it back here
+                                changer_this.checked = context.config[d.option];
                             } else {
                                 context.draw(context.data.top);
                                 context.expandable_rows.classed('chm-table-row--collapsed', true);
@@ -1664,6 +1690,8 @@
     function addResetButton(th, d) {
         var _this = this;
 
+        var context = this;
+
         var resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
 
         var resetButton = {};
@@ -1677,6 +1705,7 @@
             .classed('reset-button', true)
             .text('Reset ' + resetText)
             .on('click', function() {
+                context.columnControls.filtered = false;
                 resetFilters.call(_this);
                 _this.draw(_this.data.top);
                 _this.rows.classed('grayParent', false);
@@ -1802,6 +1831,7 @@
                         d.upper = slider1;
                     }
 
+                    context.columnControls.filtered = true;
                     update.call(context, d);
                     filterData.call(context);
                     context.draw(context.data.raw);
@@ -1831,6 +1861,7 @@
                 context.typeDict[filter.variable] == 'crfs'
                     ? parseFloat(this.textContent) / 100
                     : parseFloat(this.textContent);
+            context.columnControls.filtered = true;
             filter.upperSlider.property('value', d.upper);
             filterData.call(context);
             context.draw(context.data.raw);
@@ -1841,6 +1872,7 @@
                 context.typeDict[filter.variable] == 'crfs'
                     ? parseFloat(this.textContent) / 100
                     : parseFloat(this.textContent);
+            context.columnControls.filtered = true;
             filter.lowerSlider.property('value', d.lower);
             filterData.call(context);
             context.draw(context.data.raw);
@@ -1947,6 +1979,7 @@
                             d.upper = box1;
                         }
                     }
+                    context.columnControls.filtered = true;
                     update$1.call(context, d);
                     filterData.call(context);
                     context.draw(context.data.raw);
@@ -2143,22 +2176,15 @@
             });
     }
 
-    function flagParentRows() {
-        this.rows.classed('grayParent', function(d) {
-            return d.filtered && d.visible_child;
-        });
-    }
-
-    function addRowDisplayToggle() {
+    function iterateNest() {
         var chart = this;
         var config = this.config;
 
-        if (this.config.expand_all) {
-            this.rows.classed('chm-hidden', false);
-        }
-
+        // get all table rows
         var max_id_level = chart.config.id_cols.length - 2;
 
+        // loop through levels of nest and develop a dictionary with children for parent keys
+        // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
         function iterateNest(d, id_level) {
             return d3
                 .nest()
@@ -2167,6 +2193,7 @@
                 })
                 .rollup(function(rows) {
                     if (id_level + 1 <= max_id_level) {
+                        // if not top level then loop through and make sure it has children too
                         var obj = iterateNest(rows, id_level + 1);
                     } else {
                         obj = {};
@@ -2183,106 +2210,130 @@
                 .map(d);
         }
 
-        var childNest = iterateNest(chart.data.summarized, 0);
+        return iterateNest(chart.data.summarized, 0);
+    }
 
+    function flagParentRows() {
+        this.rows.classed('grayParent', function(d) {
+            return d.filtered && d.visible_child;
+        });
+    }
+
+    function onClick(d, chart) {
+        var row = d3.select(this);
+
+        var collapsed = !row.classed('chm-table-row--collapsed');
+
+        // ensure that you don't collapse an already collapsed row or expand an already expanded one
+        row
+            .classed('chm-table-row--collapsed', collapsed) //toggle the class
+            .classed('chm-table-row--expanded', !collapsed); //toggle the class
+
+        // subset the nested child dictionary to create an object with only the ids for the children of the current row
+        var currentNest = chart.childNest;
+        d.id.split('  |').forEach(function(level) {
+            currentNest = currentNest[level];
+        });
+
+        var childIds;
+        // when collapsing, if the nest's children have children, loop through and build array with those ids included
+        if (collapsed && Object.keys(currentNest).length > 1) {
+            childIds = [];
+            Object.keys(currentNest).forEach(function(level) {
+                Object.values(currentNest[level]).length > 1 // handle different strctures
+                    ? (childIds = childIds.concat(Object.values(currentNest[level])))
+                    : (childIds = childIds.concat(Object.values(currentNest[level])[0]));
+            });
+        } else {
+            childIds = currentNest.ids;
+        }
+
+        if (collapsed) {
+            // get an array of the html rows that are children of the current row
+            var rowChildren = chart.rows.filter(function(f) {
+                return childIds.indexOf(f.id) > -1;
+            });
+            // remove those rows
+            rowChildren.remove();
+        } else {
+            // get the data for the child rows as an array
+            var childrenData = chart.data.summarized.filter(function(a) {
+                return childIds.includes(a.id) && (a.filtered != true || a.visible_child);
+            });
+
+            // assign a class to the selected row to perform the trick below
+            row.classed('selected', true);
+
+            // repeating *s to place children after their parent in the correct order
+            childrenData.forEach(function(childData, i) {
+                return chart.tbody
+                    .insert('tr', '.selected' + ' + *'.repeat(i + 1))
+                    .classed('chm-table-row', true)
+                    .classed('children', true)
+                    .datum(childData)
+                    .classed('chm-table-row--collapsed', true);
+            });
+
+            // grab all the new child rows
+            var childrenRows = d3.selectAll('.children');
+
+            // transform data to required format
+            var childrenCells = childrenRows.selectAll('td').data(function(d) {
+                return chart.config.cols.map(function(key) {
+                    return { col: key, text: d[key] };
+                });
+            });
+
+            // add cells with text to new rows
+            childrenCells
+                .enter()
+                .append('td')
+                .text(function(d) {
+                    return d.text;
+                });
+
+            // update chart rows property to include newly added rows
+            chart.rows = chart.tbody.selectAll('tr');
+
+            // add the newly drawn rows to the array of clickable rows
+            chart.expandable_rows = chart.rows.filter(function(d) {
+                return d.nest_level < chart.config.id_cols.length - 1;
+            });
+
+            // remove temporary classes
+            childrenRows.classed('children', false);
+            row.classed('selected', false);
+
+            // apply coloring based on filters
+            flagParentRows.call(chart);
+
+            // add on click functionality to new children too
+            chart.expandable_rows.on('click', function(d) {
+                onClick.call(this, d, chart);
+            });
+
+            // apply styling
+            customizeRows(chart, childrenRows);
+
+            customizeCells(chart, childrenCells);
+        }
+    }
+
+    function addRowDisplayToggle() {
+        var chart = this;
+        var config = this.config;
+
+        // this is a nested object with parent ids as the keys and child ids as the "values"
+        chart.childNest = iterateNest.call(this);
+
+        // get all of the clickable rows
         chart.expandable_rows = this.rows.filter(function(d) {
             return d.nest_level < config.id_cols.length - 1;
         });
 
-        function onClick(d) {
-            var row = d3.select(this);
-
-            var collapsed = !row.classed('chm-table-row--collapsed');
-
-            row
-                .classed('chm-table-row--collapsed', collapsed) //toggle the class
-                .classed('chm-table-row--expanded', !collapsed); //toggle the class
-
-            var currentNest = childNest;
-            d.id.split('  |').forEach(function(level) {
-                currentNest = currentNest[level];
-            });
-
-            var childIds;
-            // when collapsing, if the nest's children have children, loop throough and build array with those included
-            if (collapsed && Object.keys(currentNest).length > 1) {
-                childIds = [];
-                Object.keys(currentNest).forEach(function(level) {
-                    Object.values(currentNest[level]).length > 1 // handle different strctures
-                        ? (childIds = childIds.concat(Object.values(currentNest[level])))
-                        : (childIds = childIds.concat(Object.values(currentNest[level])[0]));
-                });
-            } else {
-                childIds = currentNest.ids;
-            }
-
-            var rowChildren = chart.rows.filter(function(f) {
-                return childIds.indexOf(f.id) > -1;
-            });
-            if (collapsed) {
-                rowChildren.remove();
-            } else {
-                rowChildren.classed('chm-hidden', false); //show just the immediate children
-
-                // get the data for the child rows
-                var childrenData = chart.data.summarized.filter(function(a) {
-                    return childIds.includes(a.id) && (a.filtered != true || a.visible_child);
-                });
-
-                row.classed('selected', true);
-
-                // repeating *s to place children after their parent in the correct order
-                childrenData.forEach(function(childData, i) {
-                    return chart.tbody
-                        .insert('tr', '.selected' + ' + *'.repeat(i + 1))
-                        .classed('chm-table-row', true)
-                        .classed('children', true)
-                        .datum(childData)
-                        .classed('chm-table-row--collapsed', true);
-                });
-
-                var childrenRows = d3.selectAll('.children');
-
-                // transform data to required format
-                var childrenCells = childrenRows.selectAll('td').data(function(d) {
-                    return chart.config.cols.map(function(key) {
-                        return { col: key, text: d[key] };
-                    });
-                });
-
-                // add cells with text to new rows
-                childrenCells
-                    .enter()
-                    .append('td')
-                    .text(function(d) {
-                        return d.text;
-                    });
-
-                // update chart rows property to include newly added rows
-                chart.rows = chart.tbody.selectAll('tr');
-
-                // update expandable_rows with the newly drawn rows
-                chart.expandable_rows = chart.rows.filter(function(d) {
-                    return d.nest_level < config.id_cols.length - 1;
-                });
-
-                // remove classes
-                childrenRows.classed('children', false);
-                row.classed('selected', false);
-
-                // apply coloring based on filters
-                flagParentRows.call(chart);
-
-                // add on click functionality to new children too
-                chart.expandable_rows.on('click', onClick);
-
-                // apply styling
-                customizeRows(chart, childrenRows);
-
-                customizeCells(chart, childrenCells);
-            }
-        }
-        chart.expandable_rows.on('click', onClick);
+        chart.expandable_rows.on('click', function(d) {
+            onClick.call(this, d, chart);
+        });
     }
 
     function toggleCellAnnotations() {
@@ -2660,6 +2711,15 @@
             flagParentRows.call(this);
         }
 
+        //Make sure 'Expand All' check box is not checked
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.option === 'expand_all';
+            })
+            .select('.changer')
+            .property('checked', false);
+
         //end performance test
         var t1 = performance.now();
         console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
@@ -2706,8 +2766,6 @@
     }
 
     //utility functions
-    //styles, configuration, and webcharts
-    //table callbacks
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
