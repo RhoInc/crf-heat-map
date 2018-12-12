@@ -2290,7 +2290,7 @@
             }, {});
         }
 
-        // Going to want expanded data - since current data
+        // Going to want expanded data - since current data doesn't include child rows unless all are expanded
         this.export.data = this.data.summarized;
         // need to filter rows when expanding in case some input boxes are in use
         if (this.columnControls.filtered) {
