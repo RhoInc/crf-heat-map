@@ -38,8 +38,14 @@ export default function deriveData() {
         }, {});
     }
 
+    // Going to want expanded data - since current data doesn't include child rows unless all are expanded
+    this.export.data = this.data.summarized;
+    // need to filter rows when expanding in case some input boxes are in use
+    if (this.columnControls.filtered) {
+        table.export.data = table.export.data.filter(f => !f.filtered || f.visible_child);
+    }
+
     //Define data.
-    this.export.data = this.data.filtered.slice();
     this.export.data.forEach((d, i, thisArray) => {
         //Split ID variable into as many columns as nests currently in place.
         this.export.nests.forEach((id_col, j) => {

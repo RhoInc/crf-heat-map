@@ -1,5 +1,5 @@
 import addResetButton from './addColumnControls/addResetButton';
-import addSliders from './addColumnControls/addSliders';
+import addSliders from './addColumnControls/addColumnFilters';
 
 export default function addColumnControls() {
     const context = this;

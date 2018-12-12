@@ -1,4 +1,5 @@
-import reset from '../addSliders/update';
+import resetSliders from '../addSliders/update';
+import resetBoxes from '../addInputBoxes/update';
 
 export default function resetFilters() {
     this.columnControls.filters.forEach(filter => {
@@ -11,6 +12,8 @@ export default function resetFilters() {
         filter.upper = filter.max;
 
         //Reset sliders.
-        reset.call(this, filter, true);
+        this.initial_config.sliders
+            ? resetSliders.call(this, filter, true)
+            : resetBoxes.call(this, filter, true);
     });
 }

@@ -377,35 +377,50 @@
             calculateStatistics.call(_this);
         });
 
-        //Collapse array of arrays to array of objects.
-        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
-            if (visitIndex > -1) {
-                var aIds = a.id.split('  |');
-                var bIds = b.id.split('  |');
-                var i;
-                for (i = 0; i < context.config.id_cols.length; i++) {
-                    if (aIds[i] === bIds[i]) {
-                        continue;
-                    } else {
-                        // because the visit_order variable is numeric we want to treat it differently
-                        if (i === visitIndex) {
-                            return typeof aIds[i] == 'undefined'
-                                ? -1
-                                : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
-                                    ? -1
-                                    : 1;
+        // if there is a visit order column specificed in settings and it's present in the data use it to sort the folder rows
+        if (
+            this.initial_config.visit_order_col &&
+            Object.keys(this.data.initial[0]).includes(this.initial_config.visit_order_col)
+        ) {
+            //Collapse array of arrays to array of objects.
+            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
+                var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+                if (visitIndex > -1) {
+                    var aIds = a.id.split('  |');
+                    var bIds = b.id.split('  |');
+                    var i;
+                    for (i = 0; i < context.config.id_cols.length; i++) {
+                        if (aIds[i] === bIds[i]) {
+                            continue;
                         } else {
-                            return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
+                            // because the visit_order variable is numeric we want to treat it differently
+                            if (i === visitIndex) {
+                                return typeof aIds[i] == 'undefined'
+                                    ? -1
+                                    : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
+                                        ? -1
+                                        : 1;
+                            } else {
+                                return typeof aIds[i] === 'undefined'
+                                    ? -1
+                                    : aIds[i] < bIds[i]
+                                        ? -1
+                                        : 1;
+                            }
                         }
                     }
+                } else {
+                    return a.id < b.id ? -1 : 1;
                 }
-            } else {
+            });
+        } else {
+            // otherwise sort alphabetically
+            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
                 return a.id < b.id ? -1 : 1;
-            }
-        });
+            });
+        }
 
-        this.data.raw = this.data.summarized;
+        //  this.data.raw = this.data.summarized;
 
         //end performance test
         var t1 = performance.now();
@@ -417,74 +432,77 @@
 
         var context = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-        if (isIE) {
-            //update lower slider and annotation
-            if (reset)
-                filter.lowerSlider
-                    .attr({
-                        min: filter.min,
-                        max: function max(d) {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                return filter.max * 100;
-                            } else {
-                                return filter.upper;
-                            }
-                        }
-                    })
-                    .property('value', filter.lower);
+        //update lower slider and annotation
+        if (reset)
+            filter.lowerSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.lower);
+        filter.lowerAnnotation.text(
+            '' +
+                (context.typeDict[filter.variable] == 'crfs'
+                    ? Math.round(filter.lower * 100)
+                    : filter.lower) +
+                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
+        );
 
-            //update upper slider and annotation
-            if (reset)
-                filter.upperSlider
-                    .attr({
-                        min: filter.min,
-                        max: function max(d) {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                return filter.max * 100;
-                            } else {
-                                return filter.upper;
-                            }
-                        }
-                    })
-                    .property('value', function(d) {
-                        return context.typeDict[d.variable] == 'crfs'
-                            ? filter.upper * 100
-                            : filter.upper;
-                    });
-        } else {
-            //update lower slider and annotation
-            if (reset)
-                filter.lowerSlider
-                    .attr({
-                        min: filter.min,
-                        max: filter.max
-                    })
-                    .property('value', filter.lower);
-            filter.lowerAnnotation.text(
-                '' +
-                    (context.typeDict[filter.variable] == 'crfs'
-                        ? Math.round(filter.lower * 100)
-                        : filter.lower) +
-                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
-            );
+        //update upper slider and annotation
+        if (reset)
+            filter.upperSlider
+                .attr({
+                    min: filter.min,
+                    max: filter.max
+                })
+                .property('value', filter.upper);
+        filter.upperAnnotation.text(
+            '' +
+                (context.typeDict[filter.variable] == 'crfs'
+                    ? Math.round(filter.upper * 100)
+                    : filter.upper) +
+                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
+        );
+    }
 
-            //update upper slider and annotation
-            if (reset)
-                filter.upperSlider
-                    .attr({
-                        min: filter.min,
-                        max: filter.max
-                    })
-                    .property('value', filter.upper);
-            filter.upperAnnotation.text(
-                '' +
-                    (context.typeDict[filter.variable] == 'crfs'
-                        ? Math.round(filter.upper * 100)
-                        : filter.upper) +
-                    (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
-            );
-        }
+    function update$1(filter) {
+        var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        var context = this;
+
+        //update lower input box
+        if (reset)
+            filter.lowerBox
+                .attr({
+                    min: filter.min,
+                    max: function max(d) {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            return filter.max * 100;
+                        } else {
+                            return filter.upper;
+                        }
+                    }
+                })
+                .property('value', filter.lower);
+
+        //update upper input box
+        if (reset)
+            filter.upperBox
+                .attr({
+                    min: filter.min,
+                    max: function max(d) {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            return filter.max * 100;
+                        } else {
+                            return filter.upper;
+                        }
+                    }
+                })
+                .property('value', function(d) {
+                    return context.typeDict[d.variable] == 'crfs'
+                        ? filter.upper * 100
+                        : filter.upper;
+                });
     }
 
     function resetFilters() {
@@ -502,14 +520,20 @@
             filter.upper = filter.max;
 
             //Reset sliders.
-            update.call(_this, filter, true);
+            _this.initial_config.sliders
+                ? update.call(_this, filter, true)
+                : update$1.call(_this, filter, true);
         });
     }
 
     function redraw() {
         summarizeData.call(this);
+        this.data.top = this.data.summarized.filter(function(d) {
+            return d.parents.length == 0;
+        });
+        this.data.raw = this.data.top;
         resetFilters.call(this);
-        this.draw(this.data.summarized);
+        this.draw(this.data.raw);
     }
 
     function createNestControls() {
@@ -1030,7 +1054,13 @@
                 '    font-weight: normal;' +
                 '}',
             '.range-annotation--lower {' + '    text-align: left;' + '}',
-            '.range-annotation--upper {' + '    text-align: right;' + '}',
+            '.range-annotation--upper {' +
+                '    text-align: right;' +
+                '    width: 50%;' +
+                '    position: absolute;' +
+                '    right: 0;' +
+                '    bottom: 0;' +
+                '}',
             '.range-slider::-webkit-slider-thumb {' +
                 '    pointer-events: all;' +
                 '    position: relative;' +
@@ -1057,6 +1087,12 @@
                 '}',
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
             '.range-value-container {' + '    display: inline-block;' + '    width: 45%;' + '}',
+            '.range-value-parent {' +
+                'display: table-cell;' +
+                '    position: relative;' +
+                '    width: 100%;' +
+                '  vertical-align: middle;' +
+                '}',
             '.range-value-container > * {' + '    text-align: right;' + '}',
             '.range-value-container--lower {' + '    float: left;' + '}',
             '.range-value-container--upper {' + '    float: right;' + '}',
@@ -1218,7 +1254,9 @@
             ],
             filter_cols: ['subset1', 'subset2', 'subset3'],
             display_cell_annotations: true,
-            expand_all: false
+            expand_all: false,
+            sliders: false,
+            max_rows_warn: 10000
         };
     }
 
@@ -1362,6 +1400,12 @@
         //Summarize raw data.
         summarizeData.call(this);
 
+        this.data.top = this.data.summarized.filter(function(d) {
+            return d.parents.length == 0;
+        });
+
+        this.data.raw = this.data.top;
+
         //Manually set controls' data to raw data.
         this.controls.data = this.data.initial;
         this.controls.ready = true;
@@ -1466,157 +1510,125 @@
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
-                return d.type === 'checkbox';
+                return d.option === 'expand_all';
             })
             .select('.changer')
             .on('change', function(d) {
                 var changer_this = this;
 
-                var loadingdiv = d3.select('#chm-loading');
+                var confirmation = true;
+                if (
+                    changer_this.checked &&
+                    context.data.summarized.length > context.initial_config.max_rows_warn
+                ) {
+                    confirmation = confirm(
+                        'This will draw over ' +
+                            String(context.initial_config.max_rows_warn) +
+                            ' rows. Proceed?'
+                    );
+                }
 
-                loadingdiv.classed('chm-hidden', false);
+                if (!confirmation) {
+                    changer_this.checked = false;
+                } else {
+                    var loadingdiv = d3.select('#chm-loading'); // fix this later due to confirm box
 
-                var loading = setInterval(function() {
-                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+                    loadingdiv.classed('chm-hidden', false);
 
-                    if (loadingIndicated) {
-                        clearInterval(loading);
-                        loadingdiv.classed('chm-hidden', true);
+                    var loading = setInterval(function() {
+                        var loadingIndicated = loadingdiv.style('display') !== 'none';
 
-                        context.config[d.option] = changer_this.checked;
-                        context.draw(context.data.raw);
-                    }
-                }, 25);
+                        if (loadingIndicated) {
+                            clearInterval(loading);
+                            loadingdiv.classed('chm-hidden', true);
+
+                            context.config[d.option] = changer_this.checked;
+
+                            if (changer_this.checked) {
+                                context.data.raw = context.data.summarized;
+                                // need to filter rows when expanding in case some input boxes are in use
+                                if (context.columnControls.filtered) {
+                                    context.data.raw = context.data.raw.filter(function(f) {
+                                        return !f.filtered || f.visible_child;
+                                    });
+                                }
+                                context.draw(context.data.raw);
+                                context.expandable_rows.classed('chm-table-row--collapsed', false);
+                                // I'm making the default when the chart is drawn to collapse all rows and (have the box unchecked)
+                                // however I do want it to be checked when it's supposed to so flipping it back here
+                                changer_this.checked = context.config[d.option];
+                            } else {
+                                context.draw(context.data.top);
+                                context.expandable_rows.classed('chm-table-row--collapsed', true);
+                            }
+                        }
+                    }, 25);
+                }
+                context.config[d.option] = changer_this.checked;
             });
     }
 
     function addResetButton(th, d) {
         var _this = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+        var context = this;
+
+        var resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
+
         var resetButton = {};
         resetButton.container = d3
             .select(th)
             .append('div')
             .classed('reset-button-container', true);
 
-        if (isIE) {
-            resetButton.button = resetButton.container
-                .append('button')
-                .classed('reset-button', true)
-                .text('Reset Ranges') // changed the name for IE
-                .on('click', function() {
-                    _this.data.raw = _this.data.summarized;
-                    resetFilters.call(_this);
-                    _this.draw(_this.data.raw);
-                });
-        } else {
-            resetButton.button = resetButton.container
-                .append('button')
-                .classed('reset-button', true)
-                .text('Reset sliders')
-                .on('click', function() {
-                    _this.data.raw = _this.data.summarized;
-                    resetFilters.call(_this);
-                    _this.draw(_this.data.raw);
-                });
-        }
+        resetButton.button = resetButton.container
+            .append('button')
+            .classed('reset-button', true)
+            .text('Reset ' + resetText)
+            .on('click', function() {
+                context.columnControls.filtered = false;
+                resetFilters.call(_this);
+                _this.draw(_this.data.top);
+                _this.rows.classed('grayParent', false);
+            });
         this.columnControls.resetButton = resetButton;
     }
 
     function layout(filter) {
         var context = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-        if (isIE) {
-            //add containing div to header cell
-            filter.div = filter.cell
-                .append('div')
-                .datum(filter)
-                .classed('range-slider-container', true);
+        //add containing div to header cell
+        filter.div = filter.cell
+            .append('div')
+            .datum(filter)
+            .classed('range-slider-container', true);
 
-            //lower slider
-            var rangeValueLowerDiv = filter.div
-                .append('div')
-                .classed('range-value-container range-value-container--lower', true);
-            filter.lowerSlider = rangeValueLowerDiv
-                .append('input')
-                .classed('range-value filter-value--lower', true)
-                .attr({
-                    type: 'number',
-                    min: 0,
-                    step: 1,
-                    value: 0
-                });
+        //lower slider
+        filter.lowerSlider = filter.div
+            .append('input')
+            .classed('range-slider filter-slider--lower', true)
+            .attr({
+                type: 'range',
+                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
+                min: 0
+            });
 
-            rangeValueLowerDiv
-                .append('span')
-                .classed('chm-text', true)
-                .text(function(d) {
-                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
-                });
+        filter.lowerAnnotation = filter.div
+            .append('span')
+            .classed('range-annotation range-annotation--lower', true);
 
-            filter.div
-                .append('span')
-                .classed('chm-dash', true)
-                .text(function(d) {
-                    return ' - ';
-                });
-
-            //upper slider
-            var rangeValueUpperDiv = filter.div
-                .append('div')
-                .classed('range-value-container range-value-container--upper', true);
-            filter.upperSlider = rangeValueUpperDiv
-                .append('input')
-                .classed('range-value filter-value--upper', true)
-                .attr({
-                    type: 'number',
-                    min: 0,
-                    step: 1,
-                    value: 100
-                });
-
-            rangeValueUpperDiv
-                .append('span')
-                .classed('chm-text', true)
-                .text(function(d) {
-                    return context.typeDict[d.variable] == 'crfs' ? '%' : '';
-                });
-        } else {
-            //add containing div to header cell
-            filter.div = filter.cell
-                .append('div')
-                .datum(filter)
-                .classed('range-slider-container', true);
-
-            //lower slider
-            filter.lowerSlider = filter.div
-                .append('input')
-                .classed('range-slider filter-slider--lower', true)
-                .attr({
-                    type: 'range',
-                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
-                    min: 0
-                });
-
-            filter.lowerAnnotation = filter.div
-                .append('span')
-                .classed('range-annotation range-annotation--lower', true);
-
-            //upper slider
-            filter.upperSlider = filter.div
-                .append('input')
-                .classed('range-slider filter-slider--upper', true)
-                .attr({
-                    type: 'range',
-                    step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
-                    min: 0
-                });
-            filter.upperAnnotation = filter.div
-                .append('span')
-                .classed('range-annotation range-annotation--upper', true);
-        }
+        //upper slider
+        filter.upperSlider = filter.div
+            .append('input')
+            .classed('range-slider filter-slider--upper', true)
+            .attr({
+                type: 'range',
+                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
+                min: 0
+            });
+        filter.upperAnnotation = filter.div
+            .append('span')
+            .classed('range-annotation range-annotation--upper', true);
     }
 
     function filterData() {
@@ -1630,11 +1642,16 @@
         //First, get all the rows that match the filters
         this.columnControls.filters.forEach(function(filter) {
             _this.data.summarized.forEach(function(d) {
-                var filtered_low = +d[filter.variable] < +filter.lower;
-                var filtered_high = +d[filter.variable] > +filter.upper;
-                //filtered_missing = d[filter.variable] === 'N/A'
-                if (filtered_low || filtered_high) {
+                // filter N/As (as 100%) too
+                if (d[filter.variable] == 'N/A' && +filter.upper < 1) {
                     d.filtered = true;
+                } else {
+                    var filtered_low = +d[filter.variable] < +filter.lower;
+                    var filtered_high = +d[filter.variable] > +filter.upper;
+                    //filtered_missing = d[filter.variable] === 'N/A'
+                    if (filtered_low || filtered_high) {
+                        d.filtered = true;
+                    }
                 }
             });
         });
@@ -1651,14 +1668,16 @@
         var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
 
         //identifiy the parent rows
-        this.data.summarized = this.data.summarized.map(function(m) {
+        this.data.raw = this.data.summarized.map(function(m) {
             m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
             return m;
         });
 
-        //and set filtered_parent = true if filted = true
+        this.data.raw = this.data.raw.filter(function(d) {
+            return d.parents.length == 0;
+        }); // only want to draw top level;
 
-        this.data.raw = this.data.summarized.filter(function(f) {
+        this.data.raw = this.data.raw.filter(function(f) {
             return !f.filtered || f.visible_child;
         });
     }
@@ -1666,126 +1685,188 @@
     function onInput(filter) {
         var context = this;
 
-        var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+        //Attach an event listener to Sliders
+        filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
+            var _this = this;
 
-        if (isIE) {
-            //Attach an event listener to sliders.
-            filter.sliders = filter.div.selectAll('.range-value').on('change', function(d) {
-                var _this = this;
+            var loadingdiv = d3.select('#chm-loading');
 
-                var loadingdiv = d3.select('#chm-loading');
+            loadingdiv.classed('chm-hidden', false);
 
-                loadingdiv.classed('chm-hidden', false);
+            var loading = setInterval(function() {
+                var loadingIndicated = loadingdiv.style('display') !== 'none';
 
-                var loading = setInterval(function() {
-                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+                if (loadingIndicated) {
+                    clearInterval(loading);
+                    loadingdiv.classed('chm-hidden', true);
 
-                    if (loadingIndicated) {
-                        clearInterval(loading);
-                        loadingdiv.classed('chm-hidden', true);
+                    var sliders = _this.parentNode.getElementsByTagName('input');
+                    var slider1 = parseFloat(sliders[0].value);
+                    var slider2 = parseFloat(sliders[1].value);
 
-                        var sliders = _this.parentNode.parentNode.getElementsByTagName('input');
-                        var slider1 = parseFloat(sliders[0].value);
-                        var slider2 = parseFloat(sliders[1].value);
-
-                        if (slider1 <= slider2) {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                d.lower = slider1 / 100;
-                                d.upper = slider2 / 100;
-                            } else {
-                                d.lower = slider1;
-                                d.upper = slider2;
-                            }
-                        } else {
-                            if (context.typeDict[d.variable] == 'crfs') {
-                                d.lower = slider2 / 100;
-                                d.upper = slider1 / 100;
-                            } else {
-                                d.lower = slider2;
-                                d.upper = slider1;
-                            }
-                        }
-                        update.call(context, d);
-                        filterData.call(context);
-                        context.draw(context.data.raw);
-                    }
-                }, 25);
-            });
-
-            filter.sliders = filter.div.selectAll('.range-value').on('input', function(d) {
-                var sliders = this.parentNode.parentNode.getElementsByTagName('input');
-                var slider1 = parseFloat(sliders[0].value);
-                var slider2 = parseFloat(sliders[1].value);
-
-                if (slider1 <= slider2) {
-                    if (context.typeDict[d.variable] == 'crfs') {
-                        d.lower = slider1 / 100;
-                        d.upper = slider2 / 100;
-                    } else {
+                    if (slider1 <= slider2) {
                         d.lower = slider1;
                         d.upper = slider2;
-                    }
-                } else {
-                    if (context.typeDict[d.variable] == 'crfs') {
-                        d.lower = slider2 / 100;
-                        d.upper = slider1 / 100;
                     } else {
                         d.lower = slider2;
                         d.upper = slider1;
                     }
+
+                    context.columnControls.filtered = true;
+                    update.call(context, d);
+                    filterData.call(context);
+                    context.draw(context.data.raw);
                 }
-                update.call(context, d);
+            }, 25);
+        });
+
+        filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+            var sliders = this.parentNode.getElementsByTagName('input');
+            var slider1 = parseFloat(sliders[0].value);
+            var slider2 = parseFloat(sliders[1].value);
+
+            if (slider1 <= slider2) {
+                d.lower = slider1;
+                d.upper = slider2;
+            } else {
+                d.lower = slider2;
+                d.upper = slider1;
+            }
+
+            update.call(context, d);
+        });
+
+        //allow users to change filter settings by editing text annotations - not handling the flip case for simplicity
+        filter.upperAnnotation.attr('contenteditable', true).on('blur', function(d) {
+            d.upper =
+                context.typeDict[filter.variable] == 'crfs'
+                    ? parseFloat(this.textContent) / 100
+                    : parseFloat(this.textContent);
+            context.columnControls.filtered = true;
+            filter.upperSlider.property('value', d.upper);
+            filterData.call(context);
+            context.draw(context.data.raw);
+        });
+
+        filter.lowerAnnotation.attr('contenteditable', true).on('blur', function(d) {
+            d.lower =
+                context.typeDict[filter.variable] == 'crfs'
+                    ? parseFloat(this.textContent) / 100
+                    : parseFloat(this.textContent);
+            context.columnControls.filtered = true;
+            filter.lowerSlider.property('value', d.lower);
+            filterData.call(context);
+            context.draw(context.data.raw);
+        });
+    }
+
+    function layout$1(filter) {
+        var context = this;
+
+        //add containing div to header cell
+        filter.div = filter.cell
+            .append('div')
+            .datum(filter)
+            .classed('range-value-parent', true);
+
+        var rangeValueLowerDiv = filter.div
+            .append('div')
+            .classed('range-value-container range-value-container--lower', true);
+
+        //lower Input Box
+        filter.lowerBox = rangeValueLowerDiv
+            .append('input')
+            .classed('range-value filter-value--lower', true)
+            .attr({
+                type: 'number',
+                min: 0,
+                step: 1,
+                value: 0
             });
-        } else {
-            filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
-                var _this2 = this;
 
-                var loadingdiv = d3.select('#chm-loading');
+        rangeValueLowerDiv
+            .append('span')
+            .classed('chm-text', true)
+            .text(function(d) {
+                return context.typeDict[d.variable] == 'crfs' ? '%' : '';
+            });
 
-                loadingdiv.classed('chm-hidden', false);
+        filter.div
+            .append('span')
+            .classed('chm-dash', true)
+            .text(function(d) {
+                return ' - ';
+            });
 
-                var loading = setInterval(function() {
-                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+        var rangeValueUpperDiv = filter.div
+            .append('div')
+            .classed('range-value-container range-value-container--upper', true);
 
-                    if (loadingIndicated) {
-                        clearInterval(loading);
-                        loadingdiv.classed('chm-hidden', true);
+        //upper Input Box
+        filter.upperBox = rangeValueUpperDiv
+            .append('input')
+            .classed('range-value filter-value--upper', true)
+            .attr({
+                type: 'number',
+                min: 0,
+                step: 1,
+                value: 100
+            });
 
-                        var sliders = _this2.parentNode.getElementsByTagName('input');
-                        var slider1 = parseFloat(sliders[0].value);
-                        var slider2 = parseFloat(sliders[1].value);
+        rangeValueUpperDiv
+            .append('span')
+            .classed('chm-text', true)
+            .text(function(d) {
+                return context.typeDict[d.variable] == 'crfs' ? '%' : '';
+            });
+    }
 
-                        if (slider1 <= slider2) {
-                            d.lower = slider1;
-                            d.upper = slider2;
+    function onInput$1(filter) {
+        var context = this;
+
+        //Attach an event listener to Input Boxes.
+        filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function(d) {
+            var _this = this;
+
+            var loadingdiv = d3.select('#chm-loading');
+
+            loadingdiv.classed('chm-hidden', false);
+
+            var loading = setInterval(function() {
+                var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                if (loadingIndicated) {
+                    clearInterval(loading);
+                    loadingdiv.classed('chm-hidden', true);
+
+                    var boxes = _this.parentNode.parentNode.getElementsByTagName('input');
+                    var box1 = parseFloat(boxes[0].value);
+                    var box2 = parseFloat(boxes[1].value);
+
+                    if (box1 <= box2) {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            d.lower = box1 / 100;
+                            d.upper = box2 / 100;
                         } else {
-                            d.lower = slider2;
-                            d.upper = slider1;
+                            d.lower = box1;
+                            d.upper = box2;
                         }
-
-                        update.call(context, d);
-                        filterData.call(context);
-                        context.draw(context.data.raw);
+                    } else {
+                        if (context.typeDict[d.variable] == 'crfs') {
+                            d.lower = box2 / 100;
+                            d.upper = box1 / 100;
+                        } else {
+                            d.lower = box2;
+                            d.upper = box1;
+                        }
                     }
-                }, 25);
-            });
-
-            filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
-                var sliders = this.parentNode.getElementsByTagName('input');
-                var slider1 = parseFloat(sliders[0].value);
-                var slider2 = parseFloat(sliders[1].value);
-
-                if (slider1 <= slider2) {
-                    d.lower = slider1;
-                    d.upper = slider2;
-                } else {
-                    d.lower = slider2;
-                    d.upper = slider1;
+                    context.columnControls.filtered = true;
+                    update$1.call(context, d);
+                    filterData.call(context);
+                    context.draw(context.data.raw);
                 }
-
-                update.call(context, d);
-            });
-        }
+            }, 25);
+        });
     }
 
     function addSliders(th, d) {
@@ -1796,9 +1877,15 @@
         filter.cell = d3.select(th);
 
         //Lay out, initialize, and define event listeners for column filter.
-        layout.call(this, filter);
-        update.call(this, filter, true);
-        onInput.call(this, filter);
+        if (this.initial_config.sliders) {
+            layout.call(this, filter);
+            update.call(this, filter, true);
+            onInput.call(this, filter);
+        } else {
+            layout$1.call(this, filter);
+            update$1.call(this, filter, true);
+            onInput$1.call(this, filter);
+        }
     }
 
     function addColumnControls() {
@@ -1851,20 +1938,14 @@
         addColumnControls.call(this);
     }
 
-    function customizeRows() {
-        var _this = this;
-
-        this.rows = this.tbody.selectAll('tr');
-        this.rows
+    function customizeRows(chart, rows) {
+        rows
             .classed('chm-table-row', true)
             .classed('chm-table-row--expandable', function(d) {
-                return d.id.split('  |').length < _this.config.id_cols.length;
+                return d.id.split('  |').length < chart.config.id_cols.length;
             })
             .classed('chm-table-row--collapsed', function(d) {
-                return d.id.split('  |').length < _this.config.id_cols.length;
-            })
-            .classed('chm-hidden', function(d) {
-                return d.id.indexOf('  |') > -1;
+                return d.id.split('  |').length < chart.config.id_cols.length;
             });
     }
 
@@ -1907,11 +1988,8 @@
             });
     }
 
-    function customizeCells() {
-        var context = this;
-
-        this.cells = this.tbody.selectAll('td');
-        this.cells
+    function customizeCells(chart, cells) {
+        cells
             .attr('class', function(d) {
                 var cellClass = 'chm-cell';
 
@@ -1924,7 +2002,7 @@
                 else {
                     cellClass = cellClass + ' chm-cell--heat';
                     var level = void 0;
-                    if (context.typeDict[d.col] == 'queries')
+                    if (chart.typeDict[d.col] == 'queries')
                         level =
                             d.text === 0
                                 ? 5
@@ -1956,7 +2034,7 @@
             .text(function(d) {
                 return d.col === 'id'
                     ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : context.typeDict[d.col] == 'crfs'
+                    : chart.typeDict[d.col] == 'crfs'
                         ? d.text === 'N/A'
                             ? d.text
                             : String(Math.floor(d.text * 100)) + '%'
@@ -1979,17 +2057,18 @@
             });
     }
 
-    function addRowDisplayToggle() {
+    function iterateNest() {
         var chart = this;
         var config = this.config;
 
-        if (this.config.expand_all) {
-            this.rows.classed('chm-hidden', false);
-        }
-
+        // get all table rows
         var rows = this.rows[0];
+
+        // get the highest id level
         var max_id_level = chart.config.id_cols.length - 2;
 
+        // loop through levels of nest and develop a dictionary with children for parent keys
+        // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
         function iterateNest(d, id_level) {
             return d3
                 .nest()
@@ -1998,6 +2077,7 @@
                 })
                 .rollup(function(rows) {
                     if (id_level + 1 <= max_id_level) {
+                        // if not top level then loop through and make sure it has children too
                         var obj = iterateNest(rows, id_level + 1);
                     } else {
                         obj = {};
@@ -2014,49 +2094,129 @@
                 .map(d);
         }
 
-        var childNest = iterateNest(chart.data.raw, 0);
+        return iterateNest(chart.data.summarized, 0);
+    }
 
-        var expandable_rows = this.rows
-            .data(chart.data.raw)
-            .filter(function(d) {
-                return d.nest_level < config.id_cols.length - 1;
-            })
-            .select('td');
+    function flagParentRows() {
+        this.rows.classed('grayParent', function(d) {
+            return d.filtered && d.visible_child;
+        });
+    }
 
-        expandable_rows.on('click', function(d) {
-            var row = d3.select(this.parentNode);
-            var collapsed = !row.classed('chm-table-row--collapsed');
+    function onClick(d, chart) {
+        var row = d3.select(this);
 
-            row
-                .classed('chm-table-row--collapsed', collapsed) //toggle the class
-                .classed('chm-table-row--expanded', !collapsed); //toggle the class
+        var collapsed = !row.classed('chm-table-row--collapsed');
 
-            var currentNest = childNest;
-            d.id.split('  |').forEach(function(level) {
-                currentNest = currentNest[level];
+        // ensure that you don't collapse an already collapsed row or expand an already expanded one
+        row
+            .classed('chm-table-row--collapsed', collapsed) //toggle the class
+            .classed('chm-table-row--expanded', !collapsed); //toggle the class
+
+        // subset the nested child dictionary to create an object with only the ids for the children of the current row
+        var currentNest = chart.childNest;
+        d.id.split('  |').forEach(function(level) {
+            currentNest = currentNest[level];
+        });
+
+        var childIds;
+        // when collapsing, if the nest's children have children, loop through and build array with those ids included
+        if (collapsed && Object.keys(currentNest).length > 1) {
+            childIds = [];
+            Object.keys(currentNest).forEach(function(level) {
+                Object.values(currentNest[level]).length > 1 // handle different strctures
+                    ? (childIds = childIds.concat(Object.values(currentNest[level])))
+                    : (childIds = childIds.concat(Object.values(currentNest[level])[0]));
             });
-            var childIds;
-            // when collapsing, if the nest's children have children, loop throough and build array with those included
-            if (collapsed && Object.keys(currentNest).length > 1) {
-                childIds = [];
-                Object.keys(currentNest).forEach(function(level) {
-                    Object.values(currentNest[level]).length > 1 // handle different strctures
-                        ? (childIds = childIds.concat(Object.values(currentNest[level])))
-                        : (childIds = childIds.concat(Object.values(currentNest[level])[0]));
-                });
-            } else {
-                childIds = currentNest.ids;
-            }
+        } else {
+            childIds = currentNest.ids;
+        }
+
+        if (collapsed) {
+            // get an array of the html rows that are children of the current row
             var rowChildren = chart.rows.filter(function(f) {
                 return childIds.indexOf(f.id) > -1;
             });
-            if (collapsed) {
-                rowChildren
-                    .classed('chm-hidden chm-table-row--collapsed', true)
-                    .classed('chm-table-row--expanded', false);
-            } else {
-                rowChildren.classed('chm-hidden', false); //show just the immediate children
-            }
+            // remove those rows
+            rowChildren.remove();
+        } else {
+            // get the data for the child rows as an array
+            var childrenData = chart.data.summarized.filter(function(a) {
+                return childIds.includes(a.id) && (a.filtered != true || a.visible_child);
+            });
+
+            // assign a class to the selected row to perform the trick below
+            row.classed('selected', true);
+
+            // repeating *s to place children after their parent in the correct order
+            childrenData.forEach(function(childData, i) {
+                return chart.tbody
+                    .insert('tr', '.selected' + ' + *'.repeat(i + 1))
+                    .classed('chm-table-row', true)
+                    .classed('children', true)
+                    .datum(childData)
+                    .classed('chm-table-row--collapsed', true);
+            });
+
+            // grab all the new child rows
+            var childrenRows = d3.selectAll('.children');
+
+            // transform data to required format
+            var childrenCells = childrenRows.selectAll('td').data(function(d) {
+                return chart.config.cols.map(function(key) {
+                    return { col: key, text: d[key] };
+                });
+            });
+
+            // add cells with text to new rows
+            childrenCells
+                .enter()
+                .append('td')
+                .text(function(d) {
+                    return d.text;
+                });
+
+            // update chart rows property to include newly added rows
+            chart.rows = chart.tbody.selectAll('tr');
+
+            // add the newly drawn rows to the array of clickable rows
+            chart.expandable_rows = chart.rows.filter(function(d) {
+                return d.nest_level < chart.config.id_cols.length - 1;
+            });
+
+            // remove temporary classes
+            childrenRows.classed('children', false);
+            row.classed('selected', false);
+
+            // apply coloring based on filters
+            flagParentRows.call(chart);
+
+            // add on click functionality to new children too
+            chart.expandable_rows.on('click', function(d) {
+                onClick.call(this, d, chart);
+            });
+
+            // apply styling
+            customizeRows(chart, childrenRows);
+
+            customizeCells(chart, childrenCells);
+        }
+    }
+
+    function addRowDisplayToggle() {
+        var chart = this;
+        var config = this.config;
+
+        // this is a nested object with parent ids as the keys and child ids as the "values"
+        chart.childNest = iterateNest.call(this);
+
+        // get all of the clickable rows
+        chart.expandable_rows = this.rows.filter(function(d) {
+            return d.nest_level < config.id_cols.length - 1;
+        });
+
+        chart.expandable_rows.on('click', function(d) {
+            onClick.call(this, d, chart);
         });
     }
 
@@ -2130,8 +2290,16 @@
             }, {});
         }
 
+        // Going to want expanded data - since current data doesn't include child rows unless all are expanded
+        this.export.data = this.data.summarized;
+        // need to filter rows when expanding in case some input boxes are in use
+        if (this.columnControls.filtered) {
+            table.export.data = table.export.data.filter(function(f) {
+                return !f.filtered || f.visible_child;
+            });
+        }
+
         //Define data.
-        this.export.data = this.data.filtered.slice();
         this.export.data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
@@ -2398,12 +2566,6 @@
         }
     }
 
-    function flagParentRows() {
-        this.rows.classed('grayParent', function(d) {
-            return d.filtered && d.visible_child;
-        });
-    }
-
     function onDraw() {
         var config = this.config;
         var chart = this;
@@ -2413,7 +2575,7 @@
 
         // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
         var id;
-        chart.data.raw.forEach(function(d) {
+        chart.data.summarized.forEach(function(d) {
             id = d['id'].split('  |');
             if (id[2]) {
                 d[config.id_cols[2]] = id[2];
@@ -2428,15 +2590,27 @@
         });
 
         if (this.data.summarized.length) {
-            customizeRows.call(this);
+            this.rows = this.tbody.selectAll('tr');
+            customizeRows(this, this.rows);
             addStudySummary.call(this);
-            customizeCells.call(this);
+
+            this.cells = this.tbody.selectAll('td');
+            customizeCells(this, this.cells);
             addInfoBubbles.call(this);
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
             dataExport.call(this);
             flagParentRows.call(this);
         }
+
+        //Make sure 'Expand All' check box is not checked
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.option === 'expand_all';
+            })
+            .select('.changer')
+            .property('checked', false);
 
         //end performance test
         var t1 = performance.now();

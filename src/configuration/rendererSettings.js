@@ -88,6 +88,8 @@ export default function rendererSettings() {
         ],
         filter_cols: ['subset1', 'subset2', 'subset3'],
         display_cell_annotations: true,
-        expand_all: false
+        expand_all: false,
+        sliders: false,
+        max_rows_warn: 10000
     };
 }
