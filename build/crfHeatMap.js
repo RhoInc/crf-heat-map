@@ -2290,8 +2290,16 @@
             }, {});
         }
 
+        // Going to want expanded data - since current data
+        this.export.data = this.data.summarized;
+        // need to filter rows when expanding in case some input boxes are in use
+        if (this.columnControls.filtered) {
+            table.export.data = table.export.data.filter(function(f) {
+                return !f.filtered || f.visible_child;
+            });
+        }
+
         //Define data.
-        this.export.data = this.data.filtered.slice();
         this.export.data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
