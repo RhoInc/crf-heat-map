@@ -1096,7 +1096,11 @@
             '.range-value-container > * {' + '    text-align: right;' + '}',
             '.range-value-container--lower {' + '    float: left;' + '}',
             '.range-value-container--upper {' + '    float: right;' + '}',
-            '.range-value {' + '    width: 70%;' + '}',
+            '.range-value {' +
+                '    width: 80%;' +
+                '    font-weight: normal;' +
+                '    font-size: small;' +
+                '}',
             '.chm-text {' + '    font-size: 12px;' + '    font-weight: normal;' + '}',
 
             /* Table body rows */

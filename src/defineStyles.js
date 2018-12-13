@@ -337,7 +337,9 @@ export default function defineStyles() {
                     '    float: right;' +
                     '}',
                 '.range-value {' +
-                    '    width: 70%;' +
+                    '    width: 80%;' +
+                    '    font-weight: normal;' +
+                    '    font-size: small;' +
                     '}',
                 '.chm-text {' +
                     '    font-size: 12px;' +
