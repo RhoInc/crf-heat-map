@@ -1086,16 +1086,17 @@
                 '    border: 0;' +
                 '}',
             '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-            '.range-value-container {' + '    display: inline-block;' + '    width: 45%;' + '}',
+            '.range-value-container {' + '    display: inline-block;' + '}',
             '.range-value-parent {' +
-                'display: table-cell;' +
+                '    display: inline-block;' +
                 '    position: relative;' +
                 '    width: 100%;' +
-                '  vertical-align: middle;' +
+                '    vertical-align: middle; ' +
+                '    text-align: center;' +
                 '}',
             '.range-value-container > * {' + '    text-align: right;' + '}',
-            '.range-value-container--lower {' + '    float: left;' + '}',
-            '.range-value-container--upper {' + '    float: right;' + '}',
+            '.range-value-container--lower {' + '    width: 55px;' + '    float: left;' + '}',
+            '.range-value-container--upper {' + '    float: right;' + '    width: 55px;' + '}',
             '.range-value {' +
                 '    width: 80%;' +
                 '    font-weight: normal;' +

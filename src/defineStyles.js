@@ -319,22 +319,24 @@ export default function defineStyles() {
                 '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
                 '.range-value-container {' +
                     '    display: inline-block;' +
-                    '    width: 45%;' +
                     '}',
-                  '.range-value-parent {' +
-                      'display: table-cell;' +
-                        '    position: relative;' +
-                        '    width: 100%;' +
-                      '  vertical-align: middle;' +
-                        '}',
+                '.range-value-parent {' +
+                    '    display: inline-block;' +
+                    '    position: relative;' +
+                    '    width: 100%;' +
+                    '    vertical-align: middle; '+
+                    '    text-align: center;' +
+                    '}',
                 '.range-value-container > * {' +
                     '    text-align: right;' +
                     '}',
                 '.range-value-container--lower {' +
+                '    width: 55px;' +
                     '    float: left;' +
                     '}',
                 '.range-value-container--upper {' +
                     '    float: right;' +
+                    '    width: 55px;' +
                     '}',
                 '.range-value {' +
                     '    width: 80%;' +
