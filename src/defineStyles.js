@@ -343,6 +343,7 @@ export default function defineStyles() {
                   '    width: 74%;' +
                   '    font-weight: normal;' +
                   '    font-size: small;' +
+                  '    padding: 0;' +
                   '}',
                 '.chm-text {' +
                     '    font-size: 12px;' +
