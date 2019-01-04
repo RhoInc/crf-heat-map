@@ -1509,6 +1509,87 @@
             });
     }
 
+    function customizeCells(chart, cells) {
+        cells
+            .attr('class', function(d) {
+                var cellClass = 'chm-cell';
+
+                if (d.col === 'id')
+                    cellClass =
+                        cellClass +
+                        ' chm-cell--id' +
+                        ' chm-cell--id--level' +
+                        d.text.split('  |').length;
+                else {
+                    cellClass = cellClass + ' chm-cell--heat';
+                    var level = void 0;
+                    if (chart.typeDict[d.col] == 'queries')
+                        level =
+                            d.text === 0
+                                ? 5
+                                : d.text < 9
+                                    ? 4
+                                    : d.text < 17
+                                        ? 3
+                                        : d.text < 25
+                                            ? 2
+                                            : 1;
+                    else
+                        level =
+                            d.text === 'N/A'
+                                ? 11
+                                : d.text === 1
+                                    ? 10
+                                    : d.text > 0.75
+                                        ? 9
+                                        : d.text > 0.5
+                                            ? 8
+                                            : d.text > 0.25
+                                                ? 7
+                                                : 6;
+                    cellClass = cellClass + ' chm-cell--heat--level' + level;
+                }
+
+                return cellClass;
+            })
+            .text(function(d) {
+                return d.col === 'id'
+                    ? d.text.split('  |')[d.text.split('  |').length - 1]
+                    : chart.typeDict[d.col] == 'crfs'
+                        ? d.text === 'N/A'
+                            ? d.text
+                            : String(Math.floor(d.text * 100)) + '%'
+                        : d.text;
+            });
+    }
+
+    function toggleCellAnnotations() {
+        // hide annotations and add event handiing to show them on hover
+        if (!this.config.display_cell_annotations) {
+            this.cells
+                .filter(function(d) {
+                    return d.col !== 'id' && !d.hasOwnProperty('id');
+                })
+                .style('color', 'transparent')
+                .on('mouseover', function() {
+                    var level = +this.className.replace(/(.*)(level)(\d+)(.*)/, '$3');
+                    this.style.color = [6, 7, 8, 1, 2, 3].indexOf(level) > -1 ? 'black' : 'white';
+                })
+                .on('mouseout', function() {
+                    this.style.color = 'transparent';
+                });
+        } else {
+            // had back annotations with proper styling and remove hovering events
+            this.cells
+                .filter(function(d) {
+                    return d.col !== 'id' && !d.hasOwnProperty('id');
+                })
+                .style('color', null)
+                .on('mouseover', null)
+                .on('mouseout', null);
+        }
+    }
+
     function customizeCheckboxes() {
         var context = this;
 
@@ -1571,6 +1652,33 @@
                     }, 25);
                 }
                 context.config[d.option] = changer_this.checked;
+            });
+
+        //Redefine change event listener of Display Cell Anntotions checkbox.
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.option === 'display_cell_annotations';
+            })
+            .select('.changer')
+            .on('change', function(d) {
+                var changer_this = this;
+
+                var loadingdiv = d3.select('#chm-loading');
+
+                loadingdiv.classed('chm-hidden', false);
+
+                var loading = setInterval(function() {
+                    var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                    if (loadingIndicated) {
+                        clearInterval(loading);
+                        loadingdiv.classed('chm-hidden', true);
+
+                        context.config[d.option] = changer_this.checked;
+                        toggleCellAnnotations.call(context);
+                    }
+                }, 25);
             });
     }
 
@@ -1994,60 +2102,6 @@
             });
     }
 
-    function customizeCells(chart, cells) {
-        cells
-            .attr('class', function(d) {
-                var cellClass = 'chm-cell';
-
-                if (d.col === 'id')
-                    cellClass =
-                        cellClass +
-                        ' chm-cell--id' +
-                        ' chm-cell--id--level' +
-                        d.text.split('  |').length;
-                else {
-                    cellClass = cellClass + ' chm-cell--heat';
-                    var level = void 0;
-                    if (chart.typeDict[d.col] == 'queries')
-                        level =
-                            d.text === 0
-                                ? 5
-                                : d.text < 9
-                                    ? 4
-                                    : d.text < 17
-                                        ? 3
-                                        : d.text < 25
-                                            ? 2
-                                            : 1;
-                    else
-                        level =
-                            d.text === 'N/A'
-                                ? 11
-                                : d.text === 1
-                                    ? 10
-                                    : d.text > 0.75
-                                        ? 9
-                                        : d.text > 0.5
-                                            ? 8
-                                            : d.text > 0.25
-                                                ? 7
-                                                : 6;
-                    cellClass = cellClass + ' chm-cell--heat--level' + level;
-                }
-
-                return cellClass;
-            })
-            .text(function(d) {
-                return d.col === 'id'
-                    ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : chart.typeDict[d.col] == 'crfs'
-                        ? d.text === 'N/A'
-                            ? d.text
-                            : String(Math.floor(d.text * 100)) + '%'
-                        : d.text;
-            });
-    }
-
     function addInfoBubbles() {
         var chart = this;
 
@@ -2206,6 +2260,9 @@
             customizeRows(chart, childrenRows);
 
             customizeCells(chart, childrenCells);
+
+            // keep cells on chart object up to date
+            chart.cells = chart.tbody.selectAll('td');
         }
     }
 
@@ -2224,23 +2281,6 @@
         chart.expandable_rows.on('click', function(d) {
             onClick.call(this, d, chart);
         });
-    }
-
-    function toggleCellAnnotations() {
-        if (!this.config.display_cell_annotations) {
-            this.cells
-                .filter(function(d) {
-                    return d.col !== 'id' && !d.hasOwnProperty('id');
-                })
-                .style('color', 'transparent')
-                .on('mouseover', function() {
-                    var level = +this.className.replace(/(.*)(level)(\d+)(.*)/, '$3');
-                    this.style.color = [6, 7, 8, 1, 2, 3].indexOf(level) > -1 ? 'black' : 'white';
-                })
-                .on('mouseout', function() {
-                    this.style.color = 'transparent';
-                });
-        }
     }
 
     function deriveData() {

@@ -95,5 +95,8 @@ export default function onClick(d, chart) {
         customizeRows(chart, childrenRows);
 
         customizeCells(chart, childrenCells);
+
+        // keep cells on chart object up to date
+        chart.cells = chart.tbody.selectAll('td');
     }
 }
