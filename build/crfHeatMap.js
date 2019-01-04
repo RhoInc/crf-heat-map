@@ -2263,6 +2263,9 @@
 
             // keep cells on chart object up to date
             chart.cells = chart.tbody.selectAll('td');
+
+            // maintain display cell annotations setting since we are not drawing
+            toggleCellAnnotations.call(chart);
         }
     }
 

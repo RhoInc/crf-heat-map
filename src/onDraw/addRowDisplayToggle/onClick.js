@@ -1,5 +1,6 @@
 import customizeRows from '../customizeRows';
 import customizeCells from '../customizeCells';
+import toggleCellAnnotations from '../toggleCellAnnotations';
 import flagParentRows from '../flagParentRows';
 
 export default function onClick(d, chart) {
@@ -98,5 +99,8 @@ export default function onClick(d, chart) {
 
         // keep cells on chart object up to date
         chart.cells = chart.tbody.selectAll('td');
+
+        // maintain display cell annotations setting since we are not drawing
+        toggleCellAnnotations.call(chart);
     }
 }
