@@ -1,8 +1,5 @@
-export default function customizeCells() {
-    const context = this;
-
-    this.cells = this.tbody.selectAll('td');
-    this.cells
+export default function customizeCells(chart, cells) {
+    cells
         .attr('class', d => {
             let cellClass = 'chm-cell';
 
@@ -15,7 +12,7 @@ export default function customizeCells() {
             else {
                 cellClass = cellClass + ' chm-cell--heat';
                 let level;
-                if (context.typeDict[d.col] == 'queries')
+                if (chart.typeDict[d.col] == 'queries')
                     level =
                         d.text === 0 ? 5 : d.text < 9 ? 4 : d.text < 17 ? 3 : d.text < 25 ? 2 : 1;
                 else
@@ -40,7 +37,7 @@ export default function customizeCells() {
             d =>
                 d.col === 'id'
                     ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : context.typeDict[d.col] == 'crfs'
+                    : chart.typeDict[d.col] == 'crfs'
                         ? d.text === 'N/A'
                             ? d.text
                             : String(Math.floor(d.text * 100)) + '%'

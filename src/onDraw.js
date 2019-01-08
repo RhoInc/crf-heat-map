@@ -16,7 +16,7 @@ export default function onDraw() {
 
     // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
     var id;
-    chart.data.raw.forEach(function(d) {
+    chart.data.summarized.forEach(function(d) {
         id = d['id'].split('  |');
         if (id[2]) {
             d[config.id_cols[2]] = id[2];
@@ -31,15 +31,25 @@ export default function onDraw() {
     });
 
     if (this.data.summarized.length) {
-        customizeRows.call(this);
+        this.rows = this.tbody.selectAll('tr');
+        customizeRows(this, this.rows);
         addStudySummary.call(this);
-        customizeCells.call(this);
+
+        this.cells = this.tbody.selectAll('td');
+        customizeCells(this, this.cells);
         addInfoBubbles.call(this);
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);
         dataExport.call(this);
         flagParentRows.call(this);
     }
+
+    //Make sure 'Expand All' check box is not checked
+    this.controls.wrap
+        .selectAll('.control-group')
+        .filter(d => d.option === 'expand_all')
+        .select('.changer')
+        .property('checked', false);
 
     //end performance test
     var t1 = performance.now();

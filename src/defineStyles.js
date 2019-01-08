@@ -286,7 +286,12 @@ export default function defineStyles() {
                     '    font-weight: normal;' +
                     '}',
                 '.range-annotation--lower {' + '    text-align: left;' + '}',
-                '.range-annotation--upper {' + '    text-align: right;' + '}',
+                '.range-annotation--upper {' + '    text-align: right;' +
+                    '    width: 50%;' +
+                    '    position: absolute;' +
+                    '    right: 0;' +
+                    '    bottom: 0;' +
+                    '}',
                 '.range-slider::-webkit-slider-thumb {' +
                     '    pointer-events: all;' +
                     '    position: relative;' +
@@ -316,18 +321,30 @@ export default function defineStyles() {
                     '    display: inline-block;' +
                     '    width: 45%;' +
                     '}',
+                  '.range-value-parent {' +
+                      'display: inline-block;' +
+                        '    position: relative;' +
+                        '    width: 100%;' +
+                      '  vertical-align: middle;' +
+                      '    text-align: center;' +
+                        '}',
                 '.range-value-container > * {' +
                     '    text-align: right;' +
                     '}',
                 '.range-value-container--lower {' +
                     '    float: left;' +
+                    '    width: 55px;' +
                     '}',
                 '.range-value-container--upper {' +
                     '    float: right;' +
+                    '    width: 55px;' +
                     '}',
                 '.range-value {' +
-                    '    width: 70%;' +
-                    '}',
+                  '    width: 74%;' +
+                  '    font-weight: normal;' +
+                  '    font-size: small;' +
+                  '    padding: 0;' +
+                  '}',
                 '.chm-text {' +
                     '    font-size: 12px;' +
                     '    font-weight: normal;' +
