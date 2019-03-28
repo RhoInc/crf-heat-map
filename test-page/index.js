@@ -1,5 +1,5 @@
 d3.csv(
-    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/dmc_DataPage.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/dmc_datapage.csv',
     function(d) {
         return d;
     },
