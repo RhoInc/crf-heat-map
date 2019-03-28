@@ -1,7 +1,7 @@
 {
   "name": "crf-heat-map",
   "description": "Heat Map showing database form status at different levels",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/crf-heat-map#readme",

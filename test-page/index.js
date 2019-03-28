@@ -1,6 +1,5 @@
 d3.csv(
-    'https://raw.githubusercontent.com/RhoInc/viz-library/master/data/dataCleaning/dmc_DataPage.csv',
-    //'./dmc_DataPage.csv', // to improve speed use local data file in development
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/dmc_DataPage.csv',
     function(d) {
         return d;
     },
