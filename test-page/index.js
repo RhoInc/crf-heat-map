@@ -1,16 +1,14 @@
 d3.csv(
-    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/dmc_datapage.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/forms.csv',
     function(d) {
         return d;
     },
-    function(error, data) {
-        if (error)
-            console.log(error);
-
+    function(data) {
         var instance = crfHeatMap(
-            '#container'
+            '#container', // element
+            {
+            } // settings
         );
-
         instance.init(data);
     }
 );
