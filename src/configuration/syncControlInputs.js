@@ -3,7 +3,7 @@ import controlInputs from './controlInputs';
 export default function syncControlInputs(settings) {
     const defaultControls = controlInputs();
     const labels = {};
-    labels[settings.site_col] = 'Site';
+    labels[settings.site_col] = 'Site'; // update to be set in settings and include all nesting vars
     labels[settings.id_freeze_col] = 'Subject Freeze Status';
     labels[settings.id_status_col] = 'Subject Status';
     settings.filter_cols.forEach((filter_col, i) => {

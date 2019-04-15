@@ -14,7 +14,7 @@ export default function checkRequiredVariables() {
         variable => this.data.variables.indexOf(variable.split(' (')[0]) < 0
     );
     if (missingVariables.length)
-        alert(
+        console.log(
             `The data are missing ${
                 missingVariables.length === 1 ? 'this variable' : 'these variables'
             }: ${missingVariables.join(', ')}.`

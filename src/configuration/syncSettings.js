@@ -1,17 +1,14 @@
 export default function syncSettings(settings) {
-    //Sync nestings with data variable settings.
-    const settingsKeys = Object.keys(settings);
-    const settingsCols = settingsKeys.filter(settingsKey => /_col$/.test(settingsKey));
-    settings.nestings.forEach(nesting => {
-        nesting.value_col =
-            nesting.value_col ||
-            settings[settingsCols.find(settingsCol => settingsCol === nesting.settings_col)];
-    });
 
     // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
     settings.value_cols.sort(function(a, b) {
         return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
     });
+
+    // Assign nest variables with specfic roles to specific settings
+    settings.nestings.map(function(d){
+      if (typeof(d.role) != "undefined") settings[d.role] = d.value_col
+    })
 
     //Define initial nesting variables.
     settings.id_cols = settings.nestings
