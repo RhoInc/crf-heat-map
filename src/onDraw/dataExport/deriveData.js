@@ -19,23 +19,34 @@ export default function deriveData() {
 
     //Capture subject-level information.
     if (subject_id_col) {
-        //Add headers.
-        this.export.headers.push('Site', 'Subject Status', 'Subject Freeze Status');
+        //Add headers and columns
+        if (this.config.site_col) {
+          this.export.headers.push('Site');
+          this.export.cols.push('site');
+        }
 
-        //Add columns.
-        this.export.cols.push('site', 'status', 'freeze');
+        if (this.config.subject_export_cols) {
+          this.config.subject_export_cols.forEach(function(d) {
+            table.export.headers.push(d.label);
+            table.export.cols.push(d.value_col);
+          })
+        }
 
         // build look up for subject
+        if (this.config.site_col || this.config.subject_export_cols){
         var subjects = d3.set(table.data.initial.map(d => d[this.config.id_col])).values();
         var subjectMap = subjects.reduce((acc, cur) => {
             var subjectDatum = this.data.initial.find(d => d[this.config.id_col] === cur);
-            acc[cur] = {
-                site: subjectDatum[this.config.site_col],
-                status: subjectDatum[this.config.id_status_col],
-                freeze: subjectDatum[this.config.id_freeze_col]
-            };
+            acc[cur] = {};
+            if (this.config.site_col) acc[cur]['site'] = subjectDatum[this.config.site_col];
+            if (this.config.subject_export_cols) {
+              this.config.subject_export_cols.forEach(function(d) {
+                  acc[cur][d.value_col] = subjectDatum[d.value_col];
+              })
+            }
             return acc;
         }, {});
+      }
     }
 
     // Going to want expanded data - since current data doesn't include child rows unless all are expanded
@@ -54,7 +65,7 @@ export default function deriveData() {
         });
 
         // Now "join" subject level information to export data
-        if (subject_id_col) {
+        if ((this.config.site_col || this.config.subject_export_cols) && this.config.id_col){
             const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.id_col}`];
             Object.assign(d, subjectMap[subjectID]);
         }

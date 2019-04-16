@@ -35,6 +35,9 @@ export default function syncSettings(settings) {
         ? nest_settings.concat(settings.filter_cols)
         : nest_settings;
 
+    //Define cols to include in subject level export
+    settings.subject_export_cols = settings.filter_cols.filter(filter => filter.subject_export ==true);
+
     // add labels specified in rendererSettings as headers
     settings.headers = settings.value_cols.map(d => d.label);
 

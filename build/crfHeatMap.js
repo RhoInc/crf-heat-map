@@ -811,10 +811,12 @@
             }, {
                 value_col: 'subjfreezeflg',
                 label: 'Subject Freeze Status',
-                multiple: true
+                multiple: true,
+                subject_export: true // maybe prevent non subject lelve fitlers ued here?
             }, {
                 value_col: 'status',
-                label: "Subject Status"
+                label: "Subject Status",
+                subject_export: true
             }],
             visit_order_col: 'folder_ordinal',
             display_cell_annotations: true,
@@ -876,6 +878,11 @@
 
         //Define filter variables.
         settings.filter_cols = Array.isArray(settings.filter_cols) ? nest_settings.concat(settings.filter_cols) : nest_settings;
+
+        //Define cols to include in subject level export
+        settings.subject_export_cols = settings.filter_cols.filter(function (filter) {
+            return filter.subject_export == true;
+        });
 
         // add labels specified in rendererSettings as headers
         settings.headers = settings.value_cols.map(function (d) {
@@ -1436,6 +1443,7 @@
         customizeCheckboxes.call(this);
         //moveExportButtons.call(this);
         addColumnControls.call(this);
+        console.log(this);
     }
 
     function customizeRows(chart, rows) {
@@ -1665,27 +1673,38 @@
 
         //Capture subject-level information.
         if (subject_id_col) {
-            //Add headers.
-            this.export.headers.push('Site', 'Subject Status', 'Subject Freeze Status');
+            //Add headers and columns
+            if (this.config.site_col) {
+                this.export.headers.push('Site');
+                this.export.cols.push('site');
+            }
 
-            //Add columns.
-            this.export.cols.push('site', 'status', 'freeze');
+            if (this.config.subject_export_cols) {
+                this.config.subject_export_cols.forEach(function (d) {
+                    table.export.headers.push(d.label);
+                    table.export.cols.push(d.value_col);
+                });
+            }
 
             // build look up for subject
-            var subjects = d3.set(table.data.initial.map(function (d) {
-                return d[_this.config.id_col];
-            })).values();
-            var subjectMap = subjects.reduce(function (acc, cur) {
-                var subjectDatum = _this.data.initial.find(function (d) {
-                    return d[_this.config.id_col] === cur;
-                });
-                acc[cur] = {
-                    site: subjectDatum[_this.config.site_col],
-                    status: subjectDatum[_this.config.id_status_col],
-                    freeze: subjectDatum[_this.config.id_freeze_col]
-                };
-                return acc;
-            }, {});
+            if (this.config.site_col || this.config.subject_export_cols) {
+                var subjects = d3.set(table.data.initial.map(function (d) {
+                    return d[_this.config.id_col];
+                })).values();
+                var subjectMap = subjects.reduce(function (acc, cur) {
+                    var subjectDatum = _this.data.initial.find(function (d) {
+                        return d[_this.config.id_col] === cur;
+                    });
+                    acc[cur] = {};
+                    if (_this.config.site_col) acc[cur]['site'] = subjectDatum[_this.config.site_col];
+                    if (_this.config.subject_export_cols) {
+                        _this.config.subject_export_cols.forEach(function (d) {
+                            acc[cur][d.value_col] = subjectDatum[d.value_col];
+                        });
+                    }
+                    return acc;
+                }, {});
+            }
         }
 
         // Going to want expanded data - since current data doesn't include child rows unless all are expanded
@@ -1706,7 +1725,7 @@
             });
 
             // Now "join" subject level information to export data
-            if (subject_id_col) {
+            if ((_this.config.site_col || _this.config.subject_export_cols) && _this.config.id_col) {
                 var subjectID = d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
             }

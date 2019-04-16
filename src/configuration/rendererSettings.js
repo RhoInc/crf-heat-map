@@ -94,11 +94,13 @@ export default function rendererSettings() {
           {
             value_col: 'subjfreezeflg',
             label: 'Subject Freeze Status',
-            multiple: true
+            multiple: true,
+            subject_export : true // maybe prevent non subject lelve fitlers ued here?
           },
           {
             value_col: 'status',
-            label: "Subject Status"
+            label: "Subject Status",
+            subject_export : true
           }
         ],
         visit_order_col: 'folder_ordinal',
