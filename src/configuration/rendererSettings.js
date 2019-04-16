@@ -22,7 +22,7 @@ export default function rendererSettings() {
             {
                 value_col: 'ecrfpagename',
                 label: 'Form',
-                default_nesting: false,
+                default_nesting: false
             }
         ],
         value_cols: [
@@ -79,29 +79,29 @@ export default function rendererSettings() {
             }
         ],
         filter_cols: [
-          {
-            value_col: 'subset1',
-            label: 'Subset 1'
-          },
-          {
-            value_col: 'subset2',
-            label: 'Subset 2'
-          },
-          {
-            value_col: 'subset3',
-            label: 'Subset 3'
-          },
-          {
-            value_col: 'subjfreezeflg',
-            label: 'Subject Freeze Status',
-            multiple: true,
-            subject_export : true // maybe prevent non subject lelve fitlers ued here?
-          },
-          {
-            value_col: 'status',
-            label: "Subject Status",
-            subject_export : true
-          }
+            {
+                value_col: 'subset1',
+                label: 'Subset 1'
+            },
+            {
+                value_col: 'subset2',
+                label: 'Subset 2'
+            },
+            {
+                value_col: 'subset3',
+                label: 'Subset 3'
+            },
+            {
+                value_col: 'subjfreezeflg',
+                label: 'Subject Freeze Status',
+                multiple: true,
+                subject_export: true // I'd'like to add a check that these only change for subject or higher but not sure how i would do so
+            },
+            {
+                value_col: 'status',
+                label: 'Subject Status',
+                subject_export: true
+            }
         ],
         visit_order_col: 'folder_ordinal',
         display_cell_annotations: true,

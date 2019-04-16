@@ -1,14 +1,13 @@
 export default function syncSettings(settings) {
-
     // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
     settings.value_cols.sort(function(a, b) {
         return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
     });
 
     // Assign nest variables with specfic roles to specific settings
-    settings.nestings.map(function(d){
-      if (typeof(d.role) != "undefined") settings[d.role] = d.value_col
-    })
+    settings.nestings.map(function(d) {
+        if (typeof d.role != 'undefined') settings[d.role] = d.value_col;
+    });
 
     //Define initial nesting variables.
     settings.id_cols = settings.nestings
@@ -22,12 +21,12 @@ export default function syncSettings(settings) {
     // Define nesting filters
     var nest_settings = [];
     if (settings.nesting_filters === true) {
-      settings.nestings.forEach(setting =>
-        nest_settings.push({
-          value_col : setting.value_col,
-          label : setting.label
-        })
-      )
+        settings.nestings.forEach(setting =>
+            nest_settings.push({
+                value_col: setting.value_col,
+                label: setting.label
+            })
+        );
     }
 
     //Define filter variables.
@@ -36,7 +35,9 @@ export default function syncSettings(settings) {
         : nest_settings;
 
     //Define cols to include in subject level export
-    settings.subject_export_cols = settings.filter_cols.filter(filter => filter.subject_export ==true);
+    settings.subject_export_cols = settings.filter_cols.filter(
+        filter => filter.subject_export == true
+    );
 
     // add labels specified in rendererSettings as headers
     settings.headers = settings.value_cols.map(d => d.label);

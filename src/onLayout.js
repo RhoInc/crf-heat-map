@@ -10,5 +10,5 @@ export default function onLayout() {
     customizeCheckboxes.call(this);
     //moveExportButtons.call(this);
     addColumnControls.call(this);
-    console.log(this)
+    console.log(this);
 }
