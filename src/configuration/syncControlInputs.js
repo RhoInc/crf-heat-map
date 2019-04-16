@@ -2,20 +2,14 @@ import controlInputs from './controlInputs';
 
 export default function syncControlInputs(settings) {
     const defaultControls = controlInputs();
-    const labels = {};
-    labels[settings.site_col] = 'Site'; // update to be set in settings and include all nesting vars
-    labels[settings.id_freeze_col] = 'Subject Freeze Status';
-    labels[settings.id_status_col] = 'Subject Status';
     settings.filter_cols.forEach((filter_col, i) => {
         const filter = {
             type: 'subsetter',
-            value_col: filter_col,
-            label: labels[filter_col]
-                ? labels[filter_col]
-                : /^subset\d$/.test(filter_col)
-                    ? filter_col.replace(/^s/, 'S').replace(/(\d)/, ' $1')
-                    : filter_col.label || filter_col.value_col || filter_col,
-            multiple: filter_col == settings.id_status_col ? true : false
+            value_col: filter_col.value_col,
+            label: filter_col.label
+                ? filter_col.label
+                : filter_col.value_col,
+            multiple: filter_col.multiple ? filter_col.multiple : false
         };
         defaultControls.splice(i, 0, filter);
     });

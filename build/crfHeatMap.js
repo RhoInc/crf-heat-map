@@ -755,7 +755,6 @@
                 value_col: 'ecrfpagename',
                 label: 'Form',
                 default_nesting: false
-                //        role: 'form_col'
             }],
             value_cols: [{
                 col: 'is_partial_entry',
@@ -800,14 +799,29 @@
                 label: 'Answered',
                 description: 'Site has responded to issue, DM needs to review.'
             }],
-            filter_cols: ['subset1', 'subset2', 'subset3'],
-            id_freeze_col: 'subjfreezeflg', // add to filters later
-            id_status_col: 'status',
+            filter_cols: [{
+                value_col: 'subset1',
+                label: 'Subset 1'
+            }, {
+                value_col: 'subset2',
+                label: 'Subset 2'
+            }, {
+                value_col: 'subset3',
+                label: 'Subset 3'
+            }, {
+                value_col: 'subjfreezeflg',
+                label: 'Subject Freeze Status',
+                multiple: true
+            }, {
+                value_col: 'status',
+                label: "Subject Status"
+            }],
             visit_order_col: 'folder_ordinal',
             display_cell_annotations: true,
             expand_all: false,
             sliders: false,
-            max_rows_warn: 10000
+            max_rows_warn: 10000,
+            nesting_filters: true
         };
     }
 
@@ -849,8 +863,19 @@
             return d.col;
         })]);
 
+        // Define nesting filters
+        var nest_settings = [];
+        if (settings.nesting_filters === true) {
+            settings.nestings.forEach(function (setting) {
+                return nest_settings.push({
+                    value_col: setting.value_col,
+                    label: setting.label
+                });
+            });
+        }
+
         //Define filter variables.
-        settings.filter_cols = Array.isArray(settings.filter_cols) ? [settings.site_col, settings.id_freeze_col, settings.id_status_col].concat(settings.filter_cols) : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
+        settings.filter_cols = Array.isArray(settings.filter_cols) ? nest_settings.concat(settings.filter_cols) : nest_settings;
 
         // add labels specified in rendererSettings as headers
         settings.headers = settings.value_cols.map(function (d) {
@@ -882,16 +907,12 @@
 
     function syncControlInputs(settings) {
         var defaultControls = controlInputs();
-        var labels = {};
-        labels[settings.site_col] = 'Site'; // update to be set in settings and include all nesting vars
-        labels[settings.id_freeze_col] = 'Subject Freeze Status';
-        labels[settings.id_status_col] = 'Subject Status';
         settings.filter_cols.forEach(function (filter_col, i) {
             var filter = {
                 type: 'subsetter',
-                value_col: filter_col,
-                label: labels[filter_col] ? labels[filter_col] : /^subset\d$/.test(filter_col) ? filter_col.replace(/^s/, 'S').replace(/(\d)/, ' $1') : filter_col.label || filter_col.value_col || filter_col,
-                multiple: filter_col == settings.id_status_col ? true : false
+                value_col: filter_col.value_col,
+                label: filter_col.label ? filter_col.label : filter_col.value_col,
+                multiple: filter_col.multiple ? filter_col.multiple : false
             };
             defaultControls.splice(i, 0, filter);
         });

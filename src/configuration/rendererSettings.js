@@ -22,8 +22,7 @@ export default function rendererSettings() {
             {
                 value_col: 'ecrfpagename',
                 label: 'Form',
-                default_nesting: false
-        //        role: 'form_col'
+                default_nesting: false,
             }
         ],
         value_cols: [
@@ -79,13 +78,34 @@ export default function rendererSettings() {
                 description: 'Site has responded to issue, DM needs to review.'
             }
         ],
-        filter_cols: ['subset1', 'subset2', 'subset3'],
-        id_freeze_col: 'subjfreezeflg', // add to filters later
-        id_status_col: 'status',
+        filter_cols: [
+          {
+            value_col: 'subset1',
+            label: 'Subset 1'
+          },
+          {
+            value_col: 'subset2',
+            label: 'Subset 2'
+          },
+          {
+            value_col: 'subset3',
+            label: 'Subset 3'
+          },
+          {
+            value_col: 'subjfreezeflg',
+            label: 'Subject Freeze Status',
+            multiple: true
+          },
+          {
+            value_col: 'status',
+            label: "Subject Status"
+          }
+        ],
         visit_order_col: 'folder_ordinal',
         display_cell_annotations: true,
         expand_all: false,
         sliders: false,
-        max_rows_warn: 10000
+        max_rows_warn: 10000,
+        nesting_filters: true
     };
 }
