@@ -163,7 +163,14 @@ export default function defineStyles() {
                     '    display: block;' +
                     '    clear: left;' +
                     `    padding-left: ${paddingLeft}px;` +
+                    '    min-width : 100px;' +
                     '}',
+                  '.chm-nest-control.chm-hide {' +
+                      '    float: left;' +
+                      '    display: none;' +
+                      '    clear: left;' +
+                      `    padding-left: ${paddingLeft}px;` +
+                      '}',
                 '#chm-nest-control--1 {' +
                     '    margin-left: 0;' +
                     '}',

@@ -454,7 +454,7 @@
         idList.push({ value_col: undefined, label: 'None' });
 
         this.containers.nestControls.append('span').attr('class', 'chm-control-label').text('');
-        var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+        //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
         var idSelects = this.containers.nestControls.selectAll('select').data([0, 1, 2]).enter().append('select').classed('chm-nest-control', true).attr({
             id: function id(d) {
                 return 'chm-nest-control--' + (d + 1);
@@ -473,6 +473,19 @@
             var levelNum = d3.select(this.parentNode).datum();
             return d.value_col == config.id_cols[levelNum];
         });
+
+        // limit select options to those that are not already selected (except for None - want to keep that around)
+        idSelects.selectAll('option').style('display', function (d) {
+            return config.id_cols.includes(d.value_col) ? 'none' : null;
+        });
+
+        // disable third nest level when the second is not chosen
+        d3.select('#chm-nest-control--3').property('disabled', config.id_cols.length === 1 ? true : false);
+
+        //hide None option from second nest when third is selected
+        d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
+            return d.label === "None";
+        }).style('display', config.id_cols.length === 3 ? "none" : null);
 
         idSelects.on('change', function () {
             //indicate loading
@@ -504,6 +517,19 @@
 
                     //Update nesting variables.
                     context.table.config.id_cols = uniqueLevels;
+
+                    console.log(uniqueLevels.length);
+
+                    idSelects.selectAll('option').style('display', function (d) {
+                        return uniqueLevels.includes(d.value_col) ? 'none' : null;
+                    });
+
+                    d3.select('#chm-nest-control--3').property('disabled', uniqueLevels.length == 1 ? true : false);
+
+                    //hide None option from second nest when third is selected
+                    d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
+                        return d.label === "None";
+                    }).style('display', uniqueLevels.length === 3 ? "none" : null);
 
                     //Summarize filtered data and redraw table.
                     redraw.call(context.table);
@@ -697,7 +723,7 @@
           Nest controls
         \---------------------------------------------------------------------------------****/
 
-        '#chm-nest-controls {' + ('    width: ' + firstColumnWidth + '%;') + '    height: 100%;' + '}', '.chm-nest-control {' + '    float: left;' + '    display: block;' + '    clear: left;' + ('    padding-left: ' + paddingLeft + 'px;') + '}', '#chm-nest-control--1 {' + '    margin-left: 0;' + '}', '#chm-nest-control--2 {' + '    margin-left: 1em;' + '}', '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
+        '#chm-nest-controls {' + ('    width: ' + firstColumnWidth + '%;') + '    height: 100%;' + '}', '.chm-nest-control {' + '    float: left;' + '    display: block;' + '    clear: left;' + ('    padding-left: ' + paddingLeft + 'px;') + '    min-width : 100px;' + '}', '.chm-nest-control.chm-hide {' + '    float: left;' + '    display: none;' + '    clear: left;' + ('    padding-left: ' + paddingLeft + 'px;') + '}', '#chm-nest-control--1 {' + '    margin-left: 0;' + '}', '#chm-nest-control--2 {' + '    margin-left: 1em;' + '}', '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
 
         /****---------------------------------------------------------------------------------\
           Legend

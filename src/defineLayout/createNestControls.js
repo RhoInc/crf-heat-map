@@ -11,7 +11,7 @@ export default function createNestControls() {
         .append('span')
         .attr('class', 'chm-control-label')
         .text('');
-    var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+  //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
     var idSelects = this.containers.nestControls
         .selectAll('select')
         .data([0, 1, 2])
@@ -43,6 +43,16 @@ export default function createNestControls() {
             return d.value_col == config.id_cols[levelNum];
         });
 
+    // limit select options to those that are not already selected (except for None - want to keep that around)
+    idSelects.selectAll('option').style('display',d => config.id_cols.includes(d.value_col) ? 'none' : null)
+
+    // disable third nest level when the second is not chosen
+    d3.select('#chm-nest-control--3').property('disabled',config.id_cols.length === 1 ? true : false)
+
+    //hide None option from second nest when third is selected
+    d3.select('#chm-nest-control--2').selectAll('option').filter(d => d.label ==="None").style('display', config.id_cols.length === 3 ? "none" : null )
+
+
     idSelects.on('change', function() {
         //indicate loading
         context.containers.loading.classed('chm-hidden', false);
@@ -71,6 +81,16 @@ export default function createNestControls() {
 
                 //Update nesting variables.
                 context.table.config.id_cols = uniqueLevels;
+
+                console.log(uniqueLevels.length)
+
+                idSelects.selectAll('option').style('display',d => uniqueLevels.includes(d.value_col) ? 'none' : null)
+
+                d3.select('#chm-nest-control--3').property('disabled', uniqueLevels.length == 1 ? true : false)
+
+                //hide None option from second nest when third is selected
+                d3.select('#chm-nest-control--2').selectAll('option').filter(d => d.label ==="None").style('display', uniqueLevels.length === 3 ? "none" : null )
+
 
                 //Summarize filtered data and redraw table.
                 redraw.call(context.table);
