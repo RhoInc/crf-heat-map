@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts')) :
-    typeof define === 'function' && define.amd ? define(['webcharts'], factory) :
-    (global.crfHeatMap = factory(global.webCharts));
-}(this, (function (webcharts) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('webcharts')) :
+    typeof define === 'function' && define.amd ? define(['d3', 'webcharts'], factory) :
+    (global.crfHeatMap = factory(global.d3,global.webCharts));
+}(this, (function (d3$1,webcharts) { 'use strict';
 
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
@@ -448,18 +448,18 @@
 
     function enforceNestLogic(id_cols) {
 
-        // limit select options to those that are not already selected (except for None - want to keep that around)
-        this.containers.nestControls.selectAll('select').selectAll('option').style('display', function (d) {
-            return id_cols.includes(d.value_col) ? 'none' : null;
-        });
+      // limit select options to those that are not already selected (except for None - want to keep that around)
+      this.containers.nestControls.selectAll('select').selectAll('option').style('display', function (d) {
+        return id_cols.includes(d.value_col) ? 'none' : null;
+      });
 
-        // disable third nest level when the second is not chosen
-        d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
+      // disable third nest level when the second is not chosen
+      d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
 
-        //hide None option from second nest when third is selected
-        d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
-            return d.label === "None";
-        }).style('display', id_cols.length === 3 ? "none" : null);
+      //hide None option from second nest when third is selected
+      d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
+        return d.label === "None";
+      }).style('display', id_cols.length === 3 ? "none" : null);
     }
 
     function createNestControls() {
@@ -967,9 +967,32 @@
         syncControlInputs: syncControlInputs
     };
 
+    function removeFilters() {
+        var _this = this;
+
+        this.controls.config.inputs = this.controls.config.inputs.filter(function (input) {
+            if (input.type !== 'subsetter') {
+                return true;
+            } else if (!_this.data.raw[0].hasOwnProperty(input.value_col)) {
+                console.warn('The [ ' + input.label + ' ] filter has been removed because the variable does not exist.');
+            } else {
+                var levels = d3$1.set(_this.data.raw.map(function (d) {
+                    return d[input.value_col];
+                })).values();
+
+                if (levels.length === 1) console.warn('The [ ' + input.label + ' ] filter has been removed because the variable has only one level.');
+
+                return levels.length > 1;
+            }
+        });
+    }
+
     function onInit() {
         this.data.initial = this.data.raw;
         this.data.initial_filtered = this.data.initial;
+
+        //remove single-level or dataless filters
+        removeFilters.call(this);
 
         //Summarize raw data.
         summarizeData.call(this);

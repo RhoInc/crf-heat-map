@@ -1,8 +1,13 @@
 import summarizeData from './onInit/summarizeData';
+import removeFilters from './onInit/removeFilters';
+
 
 export default function onInit() {
     this.data.initial = this.data.raw;
     this.data.initial_filtered = this.data.initial;
+
+    //remove single-level or dataless filters
+    removeFilters.call(this)
 
     //Summarize raw data.
     summarizeData.call(this);
