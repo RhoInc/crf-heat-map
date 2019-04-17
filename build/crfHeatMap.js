@@ -446,6 +446,22 @@
         this.draw(this.data.raw);
     }
 
+    function enforceNestLogic(id_cols) {
+
+        // limit select options to those that are not already selected (except for None - want to keep that around)
+        this.containers.nestControls.selectAll('select').selectAll('option').style('display', function (d) {
+            return id_cols.includes(d.value_col) ? 'none' : null;
+        });
+
+        // disable third nest level when the second is not chosen
+        d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
+
+        //hide None option from second nest when third is selected
+        d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
+            return d.label === "None";
+        }).style('display', id_cols.length === 3 ? "none" : null);
+    }
+
     function createNestControls() {
         var context = this;
         var config = this.settings.synced;
@@ -474,18 +490,8 @@
             return d.value_col == config.id_cols[levelNum];
         });
 
-        // limit select options to those that are not already selected (except for None - want to keep that around)
-        idSelects.selectAll('option').style('display', function (d) {
-            return config.id_cols.includes(d.value_col) ? 'none' : null;
-        });
-
-        // disable third nest level when the second is not chosen
-        d3.select('#chm-nest-control--3').property('disabled', config.id_cols.length === 1 ? true : false);
-
-        //hide None option from second nest when third is selected
-        d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
-            return d.label === "None";
-        }).style('display', config.id_cols.length === 3 ? "none" : null);
+        //ensure natural nest control options and behavior
+        enforceNestLogic.call(this, config.id_cols);
 
         idSelects.on('change', function () {
             //indicate loading
@@ -518,18 +524,8 @@
                     //Update nesting variables.
                     context.table.config.id_cols = uniqueLevels;
 
-                    console.log(uniqueLevels.length);
-
-                    idSelects.selectAll('option').style('display', function (d) {
-                        return uniqueLevels.includes(d.value_col) ? 'none' : null;
-                    });
-
-                    d3.select('#chm-nest-control--3').property('disabled', uniqueLevels.length == 1 ? true : false);
-
-                    //hide None option from second nest when third is selected
-                    d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
-                        return d.label === "None";
-                    }).style('display', uniqueLevels.length === 3 ? "none" : null);
+                    //Maintain nest logic
+                    enforceNestLogic.call(context, uniqueLevels);
 
                     //Summarize filtered data and redraw table.
                     redraw.call(context.table);
