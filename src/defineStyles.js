@@ -149,7 +149,7 @@ export default function defineStyles() {
                     '    display: flex;' +
                     '    flex-wrap: wrap ;' +
                     '    margin-top: 10px;' +
-                    '    justify-content: space-between;' +
+                    '    justify-content: space-evenly;' +
                     '}',
                 '.chm-nesting-filter {' +
                     '    width : 100px !important;' +
