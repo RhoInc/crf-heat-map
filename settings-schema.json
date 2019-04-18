@@ -38,19 +38,19 @@
                     "role": "site_col"
                 },
                 {
-                    "value_col" : "id_col",
+                    "value_col" : "subjectnameoridentifier",
                     "label": "Subject ID",
                     "default_nesting": true,
                     "role": "id_col"
                 },
                 {
-                    "value_col" : "visit_col",
+                    "value_col" : "folderinstancename",
                     "label": "Folder",
                     "default_nesting": false,
                     "role": "visit_col"
                 },
                 {
-                    "value_col" : "form_col",
+                    "value_col" : "ecrfpagename",
                     "label": "Form",
                     "default_nesting": false
                 }
