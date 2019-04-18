@@ -125,7 +125,7 @@ export default function defineStyles() {
                 '#chm-controls .span-description {' +
                     '}',
                 '#chm-controls select.changer {' +
-                  '    margin: 0 auto;' +
+                    '    margin: 0 auto;' +
                     '}',
                 '#chm-controls input.changer {' +
                     '    margin-left: 2% !important;' +
@@ -147,11 +147,12 @@ export default function defineStyles() {
                     '}',
                 '.chm-nesting-filters {' +
                     '    display: flex;' +
-                    'flex-wrap: wrap ;' +
+                    '    flex-wrap: wrap ;' +
                     '    margin-top: 10px;' +
-                                 '}',
+                    '    justify-content: space-between;' +
+                    '}',
                 '.chm-nesting-filter {' +
-                    'width : 100px !important;' +
+                    '    width : 100px !important;' +
                     '}',
 
                 //checkboxes
