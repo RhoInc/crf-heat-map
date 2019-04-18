@@ -447,19 +447,18 @@
     }
 
     function enforceNestLogic(id_cols) {
+        // limit select options to those that are not already selected (except for None - want to keep that around)
+        this.containers.nestControls.selectAll('select').selectAll('option').style('display', function (d) {
+            return id_cols.includes(d.value_col) ? 'none' : null;
+        });
 
-      // limit select options to those that are not already selected (except for None - want to keep that around)
-      this.containers.nestControls.selectAll('select').selectAll('option').style('display', function (d) {
-        return id_cols.includes(d.value_col) ? 'none' : null;
-      });
+        // disable third nest level when the second is not chosen
+        d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
 
-      // disable third nest level when the second is not chosen
-      d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
-
-      //hide None option from second nest when third is selected
-      d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
-        return d.label === "None";
-      }).style('display', id_cols.length === 3 ? "none" : null);
+        //hide None option from second nest when third is selected
+        d3.select('#chm-nest-control--2').selectAll('option').filter(function (d) {
+            return d.label === 'None';
+        }).style('display', id_cols.length === 3 ? 'none' : null);
     }
 
     function createNestControls() {
@@ -707,7 +706,10 @@
           Row 2 - Controls
         \---------------------------------------------------------------------------------****/
 
-        '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}', '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}', '#chm-controls .control-group > * {' + '    display: inline-block !important;' + '    margin: 0;' + '}', '#chm-controls .wc-control-label {' + '    width: 58%;' + '    text-align: right;' + '}', '#chm-controls .span-description {' + '}', '#chm-controls select.changer {' + '    width: 40%;' + '    float: right;' + '    overflow-y: auto;' + '}', '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
+        '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}', '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}', '#chm-controls .control-group > * {' + '    display: block;' + '    width: auto;' + '}', '#chm-controls .wc-control-label {' + '    text-align: center;' + '}', '#chm-controls .span-description {' + '}', '#chm-controls select.changer {' + '    margin: 0 auto;' + '}', '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}', '.chm-control-grouping {' + '    display: inline-block;' + '}', '.chm-control-grouping--label {' + '    text-align: center;' + '    width: 100%;' + '    font-size: 20px;' + '}', '.chm-control-grouping .control-group .wc-control-label {' + '    text-align: center;' + '}', '.chm-other-controls {' + '    border-bottom: 1px solid lightgray;' + '    padding-bottom: 7px;' + '}', '.chm-nesting-filters {' + '    display: flex;' + 'flex-wrap: wrap ;' + '    margin-top: 10px;' + '}', '.chm-nesting-filter {' + 'width : 100px !important;' + '}',
+
+        //checkboxes
+        '.chm-checkbox {' + '    display: inline-flex !important;' + '    justify-content: center;' + '}', '.chm-checkbox .wc-control-label {' + '    margin-right: 5px;' + '}', '.chm-checkbox .changer {' + '    margin-top: 5px !important;' + '}',
 
         /***--------------------------------------------------------------------------------------\
           Right column
@@ -1481,13 +1483,54 @@
         });
     }
 
+    function formatControls() {
+        var context = this;
+
+        var nest_vars = this.initial_config.nestings.map(function (nesting) {
+            return nesting.value_col;
+        });
+
+        // assign classes based on control type and if it's a nesting filter
+        this.controls.controlGroups = this.controls.wrap.selectAll('.control-group').attr('class', function (d) {
+            return 'control-group chm-' + d.type;
+        }).classed('chm-nesting-filter', function (d) {
+            return nest_vars.includes(d.value_col);
+        });
+
+        //Group nesting filters
+        this.controls.filters = {
+            container: this.controls.wrap.insert('div', '.chm-nesting-filter').classed('chm-control-grouping chm-nesting-filters', true)
+        };
+
+        this.controls.filters.container.append('div').classed('chm-control-grouping--label', true).text('Nesting Filters');
+
+        this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-nesting-filter');
+        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll('.wc-control-label');
+        this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
+        this.controls.filters.controlGroups.each(function (d) {
+            context.controls.filters.container.node().appendChild(this);
+        });
+
+        //Group other controls
+        this.controls.otherControls = {
+            container: this.controls.wrap.insert('div', ':first-child').classed('chm-control-grouping chm-other-controls', true)
+        };
+        this.controls.otherControls.label = this.controls.otherControls.container.append('div').classed('chm-control-grouping--label', true).text('Controls');
+
+        this.controls.otherControls.controlGroups = this.controls.wrap.selectAll('.control-group:not(.chm-nesting-filter)');
+        this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll('.wc-control-label');
+        this.controls.otherControls.controlGroups.each(function (d) {
+            context.controls.otherControls.container.node().appendChild(this);
+        });
+    }
+
     function onLayout() {
         customizeFilters.call(this);
         tweakMultiSelects.call(this);
         customizeCheckboxes.call(this);
         //moveExportButtons.call(this);
         addColumnControls.call(this);
-        console.log(this);
+        formatControls.call(this);
     }
 
     function customizeRows(chart, rows) {

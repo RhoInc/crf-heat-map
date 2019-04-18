@@ -12,7 +12,7 @@ export default function createNestControls() {
         .append('span')
         .attr('class', 'chm-control-label')
         .text('');
-  //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+    //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
     var idSelects = this.containers.nestControls
         .selectAll('select')
         .data([0, 1, 2])
@@ -45,7 +45,7 @@ export default function createNestControls() {
         });
 
     //ensure natural nest control options and behavior
-    enforceNestLogic.call(this,config.id_cols)
+    enforceNestLogic.call(this, config.id_cols);
 
     idSelects.on('change', function() {
         //indicate loading
@@ -77,7 +77,7 @@ export default function createNestControls() {
                 context.table.config.id_cols = uniqueLevels;
 
                 //Maintain nest logic
-                enforceNestLogic.call(context,uniqueLevels)
+                enforceNestLogic.call(context, uniqueLevels);
 
                 //Summarize filtered data and redraw table.
                 redraw.call(context.table);

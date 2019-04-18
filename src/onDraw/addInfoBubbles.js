@@ -7,5 +7,5 @@ export default function addInfoBubbles() {
         .selectAll('th:not(.id)')
         .data(chart.initial_config.value_cols)
         .attr('title', d => d.description)
-        .style('cursor','help');
+        .style('cursor', 'help');
 }

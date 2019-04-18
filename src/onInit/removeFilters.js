@@ -1,7 +1,7 @@
 import { set } from 'd3';
 
 export default function removeFilters() {
-this.controls.config.inputs = this.controls.config.inputs.filter(input => {
+    this.controls.config.inputs = this.controls.config.inputs.filter(input => {
         if (input.type !== 'subsetter') {
             return true;
         } else if (!this.data.raw[0].hasOwnProperty(input.value_col)) {
