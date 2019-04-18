@@ -127,19 +127,16 @@ export default function defineStyles() {
                 '#chm-controls select.changer {' +
                     '    margin: 0 auto;' +
                     '}',
-                '#chm-controls input.changer {' +
-                    '    margin-left: 2% !important;' +
-                    '}',
                 '.chm-control-grouping {' +
                     '    display: inline-block;' +
+                    '}',
+                '.chm-control-grouping .control-group .wc-control-label {' +
+                    '    text-align: center;' +
                     '}',
                 '.chm-control-grouping--label {' +
                     '    text-align: center;' +
                     '    width: 100%;' +
                     '    font-size: 20px;' +
-                    '}',
-                '.chm-control-grouping .control-group .wc-control-label {' +
-                    '    text-align: center;' +
                     '}',
                 '.chm-other-controls {' +
                     '    border-bottom: 1px solid lightgray;' +

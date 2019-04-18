@@ -952,15 +952,14 @@
             '#chm-controls .wc-control-label {' + '    text-align: center;' + '}',
             '#chm-controls .span-description {' + '}',
             '#chm-controls select.changer {' + '    margin: 0 auto;' + '}',
-            '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
             '.chm-control-grouping {' + '    display: inline-block;' + '}',
+            '.chm-control-grouping .control-group .wc-control-label {' +
+                '    text-align: center;' +
+                '}',
             '.chm-control-grouping--label {' +
                 '    text-align: center;' +
                 '    width: 100%;' +
                 '    font-size: 20px;' +
-                '}',
-            '.chm-control-grouping .control-group .wc-control-label {' +
-                '    text-align: center;' +
                 '}',
             '.chm-other-controls {' +
                 '    border-bottom: 1px solid lightgray;' +
@@ -2858,10 +2857,15 @@
                     this.settings.synced.value_cols.map(function(d) {
                         return d.col;
                     }),
-                    this.settings.synced.filter_cols
+                    this.settings.synced.filter_cols.map(function(filter) {
+                        return filter.value_col;
+                    })
                 ])
             )
             .values();
+
+        console.log(requiredVariables);
+
         var missingVariables = requiredVariables.filter(function(variable) {
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
         });
