@@ -1615,6 +1615,15 @@
         return iterateNest(chart.data.summarized, 0);
     }
 
+    function addIdHover() {
+
+        this.cells.filter(function (d) {
+            return d.col === 'id';
+        }).attr('title', function (d) {
+            return d.text.split('|').slice(-1).pop();
+        });
+    }
+
     function flagParentRows() {
         this.rows.classed('grayParent', function (d) {
             return d.filtered && d.visible_child;
@@ -1714,6 +1723,9 @@
 
             // maintain display cell annotations setting since we are not drawing
             toggleCellAnnotations.call(chart);
+
+            // maintain display cell annotations setting since we are not drawing
+            addIdHover.call(chart);
         }
     }
 
@@ -2054,6 +2066,7 @@
             addInfoBubbles.call(this);
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
+            addIdHover.call(this);
             dataExport.call(this);
             flagParentRows.call(this);
         }
