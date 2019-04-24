@@ -1,9 +1,9 @@
 d3.csv(
     'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/forms.csv',
     //'C:/Users/spburns/Downloads/dmc_DataPage.csv',
-    function(d) {
-        const string = " Yes, I am a lengthy string. Thank you for noticing - took a lot of character(s) to get here."
-        d.folderinstancename = d.folderinstancename.concat(string);
+    function(d,i) {
+        if (i < 20) d.status = "All";
+        if (i < 20) d.subset1 = "All";
         return d
     },
     function(data) {

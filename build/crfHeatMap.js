@@ -1032,17 +1032,22 @@
                         clearInterval(loading);
                         context.parent.containers.loading.classed('chm-hidden', true);
 
-                        //Update filter object.
+                        //Update filter val
                         context.filters.find(function (filter) {
                             return filter.col === di.value_col;
                         }).val = _this.multiple ? dropdown.selectAll('option:checked').pop().map(function (d) {
                             return d.textContent;
                         }) : dropdown.selectAll('option:checked').text();
 
+                        //Update filter index
+                        context.filters.find(function (filter) {
+                            return filter.col === di.value_col;
+                        }).index = _this.multiple ? null : dropdown.selectAll('option:checked').property('index');
+
                         //Filter data.
                         context.data.initial_filtered = context.data.initial;
                         context.filters.filter(function (filter) {
-                            return filter.val !== 'All' && !(Array.isArray(filter.val) && filter.val.length === filter.choices.length);
+                            return !(filter.all === true && filter.index === 0) && !(Array.isArray(filter.val) && filter.val.length === filter.choices.length);
                         }).forEach(function (filter) {
                             context.data.initial_filtered = context.data.initial_filtered.filter(function (dii) {
                                 return Array.isArray(filter.val) ? filter.val.indexOf(dii[filter.col]) > -1 : dii[filter.col] === filter.val;

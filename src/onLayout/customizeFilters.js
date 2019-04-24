@@ -22,7 +22,7 @@ export default function customizeFilters() {
                         clearInterval(loading);
                         context.parent.containers.loading.classed('chm-hidden', true);
 
-                        //Update filter object.
+                        //Update filter val
                         context.filters.find(filter => filter.col === di.value_col).val = this
                             .multiple
                             ? dropdown
@@ -31,12 +31,16 @@ export default function customizeFilters() {
                                   .map(d => d.textContent)
                             : dropdown.selectAll('option:checked').text();
 
+                        //Update filter index
+                        context.filters.find(filter => filter.col === di.value_col).index = this
+                            .multiple ? null : dropdown.selectAll('option:checked').property('index');
+
                         //Filter data.
                         context.data.initial_filtered = context.data.initial;
                         context.filters
                             .filter(
                                 filter =>
-                                    filter.val !== 'All' &&
+                                    !(filter.all === true && filter.index === 0) &&
                                     !(
                                         Array.isArray(filter.val) &&
                                         filter.val.length === filter.choices.length
