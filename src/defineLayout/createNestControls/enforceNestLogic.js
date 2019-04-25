@@ -6,10 +6,12 @@ export default function enforceNestLogic(id_cols) {
         .style('display', d => (id_cols.includes(d.value_col) ? 'none' : null));
 
     // disable third nest level when the second is not chosen
-    d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
+    this.containers.main
+        .select('#chm-nest-control--3')
+        .property('disabled', id_cols.length === 1 ? true : false);
 
     //hide None option from second nest when third is selected
-    d3
+    this.containers.main
         .select('#chm-nest-control--2')
         .selectAll('option')
         .filter(d => d.label === 'None')

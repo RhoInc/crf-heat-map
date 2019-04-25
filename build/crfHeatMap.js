@@ -266,6 +266,8 @@
                             return di[value_col.col];
                         });
                     } else {
+                        // ensure numerator is subsetted in the event that an error is made
+                        // and an ID has a value of 1 and a denominator value of 0.
                         var subset = d.filter(function(row) {
                             return row[value_col.denominator] === '1';
                         });
@@ -422,8 +424,6 @@
                             .join('  |')
                     );
                 }
-
-                //  console.log(d)
             });
 
             calculateStatistics.call(_this);
@@ -556,10 +556,12 @@
             });
 
         // disable third nest level when the second is not chosen
-        d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
+        this.containers.main
+            .select('#chm-nest-control--3')
+            .property('disabled', id_cols.length === 1 ? true : false);
 
         //hide None option from second nest when third is selected
-        d3
+        this.containers.main
             .select('#chm-nest-control--2')
             .selectAll('option')
             .filter(function(d) {
@@ -2908,8 +2910,6 @@
                 ])
             )
             .values();
-
-        console.log(requiredVariables);
 
         var missingVariables = requiredVariables.filter(function(variable) {
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
