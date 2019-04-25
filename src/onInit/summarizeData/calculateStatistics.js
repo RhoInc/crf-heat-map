@@ -41,7 +41,13 @@ export default function calculateStatistics(onInit = true) {
 
             //Define summarized values, either rates or counts.
             context.initial_config.value_cols.forEach(value_col => {
-                const count = d3.sum(d, di => di[value_col.col]);
+                var count;
+                if (typeof value_col.denominator === 'undefined') {
+                    count = d3.sum(d, di => di[value_col.col]);
+                } else {
+                    var subset = d.filter(row => row[value_col.denominator] === '1');
+                    count = d3.sum(subset, di => di[value_col.col]);
+                }
                 summary[value_col.col] =
                     crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
                         ? summary.nForms

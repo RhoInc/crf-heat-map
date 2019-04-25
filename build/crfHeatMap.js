@@ -260,9 +260,19 @@
 
                 //Define summarized values, either rates or counts.
                 context.initial_config.value_cols.forEach(function(value_col) {
-                    var count = d3.sum(d, function(di) {
-                        return di[value_col.col];
-                    });
+                    var count;
+                    if (typeof value_col.denominator === 'undefined') {
+                        count = d3.sum(d, function(di) {
+                            return di[value_col.col];
+                        });
+                    } else {
+                        var subset = d.filter(function(row) {
+                            return row[value_col.denominator] === '1';
+                        });
+                        count = d3.sum(subset, function(di) {
+                            return di[value_col.col];
+                        });
+                    }
                     summary[value_col.col] =
                         crfsNoDenominator
                             .map(function(m) {
