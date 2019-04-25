@@ -33,7 +33,9 @@ export default function customizeFilters() {
 
                         //Update filter index
                         context.filters.find(filter => filter.col === di.value_col).index = this
-                            .multiple ? null : dropdown.selectAll('option:checked').property('index');
+                            .multiple
+                            ? null
+                            : dropdown.selectAll('option:checked').property('index');
 
                         //Filter data.
                         context.data.initial_filtered = context.data.initial;

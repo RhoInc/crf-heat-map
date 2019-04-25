@@ -52,7 +52,8 @@
                 {
                     "value_col" : "ecrfpagename",
                     "label": "Form",
-                    "default_nesting": false
+                    "default_nesting": false,
+                    "role": "form_col" 
                 }
             ]
         },
@@ -149,9 +150,15 @@
         },
         "visit_order_col" : {
           "title": "Visit Order Column",
-          "description": "Specifies variable for determining order of Visit ID",
+          "description": "Specifies variable for determining order of ID with Visit role",
           "type": "string",
           "default": "folder_ordinal"
+        },
+        "form_order_col" : {
+          "title": "Form Order Column",
+          "description": "Specifies variable for determining order of ID with Form role",
+          "type": "string",
+          "default": "form_ordinal"
         },
         "display_cell_annotations": {
             "title": "Display Cell Annotations",
