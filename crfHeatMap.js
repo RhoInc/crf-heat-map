@@ -546,19 +546,20 @@
         this.draw(this.data.raw);
     }
 
-    function enforceNestLogic(id_cols) {
-        // limit select options to those that are not already selected (except for None - want to keep that around)
-        this.containers.nestControls
-            .selectAll('select')
-            .selectAll('option')
-            .style('display', function(d) {
-                return id_cols.includes(d.value_col) ? 'none' : null;
-            });
-
+    function customizeNestOptions(id_cols) {
         // disable third nest level when the second is not chosen
         this.containers.main
             .select('#chm-nest-control--3')
             .property('disabled', id_cols.length === 1 ? true : false);
+
+        // hide options that are selected in higher level nests
+        this.containers.nestControls
+            .selectAll('#chm-nest-control--3, #chm-nest-control--2')
+            .selectAll('option')
+            .style('display', function(d) {
+                var ids = id_cols.slice(0, d3.select(this.parentNode).datum());
+                return ids.includes(d.value_col) ? 'none' : null;
+            });
 
         //hide None option from second nest when third is selected
         this.containers.main
@@ -568,6 +569,28 @@
                 return d.label === 'None';
             })
             .style('display', id_cols.length === 3 ? 'none' : null);
+    }
+
+    function customizeNestSelects(idSelects) {
+        var first_nest = idSelects[0][0],
+            second_nest = idSelects[0][1],
+            third_nest = idSelects[0][2];
+
+        //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
+        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 2) {
+            second_nest.value = 'None';
+        }
+
+        // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
+        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 3) {
+            second_nest.value = third_nest.value;
+            third_nest.value = 'None';
+        }
+
+        // case 3: If third nests value is selected for first nest or second nest, set third nest to None
+        if (first_nest.value == third_nest.value || second_nest.value == third_nest.value) {
+            third_nest.value = 'None';
+        }
     }
 
     function createNestControls() {
@@ -617,7 +640,7 @@
             });
 
         //ensure natural nest control options and behavior
-        enforceNestLogic.call(this, config.id_cols);
+        customizeNestOptions.call(this, config.id_cols);
 
         idSelects.on('change', function() {
             //indicate loading
@@ -651,11 +674,14 @@
                             return selectedLevels.indexOf(item) == pos;
                         });
 
+                    // Enforce Select Logic
+                    customizeNestSelects.call(context, idSelects);
+
                     //Update nesting variables.
                     context.table.config.id_cols = uniqueLevels;
 
-                    //Maintain nest logic
-                    enforceNestLogic.call(context, uniqueLevels);
+                    //Maintain nest options logic
+                    customizeNestOptions.call(context, uniqueLevels);
 
                     //Summarize filtered data and redraw table.
                     redraw.call(context.table);
