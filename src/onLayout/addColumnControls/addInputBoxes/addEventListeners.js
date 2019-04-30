@@ -1,12 +1,12 @@
 import update from './update';
 import filterData from '../filterData';
 
-export default function onInput(filter) {
+export default function addEventListeners(filter) {
     const context = this;
 
     //Attach an event listener to Input Boxes.
     filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function(d) {
-        const loadingdiv = d3.select('#chm-loading');
+        const loadingdiv = context.parent.containers.main.select('#chm-loading');
 
         loadingdiv.classed('chm-hidden', false);
 

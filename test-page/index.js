@@ -1,7 +1,7 @@
 d3.csv(
     'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/forms.csv',
     function(d,i) {
-        return d
+        return d;
     },
     function(data) {
         var instance = crfHeatMap(
