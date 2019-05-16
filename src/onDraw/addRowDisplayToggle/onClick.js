@@ -1,6 +1,7 @@
 import customizeRows from '../customizeRows';
 import customizeCells from '../customizeCells';
 import toggleCellAnnotations from '../toggleCellAnnotations';
+import addIdHover from '../addIdHover';
 import flagParentRows from '../flagParentRows';
 
 export default function onClick(d, chart) {
@@ -102,5 +103,8 @@ export default function onClick(d, chart) {
 
         // maintain display cell annotations setting since we are not drawing
         toggleCellAnnotations.call(chart);
+
+        // maintain display cell annotations setting since we are not drawing
+        addIdHover.call(chart);
     }
 }

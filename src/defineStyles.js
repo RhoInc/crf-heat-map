@@ -150,6 +150,7 @@ export default function defineStyles() {
                     '}',
                 '.chm-nesting-filter {' +
                     '    width : 100px !important;' +
+                    '    display : block !important;' +
                     '}',
 
                 //checkboxes
@@ -395,15 +396,19 @@ export default function defineStyles() {
                 '.wc-table table tbody tr:hover td:first-child {' +
                     '    border-left: 1px solid black;' +
                     '}',
-                  '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
+                '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
                   '    background: #CCCCCC;' +
                   '    color: black;' +
                   '}',
 
                 /* ID cells */
 
-                '.chm-cell--id {' + '    background: white;' + '}',
-
+                '.chm-cell--id {' + '    background: white;' +
+                    '   text-overflow: ellipsis;' +
+                    '   white-space: nowrap;' +
+                    '   overflow: hidden;' +
+                    '   max-width: 0px;' +
+                    '}' ,
                 '.chm-table-row--expandable .chm-cell--id {' +
                     '    color: blue;' +
                     '    cursor: pointer;' +

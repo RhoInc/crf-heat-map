@@ -135,9 +135,18 @@ Include variable in subject-level export
 ## settings.visit_order_col
 `string`
 
-Specifies variable for determining order of Visit ID
+Specifies variable for determining order of ID with Visit role
 
 **default:** `"folder_ordinal"`
+
+
+
+## settings.form_order_col
+`string`
+
+Specifies variable for determining order of ID with Form role
+
+**default:** `"form_ordinal"`
 
 
 

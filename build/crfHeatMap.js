@@ -260,9 +260,19 @@
 
                 //Define summarized values, either rates or counts.
                 context.initial_config.value_cols.forEach(function(value_col) {
-                    var count = d3.sum(d, function(di) {
-                        return di[value_col.col];
-                    });
+                    var count;
+                    if (typeof value_col.denominator === 'undefined') {
+                        count = d3.sum(d, function(di) {
+                            return di[value_col.col];
+                        });
+                    } else {
+                        var subset = d.filter(function(row) {
+                            return row[value_col.denominator] === '1';
+                        });
+                        count = d3.sum(subset, function(di) {
+                            return di[value_col.col];
+                        });
+                    }
                     summary[value_col.col] =
                         crfsNoDenominator
                             .map(function(m) {
@@ -290,7 +300,8 @@
                 });
                 summary.nest_level = d[0].nest_level;
                 summary.parents = d[0].parents;
-                summary.folder_ordinal = d[0].folder_ordinal;
+                summary.visit_order = d[0][context.initial_config.visit_order_col];
+                summary.form_order = d[0][context.initial_config.form_order_col];
                 return summary;
             })
             .entries(this.data.initial_filtered);
@@ -304,7 +315,8 @@
             });
             d.nest_level = d.values.nest_level;
             d.parents = d.values.parents;
-            d.folder_ordinal = d.values.folder_ordinal;
+            d.visit_order = d.values.visit_order;
+            d.form_order = d.values.form_order;
 
             delete d.values;
         });
@@ -328,10 +340,50 @@
         }
     }
 
+    function sortRows() {
+        var context = this;
+
+        //Collapse array of arrays to array of objects.
+        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
+            var formIndex = context.config.id_cols.indexOf(context.initial_config.form_col);
+            var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+
+            if (formIndex > -1 || visitIndex > -1) {
+                var aIds = a.id.split('  |');
+                var bIds = b.id.split('  |');
+                var i;
+                for (i = 0; i < context.config.id_cols.length; i++) {
+                    if (aIds[i] === bIds[i]) {
+                        continue;
+                    } else {
+                        // use form_order_col if provided
+                        if (i === formIndex && context.initial_config.form_order_col) {
+                            return typeof aIds[i] == 'undefined'
+                                ? -1
+                                : parseFloat(a.form_order) < parseFloat(b.form_order)
+                                    ? -1
+                                    : 1;
+                            // use visit_order_col if provided
+                        }
+                        if (i === visitIndex && context.initial_config.visit_order_col) {
+                            return typeof aIds[i] == 'undefined'
+                                ? -1
+                                : parseFloat(a.visit_order) < parseFloat(b.visit_order)
+                                    ? -1
+                                    : 1;
+                        } else {
+                            return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
+                        }
+                    }
+                }
+            } else {
+                return a.id < b.id ? -1 : 1;
+            }
+        });
+    }
+
     function summarizeData() {
         var _this = this;
-
-        var context = this;
         var t0 = performance.now();
         //begin performance test
 
@@ -377,50 +429,8 @@
             calculateStatistics.call(_this);
         });
 
-        // if there is a visit order column specificed in settings and it's present in the data use it to sort the folder rows
-        if (
-            this.initial_config.visit_order_col &&
-            Object.keys(this.data.initial[0]).includes(this.initial_config.visit_order_col)
-        ) {
-            //Collapse array of arrays to array of objects.
-            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-                var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
-                if (visitIndex > -1) {
-                    var aIds = a.id.split('  |');
-                    var bIds = b.id.split('  |');
-                    var i;
-                    for (i = 0; i < context.config.id_cols.length; i++) {
-                        if (aIds[i] === bIds[i]) {
-                            continue;
-                        } else {
-                            // because the visit_order variable is numeric we want to treat it differently
-                            if (i === visitIndex) {
-                                return typeof aIds[i] == 'undefined'
-                                    ? -1
-                                    : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
-                                        ? -1
-                                        : 1;
-                            } else {
-                                return typeof aIds[i] === 'undefined'
-                                    ? -1
-                                    : aIds[i] < bIds[i]
-                                        ? -1
-                                        : 1;
-                            }
-                        }
-                    }
-                } else {
-                    return a.id < b.id ? -1 : 1;
-                }
-            });
-        } else {
-            // otherwise sort alphabetically
-            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-                return a.id < b.id ? -1 : 1;
-            });
-        }
-
-        //  this.data.raw = this.data.summarized;
+        // sort rows
+        sortRows.call(this);
 
         //end performance test
         var t1 = performance.now();
@@ -971,7 +981,10 @@
                 '    margin-top: 10px;' +
                 '    justify-content: space-evenly;' +
                 '}',
-            '.chm-nesting-filter {' + '    width : 100px !important;' + '}',
+            '.chm-nesting-filter {' +
+                '    width : 100px !important;' +
+                '    display : block !important;' +
+                '}',
 
             //checkboxes
             '.chm-checkbox {' +
@@ -1170,7 +1183,13 @@
 
             /* ID cells */
 
-            '.chm-cell--id {' + '    background: white;' + '}',
+            '.chm-cell--id {' +
+                '    background: white;' +
+                '   text-overflow: ellipsis;' +
+                '   white-space: nowrap;' +
+                '   overflow: hidden;' +
+                '   max-width: 0px;' +
+                '}',
             '.chm-table-row--expandable .chm-cell--id {' +
                 '    color: blue;' +
                 '    cursor: pointer;' +
@@ -1245,7 +1264,8 @@
                 {
                     value_col: 'ecrfpagename',
                     label: 'Form',
-                    default_nesting: false
+                    default_nesting: false,
+                    role: 'form_col'
                 }
             ],
             value_cols: [
@@ -1328,6 +1348,7 @@
                 }
             ],
             visit_order_col: 'folder_ordinal',
+            form_order_col: 'form_ordinal',
             display_cell_annotations: true,
             expand_all: false,
             sliders: false,
@@ -1545,7 +1566,7 @@
                             clearInterval(loading);
                             context.parent.containers.loading.classed('chm-hidden', true);
 
-                            //Update filter object.
+                            //Update filter val
                             context.filters.find(function(filter) {
                                 return filter.col === di.value_col;
                             }).val = _this.multiple
@@ -1557,12 +1578,19 @@
                                       })
                                 : dropdown.selectAll('option:checked').text();
 
+                            //Update filter index
+                            context.filters.find(function(filter) {
+                                return filter.col === di.value_col;
+                            }).index = _this.multiple
+                                ? null
+                                : dropdown.selectAll('option:checked').property('index');
+
                             //Filter data.
                             context.data.initial_filtered = context.data.initial;
                             context.filters
                                 .filter(function(filter) {
                                     return (
-                                        filter.val !== 'All' &&
+                                        !(filter.all === true && filter.index === 0) &&
                                         !(
                                             Array.isArray(filter.val) &&
                                             filter.val.length === filter.choices.length
@@ -2319,6 +2347,19 @@
         return iterateNest(chart.data.summarized, 0);
     }
 
+    function addIdHover() {
+        this.cells
+            .filter(function(d) {
+                return d.col === 'id';
+            })
+            .attr('title', function(d) {
+                return d.text
+                    .split('|')
+                    .slice(-1)
+                    .pop();
+            });
+    }
+
     function flagParentRows() {
         this.rows.classed('grayParent', function(d) {
             return d.filtered && d.visible_child;
@@ -2428,6 +2469,9 @@
 
             // maintain display cell annotations setting since we are not drawing
             toggleCellAnnotations.call(chart);
+
+            // maintain display cell annotations setting since we are not drawing
+            addIdHover.call(chart);
         }
     }
 
@@ -2825,6 +2869,7 @@
             addInfoBubbles.call(this);
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
+            addIdHover.call(this);
             dataExport.call(this);
             flagParentRows.call(this);
         }

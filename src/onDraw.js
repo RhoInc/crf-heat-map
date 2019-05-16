@@ -4,6 +4,7 @@ import customizeCells from './onDraw/customizeCells';
 import addInfoBubbles from './onDraw/addInfoBubbles';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
 import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
+import addIdHover from './onDraw/addIdHover';
 import dataExport from './onDraw/dataExport';
 import flagParentRows from './onDraw/flagParentRows';
 
@@ -40,6 +41,7 @@ export default function onDraw() {
         addInfoBubbles.call(this);
         addRowDisplayToggle.call(this);
         toggleCellAnnotations.call(this);
+        addIdHover.call(this);
         dataExport.call(this);
         flagParentRows.call(this);
     }

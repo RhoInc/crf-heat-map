@@ -22,7 +22,8 @@ export default function rendererSettings() {
             {
                 value_col: 'ecrfpagename',
                 label: 'Form',
-                default_nesting: false
+                default_nesting: false,
+                role: 'form_col'
             }
         ],
         value_cols: [
@@ -104,6 +105,7 @@ export default function rendererSettings() {
             }
         ],
         visit_order_col: 'folder_ordinal',
+        form_order_col: 'form_ordinal',
         display_cell_annotations: true,
         expand_all: false,
         sliders: false,

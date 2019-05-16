@@ -41,7 +41,13 @@ export default function calculateStatistics(onInit = true) {
 
             //Define summarized values, either rates or counts.
             context.initial_config.value_cols.forEach(value_col => {
-                const count = d3.sum(d, di => di[value_col.col]);
+                var count;
+                if (typeof value_col.denominator === 'undefined') {
+                    count = d3.sum(d, di => di[value_col.col]);
+                } else {
+                    var subset = d.filter(row => row[value_col.denominator] === '1');
+                    count = d3.sum(subset, di => di[value_col.col]);
+                }
                 summary[value_col.col] =
                     crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
                         ? summary.nForms
@@ -57,7 +63,8 @@ export default function calculateStatistics(onInit = true) {
             });
             summary.nest_level = d[0].nest_level;
             summary.parents = d[0].parents;
-            summary.folder_ordinal = d[0].folder_ordinal;
+            summary.visit_order = d[0][context.initial_config.visit_order_col];
+            summary.form_order = d[0][context.initial_config.form_order_col];
             return summary;
         })
         .entries(this.data.initial_filtered);
@@ -71,7 +78,8 @@ export default function calculateStatistics(onInit = true) {
         });
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;
-        d.folder_ordinal = d.values.folder_ordinal;
+        d.visit_order = d.values.visit_order;
+        d.form_order = d.values.form_order;
 
         delete d.values;
     });
