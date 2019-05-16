@@ -11,8 +11,6 @@ export default function checkRequiredVariables() {
         )
         .values();
 
-    console.log(requiredVariables);
-
     const missingVariables = requiredVariables.filter(
         variable => this.data.variables.indexOf(variable.split(' (')[0]) < 0
     );

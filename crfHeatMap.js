@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('d3'), require('webcharts')))
+        ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['d3', 'webcharts'], factory)
-            : (global.crfHeatMap = factory(global.d3, global.webCharts));
-})(this, function(d3$1, webcharts) {
+            ? define(['webcharts'], factory)
+            : (global.crfHeatMap = factory(global.webCharts));
+})(this, function(webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -266,6 +266,8 @@
                             return di[value_col.col];
                         });
                     } else {
+                        // ensure numerator is subsetted in the event that an error is made
+                        // and an ID has a value of 1 and a denominator value of 0.
                         var subset = d.filter(function(row) {
                             return row[value_col.denominator] === '1';
                         });
@@ -422,8 +424,6 @@
                             .join('  |')
                     );
                 }
-
-                //  console.log(d)
             });
 
             calculateStatistics.call(_this);
@@ -546,26 +546,51 @@
         this.draw(this.data.raw);
     }
 
-    function enforceNestLogic(id_cols) {
-        // limit select options to those that are not already selected (except for None - want to keep that around)
+    function customizeNestOptions(id_cols) {
+        // disable third nest level when the second is not chosen
+        this.containers.main
+            .select('#chm-nest-control--3')
+            .property('disabled', id_cols.length === 1 ? true : false);
+
+        // hide options that are selected in higher level nests
         this.containers.nestControls
-            .selectAll('select')
+            .selectAll('#chm-nest-control--3, #chm-nest-control--2')
             .selectAll('option')
             .style('display', function(d) {
-                return id_cols.includes(d.value_col) ? 'none' : null;
+                var ids = id_cols.slice(0, d3.select(this.parentNode).datum());
+                return ids.includes(d.value_col) ? 'none' : null;
             });
 
-        // disable third nest level when the second is not chosen
-        d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
-
         //hide None option from second nest when third is selected
-        d3
+        this.containers.main
             .select('#chm-nest-control--2')
             .selectAll('option')
             .filter(function(d) {
                 return d.label === 'None';
             })
             .style('display', id_cols.length === 3 ? 'none' : null);
+    }
+
+    function customizeNestSelects(idSelects) {
+        var first_nest = idSelects[0][0],
+            second_nest = idSelects[0][1],
+            third_nest = idSelects[0][2];
+
+        //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
+        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 2) {
+            second_nest.value = 'None';
+        }
+
+        // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
+        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 3) {
+            second_nest.value = third_nest.value;
+            third_nest.value = 'None';
+        }
+
+        // case 3: If third nests value is selected for first nest or second nest, set third nest to None
+        if (first_nest.value == third_nest.value || second_nest.value == third_nest.value) {
+            third_nest.value = 'None';
+        }
     }
 
     function createNestControls() {
@@ -615,7 +640,7 @@
             });
 
         //ensure natural nest control options and behavior
-        enforceNestLogic.call(this, config.id_cols);
+        customizeNestOptions.call(this, config.id_cols);
 
         idSelects.on('change', function() {
             //indicate loading
@@ -649,11 +674,14 @@
                             return selectedLevels.indexOf(item) == pos;
                         });
 
+                    // Enforce Select Logic
+                    customizeNestSelects.call(context, idSelects);
+
                     //Update nesting variables.
                     context.table.config.id_cols = uniqueLevels;
 
-                    //Maintain nest logic
-                    enforceNestLogic.call(context, uniqueLevels);
+                    //Maintain nest options logic
+                    customizeNestOptions.call(context, uniqueLevels);
 
                     //Summarize filtered data and redraw table.
                     redraw.call(context.table);
@@ -1339,7 +1367,7 @@
                     value_col: 'subjfreezeflg',
                     label: 'Subject Freeze Status',
                     multiple: true,
-                    subject_export: true // I'd'like to add a check that these only change for subject or higher but not sure how i would do so
+                    subject_export: true
                 },
                 {
                     value_col: 'status',
@@ -1499,7 +1527,7 @@
                         ' ] filter has been removed because the variable does not exist.'
                 );
             } else {
-                var levels = d3$1
+                var levels = d3
                     .set(
                         _this.data.raw.map(function(d) {
                             return d[input.value_col];
@@ -1519,9 +1547,54 @@
         });
     }
 
+    function removeSubjectExportCols() {
+        var _this = this;
+
+        var context = this;
+        var export_cols = this.initial_config.subject_export_cols.map(function(d) {
+            return d.value_col;
+        });
+
+        if (export_cols.length > 0) {
+            var subjectSetSize = d3
+                .set(
+                    this.data.initial.map(function(d) {
+                        return d[_this.config.id_col];
+                    })
+                )
+                .size();
+
+            export_cols.forEach(function(col) {
+                if (
+                    d3
+                        .set(
+                            context.data.initial.map(function(d) {
+                                return d[context.initial_config.id_col] + d[col];
+                            })
+                        )
+                        .size() !== subjectSetSize
+                ) {
+                    console.warn(
+                        col +
+                            ' was removed from the subject level export due to multiple values within subject.'
+                    );
+                    context.initial_config.subject_export_cols.splice(
+                        context.initial_config.subject_export_cols.findIndex(function(d) {
+                            return d.value_col === col;
+                        }),
+                        1
+                    );
+                }
+            });
+        }
+    }
+
     function onInit() {
         this.data.initial = this.data.raw;
         this.data.initial_filtered = this.data.initial;
+
+        //remove subject-level export columns that have multiple values within a subject
+        removeSubjectExportCols.call(this);
 
         //remove single-level or dataless filters
         removeFilters.call(this);
@@ -1748,7 +1821,7 @@
                 if (!confirmation) {
                     changer_this.checked = false;
                 } else {
-                    var loadingdiv = d3.select('#chm-loading'); // fix this later due to confirm box
+                    var loadingdiv = context.containers.main.select('#chm-loading'); // fix this later due to confirm box
 
                     loadingdiv.classed('chm-hidden', false);
 
@@ -1794,7 +1867,7 @@
             .on('change', function(d) {
                 var changer_this = this;
 
-                var loadingdiv = d3.select('#chm-loading');
+                var loadingdiv = context.containers.main.select('#chm-loading');
 
                 loadingdiv.classed('chm-hidden', false);
 
@@ -1926,14 +1999,14 @@
         });
     }
 
-    function onInput(filter) {
+    function addEventListeners(filter) {
         var context = this;
 
         //Attach an event listener to Sliders
         filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
             var _this = this;
 
-            var loadingdiv = d3.select('#chm-loading');
+            var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
             loadingdiv.classed('chm-hidden', false);
 
@@ -2065,14 +2138,14 @@
             });
     }
 
-    function onInput$1(filter) {
+    function addEventListeners$1(filter) {
         var context = this;
 
         //Attach an event listener to Input Boxes.
         filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function(d) {
             var _this = this;
 
-            var loadingdiv = d3.select('#chm-loading');
+            var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
             loadingdiv.classed('chm-hidden', false);
 
@@ -2124,11 +2197,11 @@
         if (this.initial_config.sliders) {
             layout.call(this, filter);
             update.call(this, filter, true);
-            onInput.call(this, filter);
+            addEventListeners.call(this, filter);
         } else {
             layout$1.call(this, filter);
             update$1.call(this, filter, true);
-            onInput$1.call(this, filter);
+            addEventListeners$1.call(this, filter);
         }
     }
 
@@ -2191,26 +2264,32 @@
                 return nest_vars.includes(d.value_col);
             });
 
-        //Group nesting filters
-        this.controls.filters = {
-            container: this.controls.wrap
-                .insert('div', '.chm-nesting-filter')
-                .classed('chm-control-grouping chm-nesting-filters', true)
-        };
+        if (this.initial_config.nesting_filters) {
+            //Group nesting filters
+            this.controls.filters = {
+                container: this.controls.wrap
+                    .insert('div', '.chm-nesting-filter')
+                    .classed('chm-control-grouping chm-nesting-filters', true)
+            };
 
-        this.controls.filters.container
-            .append('div')
-            .classed('chm-control-grouping--label', true)
-            .text('Nesting Filters');
+            this.controls.filters.container
+                .append('div')
+                .classed('chm-control-grouping--label', true)
+                .text('Nesting Filters');
 
-        this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-nesting-filter');
-        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
-            '.wc-control-label'
-        );
-        this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
-        this.controls.filters.controlGroups.each(function(d) {
-            context.controls.filters.container.node().appendChild(this);
-        });
+            this.controls.filters.controlGroups = this.controls.wrap.selectAll(
+                '.chm-nesting-filter'
+            );
+            this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
+                '.wc-control-label'
+            );
+            this.controls.filters.selects = this.controls.filters.controlGroups.selectAll(
+                '.changer'
+            );
+            this.controls.filters.controlGroups.each(function(d) {
+                context.controls.filters.container.node().appendChild(this);
+            });
+        }
 
         //Group other controls
         this.controls.otherControls = {
@@ -2908,8 +2987,6 @@
                 ])
             )
             .values();
-
-        console.log(requiredVariables);
 
         var missingVariables = requiredVariables.filter(function(variable) {
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;

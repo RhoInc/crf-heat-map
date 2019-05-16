@@ -96,7 +96,7 @@ export default function rendererSettings() {
                 value_col: 'subjfreezeflg',
                 label: 'Subject Freeze Status',
                 multiple: true,
-                subject_export: true // I'd'like to add a check that these only change for subject or higher but not sure how i would do so
+                subject_export: true
             },
             {
                 value_col: 'status',

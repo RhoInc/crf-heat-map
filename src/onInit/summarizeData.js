@@ -35,8 +35,6 @@ export default function summarizeData() {
                         .join('  |')
                 );
             }
-
-            //  console.log(d)
         });
 
         calculateStatistics.call(this);

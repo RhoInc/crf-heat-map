@@ -9,26 +9,28 @@ export default function formatControls() {
         .attr('class', d => `control-group chm-${d.type}`)
         .classed('chm-nesting-filter', d => nest_vars.includes(d.value_col));
 
-    //Group nesting filters
-    this.controls.filters = {
-        container: this.controls.wrap
-            .insert('div', '.chm-nesting-filter')
-            .classed('chm-control-grouping chm-nesting-filters', true)
-    };
+    if (this.initial_config.nesting_filters) {
+        //Group nesting filters
+        this.controls.filters = {
+            container: this.controls.wrap
+                .insert('div', '.chm-nesting-filter')
+                .classed('chm-control-grouping chm-nesting-filters', true)
+        };
 
-    this.controls.filters.container
-        .append('div')
-        .classed('chm-control-grouping--label', true)
-        .text('Nesting Filters');
+        this.controls.filters.container
+            .append('div')
+            .classed('chm-control-grouping--label', true)
+            .text('Nesting Filters');
 
-    this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-nesting-filter');
-    this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
-        '.wc-control-label'
-    );
-    this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
-    this.controls.filters.controlGroups.each(function(d) {
-        context.controls.filters.container.node().appendChild(this);
-    });
+        this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-nesting-filter');
+        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
+            '.wc-control-label'
+        );
+        this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
+        this.controls.filters.controlGroups.each(function(d) {
+            context.controls.filters.container.node().appendChild(this);
+        });
+    }
 
     //Group other controls
     this.controls.otherControls = {

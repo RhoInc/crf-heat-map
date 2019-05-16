@@ -45,6 +45,8 @@ export default function calculateStatistics(onInit = true) {
                 if (typeof value_col.denominator === 'undefined') {
                     count = d3.sum(d, di => di[value_col.col]);
                 } else {
+                    // ensure numerator is subsetted in the event that an error is made
+                    // and an ID has a value of 1 and a denominator value of 0.
                     var subset = d.filter(row => row[value_col.denominator] === '1');
                     count = d3.sum(subset, di => di[value_col.col]);
                 }

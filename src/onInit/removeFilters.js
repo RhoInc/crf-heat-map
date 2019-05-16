@@ -1,5 +1,3 @@
-import { set } from 'd3';
-
 export default function removeFilters() {
     this.controls.config.inputs = this.controls.config.inputs.filter(input => {
         if (input.type !== 'subsetter') {
@@ -11,7 +9,7 @@ export default function removeFilters() {
                 } ] filter has been removed because the variable does not exist.`
             );
         } else {
-            const levels = set(this.data.raw.map(d => d[input.value_col])).values();
+            const levels = d3.set(this.data.raw.map(d => d[input.value_col])).values();
 
             if (levels.length === 1)
                 console.warn(
