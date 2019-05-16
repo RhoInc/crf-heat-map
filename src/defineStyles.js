@@ -116,22 +116,52 @@ export default function defineStyles() {
                     '    margin: 0 0 5px 0;' +
                     '}',
                 '#chm-controls .control-group > * {' +
-                    '    display: inline-block !important;' +
-                    '    margin: 0;' +
+                    '    display: block;' +
+                    '    width: auto;' +
                     '}',
                 '#chm-controls .wc-control-label {' +
-                    '    width: 58%;' +
-                    '    text-align: right;' +
+                    '    text-align: center;' +
                     '}',
                 '#chm-controls .span-description {' +
                     '}',
                 '#chm-controls select.changer {' +
-                    '    width: 40%;' +
-                    '    float: right;' +
-                    '    overflow-y: auto;' +
+                    '    margin: 0 auto;' +
                     '}',
-                '#chm-controls input.changer {' +
-                    '    margin-left: 2% !important;' +
+                '.chm-control-grouping {' +
+                    '    display: inline-block;' +
+                    '}',
+                '.chm-control-grouping .control-group .wc-control-label {' +
+                    '    text-align: center;' +
+                    '}',
+                '.chm-control-grouping--label {' +
+                    '    text-align: center;' +
+                    '    width: 100%;' +
+                    '    font-size: 20px;' +
+                    '}',
+                '.chm-other-controls {' +
+                    '    border-bottom: 1px solid lightgray;' +
+                    '    padding-bottom: 7px;' +
+                    '}',
+                '.chm-nesting-filters {' +
+                    '    display: flex;' +
+                    '    flex-wrap: wrap ;' +
+                    '    margin-top: 10px;' +
+                    '    justify-content: space-evenly;' +
+                    '}',
+                '.chm-nesting-filter {' +
+                    '    width : 100px !important;' +
+                    '}',
+
+                //checkboxes
+                '.chm-checkbox {' +
+                    '    display: inline-flex !important;' +
+                    '    justify-content: center;' +
+                    '}',
+                '.chm-checkbox .wc-control-label {' +
+                    '    margin-right: 5px;' +
+                    '}',
+                '.chm-checkbox .changer {' +
+                    '    margin-top: 5px !important;' +
                     '}',
 
         /***--------------------------------------------------------------------------------------\
@@ -163,7 +193,14 @@ export default function defineStyles() {
                     '    display: block;' +
                     '    clear: left;' +
                     `    padding-left: ${paddingLeft}px;` +
+                    '    min-width : 100px;' +
                     '}',
+                  '.chm-nest-control.chm-hide {' +
+                      '    float: left;' +
+                      '    display: none;' +
+                      '    clear: left;' +
+                      `    padding-left: ${paddingLeft}px;` +
+                      '}',
                 '#chm-nest-control--1 {' +
                     '    margin-left: 0;' +
                     '}',

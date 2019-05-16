@@ -1,10 +1,10 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts')))
+        ? (module.exports = factory(require('d3'), require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts'], factory)
-            : (global.crfHeatMap = factory(global.webCharts));
-})(this, function(webcharts) {
+            ? define(['d3', 'webcharts'], factory)
+            : (global.crfHeatMap = factory(global.d3, global.webCharts));
+})(this, function(d3$1, webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -536,6 +536,28 @@
         this.draw(this.data.raw);
     }
 
+    function enforceNestLogic(id_cols) {
+        // limit select options to those that are not already selected (except for None - want to keep that around)
+        this.containers.nestControls
+            .selectAll('select')
+            .selectAll('option')
+            .style('display', function(d) {
+                return id_cols.includes(d.value_col) ? 'none' : null;
+            });
+
+        // disable third nest level when the second is not chosen
+        d3.select('#chm-nest-control--3').property('disabled', id_cols.length === 1 ? true : false);
+
+        //hide None option from second nest when third is selected
+        d3
+            .select('#chm-nest-control--2')
+            .selectAll('option')
+            .filter(function(d) {
+                return d.label === 'None';
+            })
+            .style('display', id_cols.length === 3 ? 'none' : null);
+    }
+
     function createNestControls() {
         var context = this;
         var config = this.settings.synced;
@@ -547,7 +569,7 @@
             .append('span')
             .attr('class', 'chm-control-label')
             .text('');
-        var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+        //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
         var idSelects = this.containers.nestControls
             .selectAll('select')
             .data([0, 1, 2])
@@ -581,6 +603,9 @@
                 var levelNum = d3.select(this.parentNode).datum();
                 return d.value_col == config.id_cols[levelNum];
             });
+
+        //ensure natural nest control options and behavior
+        enforceNestLogic.call(this, config.id_cols);
 
         idSelects.on('change', function() {
             //indicate loading
@@ -616,6 +641,9 @@
 
                     //Update nesting variables.
                     context.table.config.id_cols = uniqueLevels;
+
+                    //Maintain nest logic
+                    enforceNestLogic.call(context, uniqueLevels);
 
                     //Summarize filtered data and redraw table.
                     redraw.call(context.table);
@@ -920,21 +948,38 @@
 
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
             '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
-            '#chm-controls .control-group > * {' +
-                '    display: inline-block !important;' +
-                '    margin: 0;' +
-                '}',
-            '#chm-controls .wc-control-label {' +
-                '    width: 58%;' +
-                '    text-align: right;' +
-                '}',
+            '#chm-controls .control-group > * {' + '    display: block;' + '    width: auto;' + '}',
+            '#chm-controls .wc-control-label {' + '    text-align: center;' + '}',
             '#chm-controls .span-description {' + '}',
-            '#chm-controls select.changer {' +
-                '    width: 40%;' +
-                '    float: right;' +
-                '    overflow-y: auto;' +
+            '#chm-controls select.changer {' + '    margin: 0 auto;' + '}',
+            '.chm-control-grouping {' + '    display: inline-block;' + '}',
+            '.chm-control-grouping .control-group .wc-control-label {' +
+                '    text-align: center;' +
                 '}',
-            '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
+            '.chm-control-grouping--label {' +
+                '    text-align: center;' +
+                '    width: 100%;' +
+                '    font-size: 20px;' +
+                '}',
+            '.chm-other-controls {' +
+                '    border-bottom: 1px solid lightgray;' +
+                '    padding-bottom: 7px;' +
+                '}',
+            '.chm-nesting-filters {' +
+                '    display: flex;' +
+                '    flex-wrap: wrap ;' +
+                '    margin-top: 10px;' +
+                '    justify-content: space-evenly;' +
+                '}',
+            '.chm-nesting-filter {' + '    width : 100px !important;' + '}',
+
+            //checkboxes
+            '.chm-checkbox {' +
+                '    display: inline-flex !important;' +
+                '    justify-content: center;' +
+                '}',
+            '.chm-checkbox .wc-control-label {' + '    margin-right: 5px;' + '}',
+            '.chm-checkbox .changer {' + '    margin-top: 5px !important;' + '}',
 
             /***--------------------------------------------------------------------------------------\
           Right column
@@ -960,6 +1005,13 @@
             '.chm-nest-control {' +
                 '    float: left;' +
                 '    display: block;' +
+                '    clear: left;' +
+                ('    padding-left: ' + paddingLeft + 'px;') +
+                '    min-width : 100px;' +
+                '}',
+            '.chm-nest-control.chm-hide {' +
+                '    float: left;' +
+                '    display: none;' +
                 '    clear: left;' +
                 ('    padding-left: ' + paddingLeft + 'px;') +
                 '}',
@@ -1413,9 +1465,45 @@
         syncControlInputs: syncControlInputs
     };
 
+    function removeFilters() {
+        var _this = this;
+
+        this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
+            if (input.type !== 'subsetter') {
+                return true;
+            } else if (!_this.data.raw[0].hasOwnProperty(input.value_col)) {
+                console.warn(
+                    'The [ ' +
+                        input.label +
+                        ' ] filter has been removed because the variable does not exist.'
+                );
+            } else {
+                var levels = d3$1
+                    .set(
+                        _this.data.raw.map(function(d) {
+                            return d[input.value_col];
+                        })
+                    )
+                    .values();
+
+                if (levels.length === 1)
+                    console.warn(
+                        'The [ ' +
+                            input.label +
+                            ' ] filter has been removed because the variable has only one level.'
+                    );
+
+                return levels.length > 1;
+            }
+        });
+    }
+
     function onInit() {
         this.data.initial = this.data.raw;
         this.data.initial_filtered = this.data.initial;
+
+        //remove single-level or dataless filters
+        removeFilters.call(this);
 
         //Summarize raw data.
         summarizeData.call(this);
@@ -2058,13 +2146,73 @@
             });
     }
 
+    function formatControls() {
+        var context = this;
+
+        var nest_vars = this.initial_config.nestings.map(function(nesting) {
+            return nesting.value_col;
+        });
+
+        // assign classes based on control type and if it's a nesting filter
+        this.controls.controlGroups = this.controls.wrap
+            .selectAll('.control-group')
+            .attr('class', function(d) {
+                return 'control-group chm-' + d.type;
+            })
+            .classed('chm-nesting-filter', function(d) {
+                return nest_vars.includes(d.value_col);
+            });
+
+        //Group nesting filters
+        this.controls.filters = {
+            container: this.controls.wrap
+                .insert('div', '.chm-nesting-filter')
+                .classed('chm-control-grouping chm-nesting-filters', true)
+        };
+
+        this.controls.filters.container
+            .append('div')
+            .classed('chm-control-grouping--label', true)
+            .text('Nesting Filters');
+
+        this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-nesting-filter');
+        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
+            '.wc-control-label'
+        );
+        this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
+        this.controls.filters.controlGroups.each(function(d) {
+            context.controls.filters.container.node().appendChild(this);
+        });
+
+        //Group other controls
+        this.controls.otherControls = {
+            container: this.controls.wrap
+                .insert('div', ':first-child')
+                .classed('chm-control-grouping chm-other-controls', true)
+        };
+        this.controls.otherControls.label = this.controls.otherControls.container
+            .append('div')
+            .classed('chm-control-grouping--label', true)
+            .text('Controls');
+
+        this.controls.otherControls.controlGroups = this.controls.wrap.selectAll(
+            '.control-group:not(.chm-nesting-filter)'
+        );
+        this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll(
+            '.wc-control-label'
+        );
+        this.controls.otherControls.controlGroups.each(function(d) {
+            context.controls.otherControls.container.node().appendChild(this);
+        });
+    }
+
     function onLayout() {
         customizeFilters.call(this);
         tweakMultiSelects.call(this);
         customizeCheckboxes.call(this);
         //moveExportButtons.call(this);
         addColumnControls.call(this);
-        console.log(this);
+        formatControls.call(this);
     }
 
     function customizeRows(chart, rows) {
@@ -2125,11 +2273,10 @@
             .select('tr')
             .selectAll('th:not(.id)')
             .data(chart.initial_config.value_cols)
-            .append('span')
-            .html(' &#9432')
             .attr('title', function(d) {
                 return d.description;
-            });
+            })
+            .style('cursor', 'help');
     }
 
     function iterateNest() {
@@ -2710,10 +2857,15 @@
                     this.settings.synced.value_cols.map(function(d) {
                         return d.col;
                     }),
-                    this.settings.synced.filter_cols
+                    this.settings.synced.filter_cols.map(function(filter) {
+                        return filter.value_col;
+                    })
                 ])
             )
             .values();
+
+        console.log(requiredVariables);
+
         var missingVariables = requiredVariables.filter(function(variable) {
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
         });
