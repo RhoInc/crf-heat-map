@@ -1171,35 +1171,27 @@
 
     function rendererSettings() {
         return {
-            site_col: 'sitename',
-            id_col: 'subjectnameoridentifier',
-            visit_col: 'folderinstancename',
-            visit_order_col: 'folder_ordinal',
-            form_col: 'ecrfpagename',
-            id_freeze_col: 'subjfreezeflg',
-            id_status_col: 'status',
             nestings: [
                 {
-                    settings_col: 'site_col',
-                    value_col: null, // set in syncSettings()
+                    value_col: 'sitename',
                     label: 'Site',
-                    default_nesting: true
+                    default_nesting: true,
+                    role: 'site_col'
                 },
                 {
-                    settings_col: 'id_col',
-                    value_col: null, // set in syncSettings()
+                    value_col: 'subjectnameoridentifier',
                     label: 'Subject ID',
-                    default_nesting: true
+                    default_nesting: true,
+                    role: 'id_col'
                 },
                 {
-                    settings_col: 'visit_col',
-                    value_col: null, // set in syncSettings(0
+                    value_col: 'folderinstancename',
                     label: 'Folder',
-                    default_nesting: false
+                    default_nesting: false,
+                    role: 'visit_col'
                 },
                 {
-                    settings_col: 'form_col',
-                    value_col: null, // set in syncSettings()
+                    value_col: 'ecrfpagename',
                     label: 'Form',
                     default_nesting: false
                 }
@@ -1258,11 +1250,37 @@
                     description: 'Site has responded to issue, DM needs to review.'
                 }
             ],
-            filter_cols: ['subset1', 'subset2', 'subset3'],
+            filter_cols: [
+                {
+                    value_col: 'subset1',
+                    label: 'Subset 1'
+                },
+                {
+                    value_col: 'subset2',
+                    label: 'Subset 2'
+                },
+                {
+                    value_col: 'subset3',
+                    label: 'Subset 3'
+                },
+                {
+                    value_col: 'subjfreezeflg',
+                    label: 'Subject Freeze Status',
+                    multiple: true,
+                    subject_export: true // I'd'like to add a check that these only change for subject or higher but not sure how i would do so
+                },
+                {
+                    value_col: 'status',
+                    label: 'Subject Status',
+                    subject_export: true
+                }
+            ],
+            visit_order_col: 'folder_ordinal',
             display_cell_annotations: true,
             expand_all: false,
             sliders: false,
-            max_rows_warn: 10000
+            max_rows_warn: 10000,
+            nesting_filters: true
         };
     }
 
@@ -1281,24 +1299,14 @@
     }
 
     function syncSettings(settings) {
-        //Sync nestings with data variable settings.
-        var settingsKeys = Object.keys(settings);
-        var settingsCols = settingsKeys.filter(function(settingsKey) {
-            return /_col$/.test(settingsKey);
-        });
-        settings.nestings.forEach(function(nesting) {
-            nesting.value_col =
-                nesting.value_col ||
-                settings[
-                    settingsCols.find(function(settingsCol) {
-                        return settingsCol === nesting.settings_col;
-                    })
-                ];
-        });
-
         // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
         settings.value_cols.sort(function(a, b) {
             return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
+        });
+
+        // Assign nest variables with specfic roles to specific settings
+        settings.nestings.map(function(d) {
+            if (typeof d.role != 'undefined') settings[d.role] = d.value_col;
         });
 
         //Define initial nesting variables.
@@ -1319,12 +1327,26 @@
             })
         ]);
 
+        // Define nesting filters
+        var nest_settings = [];
+        if (settings.nesting_filters === true) {
+            settings.nestings.forEach(function(setting) {
+                return nest_settings.push({
+                    value_col: setting.value_col,
+                    label: setting.label
+                });
+            });
+        }
+
         //Define filter variables.
         settings.filter_cols = Array.isArray(settings.filter_cols)
-            ? [settings.site_col, settings.id_freeze_col, settings.id_status_col].concat(
-                  settings.filter_cols
-              )
-            : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
+            ? nest_settings.concat(settings.filter_cols)
+            : nest_settings;
+
+        //Define cols to include in subject level export
+        settings.subject_export_cols = settings.filter_cols.filter(function(filter) {
+            return filter.subject_export == true;
+        });
 
         // add labels specified in rendererSettings as headers
         settings.headers = settings.value_cols.map(function(d) {
@@ -1359,20 +1381,12 @@
 
     function syncControlInputs(settings) {
         var defaultControls = controlInputs();
-        var labels = {};
-        labels[settings.site_col] = 'Site';
-        labels[settings.id_freeze_col] = 'Subject Freeze Status';
-        labels[settings.id_status_col] = 'Subject Status';
         settings.filter_cols.forEach(function(filter_col, i) {
             var filter = {
                 type: 'subsetter',
-                value_col: filter_col,
-                label: labels[filter_col]
-                    ? labels[filter_col]
-                    : /^subset\d$/.test(filter_col)
-                        ? filter_col.replace(/^s/, 'S').replace(/(\d)/, ' $1')
-                        : filter_col.label || filter_col.value_col || filter_col,
-                multiple: filter_col == settings.id_status_col ? true : false
+                value_col: filter_col.value_col,
+                label: filter_col.label ? filter_col.label : filter_col.value_col,
+                multiple: filter_col.multiple ? filter_col.multiple : false
             };
             defaultControls.splice(i, 0, filter);
         });
@@ -2050,6 +2064,7 @@
         customizeCheckboxes.call(this);
         //moveExportButtons.call(this);
         addColumnControls.call(this);
+        console.log(this);
     }
 
     function customizeRows(chart, rows) {
@@ -2312,31 +2327,43 @@
 
         //Capture subject-level information.
         if (subject_id_col) {
-            //Add headers.
-            this.export.headers.push('Site', 'Subject Status', 'Subject Freeze Status');
+            //Add headers and columns
+            if (this.config.site_col) {
+                this.export.headers.push('Site');
+                this.export.cols.push('site');
+            }
 
-            //Add columns.
-            this.export.cols.push('site', 'status', 'freeze');
+            if (this.config.subject_export_cols) {
+                this.config.subject_export_cols.forEach(function(d) {
+                    table.export.headers.push(d.label);
+                    table.export.cols.push(d.value_col);
+                });
+            }
 
             // build look up for subject
-            var subjects = d3
-                .set(
-                    table.data.initial.map(function(d) {
-                        return d[_this.config.id_col];
-                    })
-                )
-                .values();
-            var subjectMap = subjects.reduce(function(acc, cur) {
-                var subjectDatum = _this.data.initial.find(function(d) {
-                    return d[_this.config.id_col] === cur;
-                });
-                acc[cur] = {
-                    site: subjectDatum[_this.config.site_col],
-                    status: subjectDatum[_this.config.id_status_col],
-                    freeze: subjectDatum[_this.config.id_freeze_col]
-                };
-                return acc;
-            }, {});
+            if (this.config.site_col || this.config.subject_export_cols) {
+                var subjects = d3
+                    .set(
+                        table.data.initial.map(function(d) {
+                            return d[_this.config.id_col];
+                        })
+                    )
+                    .values();
+                var subjectMap = subjects.reduce(function(acc, cur) {
+                    var subjectDatum = _this.data.initial.find(function(d) {
+                        return d[_this.config.id_col] === cur;
+                    });
+                    acc[cur] = {};
+                    if (_this.config.site_col)
+                        acc[cur]['site'] = subjectDatum[_this.config.site_col];
+                    if (_this.config.subject_export_cols) {
+                        _this.config.subject_export_cols.forEach(function(d) {
+                            acc[cur][d.value_col] = subjectDatum[d.value_col];
+                        });
+                    }
+                    return acc;
+                }, {});
+            }
         }
 
         // Going to want expanded data - since current data doesn't include child rows unless all are expanded
@@ -2357,7 +2384,10 @@
             });
 
             // Now "join" subject level information to export data
-            if (subject_id_col) {
+            if (
+                (_this.config.site_col || _this.config.subject_export_cols) &&
+                _this.config.id_col
+            ) {
                 var subjectID =
                     d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
@@ -2688,7 +2718,7 @@
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
         });
         if (missingVariables.length)
-            alert(
+            console.log(
                 'The data are missing ' +
                     (missingVariables.length === 1 ? 'this variable' : 'these variables') +
                     ': ' +

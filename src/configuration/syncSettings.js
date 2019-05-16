@@ -1,16 +1,12 @@
 export default function syncSettings(settings) {
-    //Sync nestings with data variable settings.
-    const settingsKeys = Object.keys(settings);
-    const settingsCols = settingsKeys.filter(settingsKey => /_col$/.test(settingsKey));
-    settings.nestings.forEach(nesting => {
-        nesting.value_col =
-            nesting.value_col ||
-            settings[settingsCols.find(settingsCol => settingsCol === nesting.settings_col)];
-    });
-
     // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
     settings.value_cols.sort(function(a, b) {
         return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
+    });
+
+    // Assign nest variables with specfic roles to specific settings
+    settings.nestings.map(function(d) {
+        if (typeof d.role != 'undefined') settings[d.role] = d.value_col;
     });
 
     //Define initial nesting variables.
@@ -22,12 +18,26 @@ export default function syncSettings(settings) {
     //Define table column variables.
     settings.cols = d3.merge([['id'], settings.value_cols.map(d => d.col)]);
 
+    // Define nesting filters
+    var nest_settings = [];
+    if (settings.nesting_filters === true) {
+        settings.nestings.forEach(setting =>
+            nest_settings.push({
+                value_col: setting.value_col,
+                label: setting.label
+            })
+        );
+    }
+
     //Define filter variables.
     settings.filter_cols = Array.isArray(settings.filter_cols)
-        ? [settings.site_col, settings.id_freeze_col, settings.id_status_col].concat(
-              settings.filter_cols
-          )
-        : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
+        ? nest_settings.concat(settings.filter_cols)
+        : nest_settings;
+
+    //Define cols to include in subject level export
+    settings.subject_export_cols = settings.filter_cols.filter(
+        filter => filter.subject_export == true
+    );
 
     // add labels specified in rendererSettings as headers
     settings.headers = settings.value_cols.map(d => d.label);
