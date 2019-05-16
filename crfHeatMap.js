@@ -282,7 +282,7 @@
                             })
                             .indexOf(value_col.col) > -1
                             ? summary.nForms
-                                ? count / summary.nForms
+                                ? Math.floor(count / summary.nForms * 100) / 100
                                 : 'N/A'
                             : crfsDenominator
                                   .map(function(m) {
@@ -290,7 +290,9 @@
                                   })
                                   .indexOf(value_col.col) > -1
                                 ? summary['n' + value_col.denominator]
-                                    ? count / summary['n' + value_col.denominator]
+                                    ? Math.floor(
+                                          count / summary['n' + value_col.denominator] * 100
+                                      ) / 100
                                     : 'N/A'
                                 : queries
                                       .map(function(m) {
@@ -1761,7 +1763,7 @@
                     : chart.typeDict[d.col] == 'crfs'
                         ? d.text === 'N/A'
                             ? d.text
-                            : String(Math.floor(d.text * 100)) + '%'
+                            : d3.format('%')(d.text)
                         : d.text;
             });
     }
@@ -2731,7 +2733,7 @@
                     value_cols.indexOf(col) > -1 &&
                     context.typeDict[col] == 'crfs' &&
                     ['N/A', ''].indexOf(d[col]) < 0
-                        ? Math.floor(d[col] * 100)
+                        ? d[col] * 100
                         : d[col];
 
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
@@ -2780,11 +2782,7 @@
         };
         var arrayOfArrays = this.export.data.map(function(d) {
             return _this.export.cols.map(function(col) {
-                return value_cols.indexOf(col) > -1 &&
-                    context.typeDict[col] == 'crfs' &&
-                    ['N/A', ''].indexOf(d[col]) < 0
-                    ? Math.floor(d[col] * 100) / 100
-                    : d[col];
+                return d[col];
             });
         }); // convert data from array of objects to array of arrays.
         var workbook = {

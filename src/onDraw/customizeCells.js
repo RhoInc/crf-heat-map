@@ -40,7 +40,7 @@ export default function customizeCells(chart, cells) {
                     : chart.typeDict[d.col] == 'crfs'
                         ? d.text === 'N/A'
                             ? d.text
-                            : String(Math.floor(d.text * 100)) + '%'
+                            : d3.format('%')(d.text)
                         : d.text
         );
 }

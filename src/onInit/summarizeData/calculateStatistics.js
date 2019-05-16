@@ -53,11 +53,12 @@ export default function calculateStatistics(onInit = true) {
                 summary[value_col.col] =
                     crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
                         ? summary.nForms
-                            ? count / summary.nForms
+                            ? Math.floor(count / summary.nForms * 100) / 100
                             : 'N/A'
                         : crfsDenominator.map(m => m.col).indexOf(value_col.col) > -1
                             ? summary['n' + value_col.denominator]
-                                ? count / summary['n' + value_col.denominator]
+                                ? Math.floor(count / summary['n' + value_col.denominator] * 100) /
+                                  100
                                 : 'N/A'
                             : queries.map(m => m.col).indexOf(value_col.col) > -1
                                 ? count

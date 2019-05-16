@@ -49,7 +49,7 @@ export default function csv() {
                 value_cols.indexOf(col) > -1 &&
                 context.typeDict[col] == 'crfs' &&
                 ['N/A', ''].indexOf(d[col]) < 0
-                    ? Math.floor(d[col] * 100)
+                    ? d[col] * 100
                     : d[col];
 
             if (typeof value === 'string') value = value.replace(/"/g, '""');
