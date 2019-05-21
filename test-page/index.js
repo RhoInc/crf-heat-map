@@ -10,6 +10,11 @@ d3.csv(
             } // settings
         );
         instance.init(data);
+
+        destroyToggle //test destruction
+             .on('click', function() {
+               instance.table.destroy()
+             });
     }
 );
 
@@ -29,3 +34,10 @@ bootstrapToggle
         bootstrap.property('disabled', !disabled);
         bootstrapToggle.text((disabled ? 'Disable' : 'Enable') + ' bootstrap');
     });
+
+    //Add button that toggles DESTRUCTION
+    const destroyToggle = d3.select('#title')
+        .append('button')
+        .attr('id', 'destroy-toggle')
+        .style('float', 'right')
+        .text('Destroy');

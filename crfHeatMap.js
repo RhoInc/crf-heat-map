@@ -2967,6 +2967,14 @@
         this.parent.containers.loading.classed('chm-hidden', true);
     }
 
+    function onDestroy() {
+        //remove stylesheet
+        document.getElementsByTagName('head')[0].lastChild.remove();
+
+        //clear container
+        d3.select(this.parent.element).html('');
+    }
+
     function checkRequiredVariables() {
         var _this = this;
 
@@ -3053,6 +3061,7 @@
         crfHeatMap.table.on('init', onInit);
         crfHeatMap.table.on('layout', onLayout);
         crfHeatMap.table.on('draw', onDraw);
+        crfHeatMap.table.on('destroy', onDestroy);
 
         //stylesheet
         defineStyles.call(crfHeatMap);
