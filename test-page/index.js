@@ -13,7 +13,7 @@ d3.csv(
 
         destroyToggle //test destruction
              .on('click', function() {
-               instance.table.destroy()
+               instance.destroy()
              });
     }
 );

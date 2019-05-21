@@ -62,6 +62,10 @@ export default function crfHeatMap(element, settings) {
     crfHeatMap.table.on('draw', onDraw);
     crfHeatMap.table.on('destroy', onDestroy);
 
+    crfHeatMap.destroy = () => {
+        crfHeatMap.table.destroy();
+    };
+
     //stylesheet
     defineStyles.call(crfHeatMap);
 
