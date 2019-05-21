@@ -1,7 +1,10 @@
 export default function onDestroy() {
     //remove stylesheet
-    document.getElementsByTagName('head')[0].lastChild.remove();
+    this.parent.style.remove();
 
     //clear container
-    d3.select(this.parent.element).html('');
+    d3
+        .select(this.parent.element)
+        .selectAll('*')
+        .remove();
 }
