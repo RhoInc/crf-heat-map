@@ -13,6 +13,7 @@ import { createControls, createTable } from 'webcharts';
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDraw from './onDraw';
+import onDestroy from './onDestroy';
 
 import init from './init';
 
@@ -59,6 +60,11 @@ export default function crfHeatMap(element, settings) {
     crfHeatMap.table.on('init', onInit);
     crfHeatMap.table.on('layout', onLayout);
     crfHeatMap.table.on('draw', onDraw);
+    crfHeatMap.table.on('destroy', onDestroy);
+
+    crfHeatMap.destroy = () => {
+        crfHeatMap.table.destroy();
+    };
 
     //stylesheet
     defineStyles.call(crfHeatMap);
