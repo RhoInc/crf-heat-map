@@ -53,7 +53,7 @@
                     "value_col" : "ecrfpagename",
                     "label": "Form",
                     "default_nesting": false,
-                    "role": "form_col" 
+                    "role": "form_col"
                 }
             ]
         },
@@ -138,12 +138,12 @@
               {
                 "value_col": "subjfreezeflg",
                 "label": "Subject Freeze Status",
-                "multiple": true,
                 "subject_export" : true
               },
               {
                 "value_col": "status",
                 "label": "Subject Status",
+                "multiple": true,
                 "subject_export" : true
               }
             ]

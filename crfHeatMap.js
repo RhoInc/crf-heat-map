@@ -1368,12 +1368,12 @@
                 {
                     value_col: 'subjfreezeflg',
                     label: 'Subject Freeze Status',
-                    multiple: true,
                     subject_export: true
                 },
                 {
                     value_col: 'status',
                     label: 'Subject Status',
+                    multiple: true,
                     subject_export: true
                 }
             ],
