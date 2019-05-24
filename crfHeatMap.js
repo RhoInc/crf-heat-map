@@ -782,7 +782,9 @@
             main: d3
                 .select(this.element)
                 .append('div')
-                .attr('id', 'crf-heat-map')
+                .datum(this)
+                .classed('crf-heat-map', true)
+                .attr('id', 'crf-heat-map' + document.querySelectorAll('.crf-heat-map').length)
         };
 
         // display warning message to user if they are using IE
@@ -930,14 +932,14 @@
 
         var styles = [
             'body {' + '    overflow-y: scroll;' + '}',
-            'body #crf-heat-map {' +
+            'body .crf-heat-map {' +
                 '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
                 '    font-size: 16px;' +
                 '    line-height: normal;' +
                 '}',
-            '#crf-heat-map {' + '}',
-            '#crf-heat-map div {' + '    box-sizing: content-box;' + '}',
-            '#crf-heat-map select {' + '    font-size: 12px;' + '}',
+            '.crf-heat-map {' + '}',
+            '.crf-heat-map div {' + '    box-sizing: content-box;' + '}',
+            '.crf-heat-map select {' + '    font-size: 12px;' + '}',
             '.chm-hidden {' + '    display: none !important;' + '}',
             '.chm-column {' + '    display: inline-block;' + '}',
             '.chm-column > * {' + '    width: 100%;' + '}',

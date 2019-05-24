@@ -31,17 +31,17 @@ export default function defineStyles() {
         'body {' +
             '    overflow-y: scroll;' +
             '}',
-        'body #crf-heat-map {' +
+        'body .crf-heat-map {' +
             '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
             '    font-size: 16px;' +
             '    line-height: normal;' +
             '}',
-        '#crf-heat-map {' +
+        '.crf-heat-map {' +
             '}',
-        '#crf-heat-map div {' +
+        '.crf-heat-map div {' +
             '    box-sizing: content-box;' +
             '}',
-        '#crf-heat-map select {' +
+        '.crf-heat-map select {' +
             '    font-size: 12px;' +
             '}',
         '.chm-hidden {' +

@@ -7,14 +7,15 @@ export default function defineLayout() {
     this.containers = {
         main: d3.select(this.element)
             .append('div')
-            .attr('id', 'crf-heat-map'),
+            .datum(this)
+            .classed('crf-heat-map', true)
+            .attr('id', `crf-heat-map${document.querySelectorAll('.crf-heat-map').length}`)
     };
 
     // display warning message to user if they are using IE
     if (isIE) {
       this.containers.main.append("p").style({'color':'red','font-size':'20px','padding':'20px'}).text("Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.")
     }
-
 
     /**-------------------------------------------------------------------------------------------\
 	  Left column
