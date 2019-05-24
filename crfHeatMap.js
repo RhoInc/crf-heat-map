@@ -126,6 +126,59 @@
         });
     }
 
+    if (!Array.prototype.includes) {
+        Object.defineProperty(Array.prototype, 'includes', {
+            value: function value(valueToFind, fromIndex) {
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                // 1. Let O be ? ToObject(this value).
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If len is 0, return false.
+                if (len === 0) {
+                    return false;
+                }
+
+                // 4. Let n be ? ToInteger(fromIndex).
+                //    (If fromIndex is undefined, this step produces the value 0.)
+                var n = fromIndex | 0;
+
+                // 5. If n = 0, then
+                //  a. Let k be n.
+                // 6. Else n < 0,
+                //  a. Let k be len + n.
+                //  b. If k < 0, let k be 0.
+                var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+                function sameValueZero(x, y) {
+                    return (
+                        x === y ||
+                        (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y))
+                    );
+                }
+
+                // 7. Repeat, while k < len
+                while (k < len) {
+                    // a. Let elementK be the result of ? Get(O, ! ToString(k)).
+                    // b. If SameValueZero(valueToFind, elementK) is true, return true.
+                    if (sameValueZero(o[k], valueToFind)) {
+                        return true;
+                    }
+                    // c. Increase k by 1.
+                    k++;
+                }
+
+                // 8. Return false
+                return false;
+            }
+        });
+    }
+
     var _typeof =
         typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
             ? function(obj) {
@@ -791,15 +844,15 @@
         if (isIE) {
             this.containers.main
                 .append('p')
-                .style({ color: 'red', 'font-size': '20px', padding: '20px' })
+                .classed('chm-ie-sucks', true)
                 .text(
                     'Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.'
                 );
         }
 
         /**-------------------------------------------------------------------------------------------\
-        Left column
-        \-------------------------------------------------------------------------------------------**/
+      Left column
+      \-------------------------------------------------------------------------------------------**/
 
         this.containers.leftColumn = this.containers.main
             .append('div')
@@ -807,8 +860,8 @@
             .attr('id', 'chm-left-column');
 
         /***--------------------------------------------------------------------------------------\
-          Row 1
-        \--------------------------------------------------------------------------------------***/
+        Row 1
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow1 = this.containers.leftColumn
             .append('div')
@@ -835,8 +888,8 @@
             .text('Loading...');
 
         /***--------------------------------------------------------------------------------------\
-          Row 2
-        \--------------------------------------------------------------------------------------***/
+        Row 2
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow2 = this.containers.leftColumn
             .append('div')
@@ -849,8 +902,8 @@
             .attr('id', 'chm-controls');
 
         /**-------------------------------------------------------------------------------------------\
-        Right column
-        \-------------------------------------------------------------------------------------------**/
+      Right column
+      \-------------------------------------------------------------------------------------------**/
 
         this.containers.rightColumn = this.containers.main
             .append('div')
@@ -858,8 +911,8 @@
             .attr('id', 'chm-right-column');
 
         /***--------------------------------------------------------------------------------------\
-          Row 1
-        \--------------------------------------------------------------------------------------***/
+        Row 1
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow1 = this.containers.rightColumn
             .append('div')
@@ -890,8 +943,8 @@
         drawQueryLegend.call(this);
 
         /***--------------------------------------------------------------------------------------\
-          Row 2
-        \--------------------------------------------------------------------------------------***/
+        Row 2
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow2 = this.containers.rightColumn
             .append('div')
@@ -941,6 +994,10 @@
             '.crf-heat-map div {' + '    box-sizing: content-box;' + '}',
             '.crf-heat-map select {' + '    font-size: 12px;' + '}',
             '.chm-hidden {' + '    display: none !important;' + '}',
+            '.chm-ie-sucks {' + '    color: red;',
+            '    font-size: 20px;',
+            '    padding: 20px;',
+            '}',
             '.chm-column {' + '    display: inline-block;' + '}',
             '.chm-column > * {' + '    width: 100%;' + '}',
             '.chm-row {' + '    display: inline-block;' + '}',
@@ -954,8 +1011,8 @@
                 '}',
 
             /***--------------------------------------------------------------------------------------\
-          Left column
-        \--------------------------------------------------------------------------------------***/
+        Left column
+      \--------------------------------------------------------------------------------------***/
 
             '#chm-left-column {' +
                 '    float: left;' +
@@ -964,8 +1021,8 @@
                 '}',
 
             /****---------------------------------------------------------------------------------\
-          Row 1 - Data Export
-        \---------------------------------------------------------------------------------****/
+        Row 1 - Data Export
+      \---------------------------------------------------------------------------------****/
 
             '#chm-left-column-row-1 {' + '    position: relative;' + '}',
             '#chm-loading {' +
@@ -985,8 +1042,8 @@
                 '}',
 
             /****---------------------------------------------------------------------------------\
-          Row 2 - Controls
-        \---------------------------------------------------------------------------------****/
+        Row 2 - Controls
+      \---------------------------------------------------------------------------------****/
 
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
             '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
@@ -1027,8 +1084,8 @@
             '.chm-checkbox .changer {' + '    margin-top: 5px !important;' + '}',
 
             /***--------------------------------------------------------------------------------------\
-          Right column
-        \--------------------------------------------------------------------------------------***/
+        Right column
+      \--------------------------------------------------------------------------------------***/
 
             '#chm-right-column {' +
                 '    float: right;' +
@@ -1040,8 +1097,8 @@
             '#chm-right-column-row-2 > * {' + '}',
 
             /****---------------------------------------------------------------------------------\
-          Nest controls
-        \---------------------------------------------------------------------------------****/
+        Nest controls
+      \---------------------------------------------------------------------------------****/
 
             '#chm-nest-controls {' +
                 ('    width: ' + firstColumnWidth + '%;') +
@@ -1065,8 +1122,8 @@
             '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
 
             /****---------------------------------------------------------------------------------\
-          Legend
-        \---------------------------------------------------------------------------------****/
+        Legend
+      \---------------------------------------------------------------------------------****/
 
             '#chm-legend-container {' +
                 ('    width: ' + (100 - firstColumnWidth) + '%;') +
@@ -1097,8 +1154,8 @@
             '#chm-query-legend .chm-legend-div {' + '    width: 20%;' + '}',
 
             /****---------------------------------------------------------------------------------\
-          Table
-        \---------------------------------------------------------------------------------****/
+        Table
+      \---------------------------------------------------------------------------------****/
 
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '}',

@@ -14,7 +14,10 @@ export default function defineLayout() {
 
     // display warning message to user if they are using IE
     if (isIE) {
-      this.containers.main.append("p").style({'color':'red','font-size':'20px','padding':'20px'}).text("Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.")
+        this.containers.main
+            .append('p')
+            .classed('chm-ie-sucks', true)
+            .text('Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.')
     }
 
     /**-------------------------------------------------------------------------------------------\

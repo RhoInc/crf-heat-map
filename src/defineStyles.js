@@ -47,6 +47,11 @@ export default function defineStyles() {
         '.chm-hidden {' +
             '    display: none !important;' +
             '}',
+        '.chm-ie-sucks {' +
+            '    color: red;',
+            '    font-size: 20px;',
+            '    padding: 20px;',
+            '}',
         '.chm-column {' +
             '    display: inline-block;' +
             '}',
