@@ -7,7 +7,6 @@ export default function defineLayout() {
     this.containers = {
         main: d3.select(this.element)
             .append('div')
-            .datum(this)
             .classed('crf-heat-map', true)
             .attr('id', `crf-heat-map${document.querySelectorAll('.crf-heat-map').length}`)
     };
