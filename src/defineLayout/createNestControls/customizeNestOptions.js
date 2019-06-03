@@ -1,7 +1,7 @@
 export default function customizeNestOptions(id_cols) {
     // disable third nest level when the second is not chosen
     this.containers.main
-        .select('#chm-nest-control--3')
+        .selectAll('#chm-nest-control--3')
         .property('disabled', id_cols.length === 1 ? true : false);
 
     // hide options that are selected in higher level nests
@@ -15,7 +15,7 @@ export default function customizeNestOptions(id_cols) {
 
     //hide None option from second nest when third is selected
     this.containers.main
-        .select('#chm-nest-control--2')
+        .selectAll('#chm-nest-control--2')
         .selectAll('option')
         .filter(d => d.label === 'None')
         .style('display', id_cols.length === 3 ? 'none' : null);
