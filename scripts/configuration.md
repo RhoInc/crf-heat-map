@@ -10,7 +10,7 @@ The sections below describe each crf-heat-map setting as of version 1.3.0.
 
 an array of objects specifying the variables to nest the data by for calculations
 
-**default:**
+**default:** 
 ```
 undefined
 ```
@@ -50,7 +50,7 @@ Specify Optional Role
 
 binary CRF flags and query frequencies that capture some status related to the case report form (CRF)
 
-**default:**
+**default:** 
 ```
 undefined
 ```
@@ -97,7 +97,7 @@ Description for Info Bubbles
 
 variables in the data with which to filter the data
 
-**default:**
+**default:** 
 ```
 undefined
 ```

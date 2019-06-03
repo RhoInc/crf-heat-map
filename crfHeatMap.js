@@ -319,11 +319,8 @@
                             return di[value_col.col];
                         });
                     } else {
-<<<<<<< HEAD:build/crfHeatMap.js
-=======
                         // ensure numerator is subsetted in the event that an error is made
                         // and an ID has a value of 1 and a denominator value of 0.
->>>>>>> dev-v1.3.0:crfHeatMap.js
                         var subset = d.filter(function(row) {
                             return row[value_col.denominator] === '1';
                         });
