@@ -126,6 +126,59 @@
         });
     }
 
+    if (!Array.prototype.includes) {
+        Object.defineProperty(Array.prototype, 'includes', {
+            value: function value(valueToFind, fromIndex) {
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                // 1. Let O be ? ToObject(this value).
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If len is 0, return false.
+                if (len === 0) {
+                    return false;
+                }
+
+                // 4. Let n be ? ToInteger(fromIndex).
+                //    (If fromIndex is undefined, this step produces the value 0.)
+                var n = fromIndex | 0;
+
+                // 5. If n = 0, then
+                //  a. Let k be n.
+                // 6. Else n < 0,
+                //  a. Let k be len + n.
+                //  b. If k < 0, let k be 0.
+                var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+                function sameValueZero(x, y) {
+                    return (
+                        x === y ||
+                        (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y))
+                    );
+                }
+
+                // 7. Repeat, while k < len
+                while (k < len) {
+                    // a. Let elementK be the result of ? Get(O, ! ToString(k)).
+                    // b. If SameValueZero(valueToFind, elementK) is true, return true.
+                    if (sameValueZero(o[k], valueToFind)) {
+                        return true;
+                    }
+                    // c. Increase k by 1.
+                    k++;
+                }
+
+                // 8. Return false
+                return false;
+            }
+        });
+    }
+
     var _typeof =
         typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
             ? function(obj) {
@@ -266,6 +319,11 @@
                             return di[value_col.col];
                         });
                     } else {
+<<<<<<< HEAD:build/crfHeatMap.js
+=======
+                        // ensure numerator is subsetted in the event that an error is made
+                        // and an ID has a value of 1 and a denominator value of 0.
+>>>>>>> dev-v1.3.0:crfHeatMap.js
                         var subset = d.filter(function(row) {
                             return row[value_col.denominator] === '1';
                         });
@@ -280,7 +338,7 @@
                             })
                             .indexOf(value_col.col) > -1
                             ? summary.nForms
-                                ? count / summary.nForms
+                                ? Math.floor(count / summary.nForms * 100) / 100
                                 : 'N/A'
                             : crfsDenominator
                                   .map(function(m) {
@@ -288,7 +346,9 @@
                                   })
                                   .indexOf(value_col.col) > -1
                                 ? summary['n' + value_col.denominator]
-                                    ? count / summary['n' + value_col.denominator]
+                                    ? Math.floor(
+                                          count / summary['n' + value_col.denominator] * 100
+                                      ) / 100
                                     : 'N/A'
                                 : queries
                                       .map(function(m) {
@@ -300,7 +360,8 @@
                 });
                 summary.nest_level = d[0].nest_level;
                 summary.parents = d[0].parents;
-                summary.folder_ordinal = d[0].folder_ordinal;
+                summary.visit_order = d[0][context.initial_config.visit_order_col];
+                summary.form_order = d[0][context.initial_config.form_order_col];
                 return summary;
             })
             .entries(this.data.initial_filtered);
@@ -314,7 +375,8 @@
             });
             d.nest_level = d.values.nest_level;
             d.parents = d.values.parents;
-            d.folder_ordinal = d.values.folder_ordinal;
+            d.visit_order = d.values.visit_order;
+            d.form_order = d.values.form_order;
 
             delete d.values;
         });
@@ -338,10 +400,50 @@
         }
     }
 
+    function sortRows() {
+        var context = this;
+
+        //Collapse array of arrays to array of objects.
+        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
+            var formIndex = context.config.id_cols.indexOf(context.initial_config.form_col);
+            var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+
+            if (formIndex > -1 || visitIndex > -1) {
+                var aIds = a.id.split('  |');
+                var bIds = b.id.split('  |');
+                var i;
+                for (i = 0; i < context.config.id_cols.length; i++) {
+                    if (aIds[i] === bIds[i]) {
+                        continue;
+                    } else {
+                        // use form_order_col if provided
+                        if (i === formIndex && context.initial_config.form_order_col) {
+                            return typeof aIds[i] == 'undefined'
+                                ? -1
+                                : parseFloat(a.form_order) < parseFloat(b.form_order)
+                                    ? -1
+                                    : 1;
+                            // use visit_order_col if provided
+                        }
+                        if (i === visitIndex && context.initial_config.visit_order_col) {
+                            return typeof aIds[i] == 'undefined'
+                                ? -1
+                                : parseFloat(a.visit_order) < parseFloat(b.visit_order)
+                                    ? -1
+                                    : 1;
+                        } else {
+                            return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
+                        }
+                    }
+                }
+            } else {
+                return a.id < b.id ? -1 : 1;
+            }
+        });
+    }
+
     function summarizeData() {
         var _this = this;
-
-        var context = this;
         var t0 = performance.now();
         //begin performance test
 
@@ -380,57 +482,13 @@
                             .join('  |')
                     );
                 }
-
-                //  console.log(d)
             });
 
             calculateStatistics.call(_this);
         });
 
-        // if there is a visit order column specificed in settings and it's present in the data use it to sort the folder rows
-        if (
-            this.initial_config.visit_order_col &&
-            Object.keys(this.data.initial[0]).includes(this.initial_config.visit_order_col)
-        ) {
-            //Collapse array of arrays to array of objects.
-            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-                var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
-                if (visitIndex > -1) {
-                    var aIds = a.id.split('  |');
-                    var bIds = b.id.split('  |');
-                    var i;
-                    for (i = 0; i < context.config.id_cols.length; i++) {
-                        if (aIds[i] === bIds[i]) {
-                            continue;
-                        } else {
-                            // because the visit_order variable is numeric we want to treat it differently
-                            if (i === visitIndex) {
-                                return typeof aIds[i] == 'undefined'
-                                    ? -1
-                                    : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
-                                        ? -1
-                                        : 1;
-                            } else {
-                                return typeof aIds[i] === 'undefined'
-                                    ? -1
-                                    : aIds[i] < bIds[i]
-                                        ? -1
-                                        : 1;
-                            }
-                        }
-                    }
-                } else {
-                    return a.id < b.id ? -1 : 1;
-                }
-            });
-        } else {
-            // otherwise sort alphabetically
-            this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-                return a.id < b.id ? -1 : 1;
-            });
-        }
-
-        //  this.data.raw = this.data.summarized;
+        // sort rows
+        sortRows.call(this);
 
         //end performance test
         var t1 = performance.now();
@@ -546,6 +604,53 @@
         this.draw(this.data.raw);
     }
 
+    function customizeNestOptions(id_cols) {
+        // disable third nest level when the second is not chosen
+        this.containers.main
+            .select('#chm-nest-control--3')
+            .property('disabled', id_cols.length === 1 ? true : false);
+
+        // hide options that are selected in higher level nests
+        this.containers.nestControls
+            .selectAll('#chm-nest-control--3, #chm-nest-control--2')
+            .selectAll('option')
+            .style('display', function(d) {
+                var ids = id_cols.slice(0, d3.select(this.parentNode).datum());
+                return ids.includes(d.value_col) ? 'none' : null;
+            });
+
+        //hide None option from second nest when third is selected
+        this.containers.main
+            .select('#chm-nest-control--2')
+            .selectAll('option')
+            .filter(function(d) {
+                return d.label === 'None';
+            })
+            .style('display', id_cols.length === 3 ? 'none' : null);
+    }
+
+    function customizeNestSelects(idSelects) {
+        var first_nest = idSelects[0][0],
+            second_nest = idSelects[0][1],
+            third_nest = idSelects[0][2];
+
+        //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
+        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 2) {
+            second_nest.value = 'None';
+        }
+
+        // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
+        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 3) {
+            second_nest.value = third_nest.value;
+            third_nest.value = 'None';
+        }
+
+        // case 3: If third nests value is selected for first nest or second nest, set third nest to None
+        if (first_nest.value == third_nest.value || second_nest.value == third_nest.value) {
+            third_nest.value = 'None';
+        }
+    }
+
     function createNestControls() {
         var context = this;
         var config = this.settings.synced;
@@ -557,7 +662,7 @@
             .append('span')
             .attr('class', 'chm-control-label')
             .text('');
-        var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+        //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
         var idSelects = this.containers.nestControls
             .selectAll('select')
             .data([0, 1, 2])
@@ -592,6 +697,9 @@
                 return d.value_col == config.id_cols[levelNum];
             });
 
+        //ensure natural nest control options and behavior
+        customizeNestOptions.call(this, config.id_cols);
+
         idSelects.on('change', function() {
             //indicate loading
             context.containers.loading.classed('chm-hidden', false);
@@ -624,8 +732,14 @@
                             return selectedLevels.indexOf(item) == pos;
                         });
 
+                    // Enforce Select Logic
+                    customizeNestSelects.call(context, idSelects);
+
                     //Update nesting variables.
                     context.table.config.id_cols = uniqueLevels;
+
+                    //Maintain nest options logic
+                    customizeNestOptions.call(context, uniqueLevels);
 
                     //Summarize filtered data and redraw table.
                     redraw.call(context.table);
@@ -724,14 +838,16 @@
             main: d3
                 .select(this.element)
                 .append('div')
-                .attr('id', 'crf-heat-map')
+                .datum(this)
+                .classed('crf-heat-map', true)
+                .attr('id', 'crf-heat-map' + document.querySelectorAll('.crf-heat-map').length)
         };
 
         // display warning message to user if they are using IE
         if (isIE) {
             this.containers.main
                 .append('p')
-                .style({ color: 'red', 'font-size': '20px', padding: '20px' })
+                .classed('chm-ie-sucks', true)
                 .text(
                     'Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.'
                 );
@@ -872,15 +988,19 @@
 
         var styles = [
             'body {' + '    overflow-y: scroll;' + '}',
-            'body #crf-heat-map {' +
+            'body .crf-heat-map {' +
                 '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
                 '    font-size: 16px;' +
                 '    line-height: normal;' +
                 '}',
-            '#crf-heat-map {' + '}',
-            '#crf-heat-map div {' + '    box-sizing: content-box;' + '}',
-            '#crf-heat-map select {' + '    font-size: 12px;' + '}',
+            '.crf-heat-map {' + '}',
+            '.crf-heat-map div {' + '    box-sizing: content-box;' + '}',
+            '.crf-heat-map select {' + '    font-size: 12px;' + '}',
             '.chm-hidden {' + '    display: none !important;' + '}',
+            '.chm-ie-sucks {' + '    color: red;',
+            '    font-size: 20px;',
+            '    padding: 20px;',
+            '}',
             '.chm-column {' + '    display: inline-block;' + '}',
             '.chm-column > * {' + '    width: 100%;' + '}',
             '.chm-row {' + '    display: inline-block;' + '}',
@@ -930,21 +1050,41 @@
 
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
             '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
-            '#chm-controls .control-group > * {' +
-                '    display: inline-block !important;' +
-                '    margin: 0;' +
-                '}',
-            '#chm-controls .wc-control-label {' +
-                '    width: 58%;' +
-                '    text-align: right;' +
-                '}',
+            '#chm-controls .control-group > * {' + '    display: block;' + '    width: auto;' + '}',
+            '#chm-controls .wc-control-label {' + '    text-align: center;' + '}',
             '#chm-controls .span-description {' + '}',
-            '#chm-controls select.changer {' +
-                '    width: 40%;' +
-                '    float: right;' +
-                '    overflow-y: auto;' +
+            '#chm-controls select.changer {' + '    margin: 0 auto;' + '}',
+            '.chm-control-grouping {' + '    display: inline-block;' + '}',
+            '.chm-control-grouping .control-group .wc-control-label {' +
+                '    text-align: center;' +
                 '}',
-            '#chm-controls input.changer {' + '    margin-left: 2% !important;' + '}',
+            '.chm-control-grouping--label {' +
+                '    text-align: center;' +
+                '    width: 100%;' +
+                '    font-size: 20px;' +
+                '}',
+            '.chm-other-controls {' +
+                '    border-bottom: 1px solid lightgray;' +
+                '    padding-bottom: 7px;' +
+                '}',
+            '.chm-nesting-filters {' +
+                '    display: flex;' +
+                '    flex-wrap: wrap ;' +
+                '    margin-top: 10px;' +
+                '    justify-content: space-evenly;' +
+                '}',
+            '.chm-nesting-filter {' +
+                '    width : 100px !important;' +
+                '    display : block !important;' +
+                '}',
+
+            //checkboxes
+            '.chm-checkbox {' +
+                '    display: inline-flex !important;' +
+                '    justify-content: center;' +
+                '}',
+            '.chm-checkbox .wc-control-label {' + '    margin-right: 5px;' + '}',
+            '.chm-checkbox .changer {' + '    margin-top: 5px !important;' + '}',
 
             /***--------------------------------------------------------------------------------------\
           Right column
@@ -970,6 +1110,13 @@
             '.chm-nest-control {' +
                 '    float: left;' +
                 '    display: block;' +
+                '    clear: left;' +
+                ('    padding-left: ' + paddingLeft + 'px;') +
+                '    min-width : 100px;' +
+                '}',
+            '.chm-nest-control.chm-hide {' +
+                '    float: left;' +
+                '    display: none;' +
                 '    clear: left;' +
                 ('    padding-left: ' + paddingLeft + 'px;') +
                 '}',
@@ -1128,7 +1275,13 @@
 
             /* ID cells */
 
-            '.chm-cell--id {' + '    background: white;' + '}',
+            '.chm-cell--id {' +
+                '    background: white;' +
+                '   text-overflow: ellipsis;' +
+                '   white-space: nowrap;' +
+                '   overflow: hidden;' +
+                '   max-width: 0px;' +
+                '}',
             '.chm-table-row--expandable .chm-cell--id {' +
                 '    color: blue;' +
                 '    cursor: pointer;' +
@@ -1181,37 +1334,30 @@
 
     function rendererSettings() {
         return {
-            site_col: 'sitename',
-            id_col: 'subjectnameoridentifier',
-            visit_col: 'folderinstancename',
-            visit_order_col: 'folder_ordinal',
-            form_col: 'ecrfpagename',
-            id_freeze_col: 'subjfreezeflg',
-            id_status_col: 'status',
             nestings: [
                 {
-                    settings_col: 'site_col',
-                    value_col: null, // set in syncSettings()
+                    value_col: 'sitename',
                     label: 'Site',
-                    default_nesting: true
+                    default_nesting: true,
+                    role: 'site_col'
                 },
                 {
-                    settings_col: 'id_col',
-                    value_col: null, // set in syncSettings()
+                    value_col: 'subjectnameoridentifier',
                     label: 'Subject ID',
-                    default_nesting: true
+                    default_nesting: true,
+                    role: 'id_col'
                 },
                 {
-                    settings_col: 'visit_col',
-                    value_col: null, // set in syncSettings(0
+                    value_col: 'folderinstancename',
                     label: 'Folder',
-                    default_nesting: false
+                    default_nesting: false,
+                    role: 'visit_col'
                 },
                 {
-                    settings_col: 'form_col',
-                    value_col: null, // set in syncSettings()
+                    value_col: 'ecrfpagename',
                     label: 'Form',
-                    default_nesting: false
+                    default_nesting: false,
+                    role: 'form_col'
                 }
             ],
             value_cols: [
@@ -1268,11 +1414,38 @@
                     description: 'Site has responded to issue, DM needs to review.'
                 }
             ],
-            filter_cols: ['subset1', 'subset2', 'subset3'],
+            filter_cols: [
+                {
+                    value_col: 'subset1',
+                    label: 'Subset 1'
+                },
+                {
+                    value_col: 'subset2',
+                    label: 'Subset 2'
+                },
+                {
+                    value_col: 'subset3',
+                    label: 'Subset 3'
+                },
+                {
+                    value_col: 'subjfreezeflg',
+                    label: 'Subject Freeze Status',
+                    subject_export: true
+                },
+                {
+                    value_col: 'status',
+                    label: 'Subject Status',
+                    multiple: true,
+                    subject_export: true
+                }
+            ],
+            visit_order_col: 'folder_ordinal',
+            form_order_col: 'form_ordinal',
             display_cell_annotations: true,
             expand_all: false,
             sliders: false,
-            max_rows_warn: 10000
+            max_rows_warn: 10000,
+            nesting_filters: true
         };
     }
 
@@ -1291,24 +1464,14 @@
     }
 
     function syncSettings(settings) {
-        //Sync nestings with data variable settings.
-        var settingsKeys = Object.keys(settings);
-        var settingsCols = settingsKeys.filter(function(settingsKey) {
-            return /_col$/.test(settingsKey);
-        });
-        settings.nestings.forEach(function(nesting) {
-            nesting.value_col =
-                nesting.value_col ||
-                settings[
-                    settingsCols.find(function(settingsCol) {
-                        return settingsCol === nesting.settings_col;
-                    })
-                ];
-        });
-
         // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
         settings.value_cols.sort(function(a, b) {
             return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
+        });
+
+        // Assign nest variables with specfic roles to specific settings
+        settings.nestings.map(function(d) {
+            if (typeof d.role != 'undefined') settings[d.role] = d.value_col;
         });
 
         //Define initial nesting variables.
@@ -1329,12 +1492,26 @@
             })
         ]);
 
+        // Define nesting filters
+        var nest_settings = [];
+        if (settings.nesting_filters === true) {
+            settings.nestings.forEach(function(setting) {
+                return nest_settings.push({
+                    value_col: setting.value_col,
+                    label: setting.label
+                });
+            });
+        }
+
         //Define filter variables.
         settings.filter_cols = Array.isArray(settings.filter_cols)
-            ? [settings.site_col, settings.id_freeze_col, settings.id_status_col].concat(
-                  settings.filter_cols
-              )
-            : [settings.site_col, settings.id_freeze_col, settings.id_status_col];
+            ? nest_settings.concat(settings.filter_cols)
+            : nest_settings;
+
+        //Define cols to include in subject level export
+        settings.subject_export_cols = settings.filter_cols.filter(function(filter) {
+            return filter.subject_export == true;
+        });
 
         // add labels specified in rendererSettings as headers
         settings.headers = settings.value_cols.map(function(d) {
@@ -1369,20 +1546,12 @@
 
     function syncControlInputs(settings) {
         var defaultControls = controlInputs();
-        var labels = {};
-        labels[settings.site_col] = 'Site';
-        labels[settings.id_freeze_col] = 'Subject Freeze Status';
-        labels[settings.id_status_col] = 'Subject Status';
         settings.filter_cols.forEach(function(filter_col, i) {
             var filter = {
                 type: 'subsetter',
-                value_col: filter_col,
-                label: labels[filter_col]
-                    ? labels[filter_col]
-                    : /^subset\d$/.test(filter_col)
-                        ? filter_col.replace(/^s/, 'S').replace(/(\d)/, ' $1')
-                        : filter_col.label || filter_col.value_col || filter_col,
-                multiple: filter_col == settings.id_status_col ? true : false
+                value_col: filter_col.value_col,
+                label: filter_col.label ? filter_col.label : filter_col.value_col,
+                multiple: filter_col.multiple ? filter_col.multiple : false
             };
             defaultControls.splice(i, 0, filter);
         });
@@ -1409,9 +1578,90 @@
         syncControlInputs: syncControlInputs
     };
 
+    function removeFilters() {
+        var _this = this;
+
+        this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
+            if (input.type !== 'subsetter') {
+                return true;
+            } else if (!_this.data.raw[0].hasOwnProperty(input.value_col)) {
+                console.warn(
+                    'The [ ' +
+                        input.label +
+                        ' ] filter has been removed because the variable does not exist.'
+                );
+            } else {
+                var levels = d3
+                    .set(
+                        _this.data.raw.map(function(d) {
+                            return d[input.value_col];
+                        })
+                    )
+                    .values();
+
+                if (levels.length === 1)
+                    console.warn(
+                        'The [ ' +
+                            input.label +
+                            ' ] filter has been removed because the variable has only one level.'
+                    );
+
+                return levels.length > 1;
+            }
+        });
+    }
+
+    function removeSubjectExportCols() {
+        var _this = this;
+
+        var context = this;
+        var export_cols = this.initial_config.subject_export_cols.map(function(d) {
+            return d.value_col;
+        });
+
+        if (export_cols.length > 0) {
+            var subjectSetSize = d3
+                .set(
+                    this.data.initial.map(function(d) {
+                        return d[_this.config.id_col];
+                    })
+                )
+                .size();
+
+            export_cols.forEach(function(col) {
+                if (
+                    d3
+                        .set(
+                            context.data.initial.map(function(d) {
+                                return d[context.initial_config.id_col] + d[col];
+                            })
+                        )
+                        .size() !== subjectSetSize
+                ) {
+                    console.warn(
+                        col +
+                            ' was removed from the subject level export due to multiple values within subject.'
+                    );
+                    context.initial_config.subject_export_cols.splice(
+                        context.initial_config.subject_export_cols.findIndex(function(d) {
+                            return d.value_col === col;
+                        }),
+                        1
+                    );
+                }
+            });
+        }
+    }
+
     function onInit() {
         this.data.initial = this.data.raw;
         this.data.initial_filtered = this.data.initial;
+
+        //remove subject-level export columns that have multiple values within a subject
+        removeSubjectExportCols.call(this);
+
+        //remove single-level or dataless filters
+        removeFilters.call(this);
 
         //Summarize raw data.
         summarizeData.call(this);
@@ -1453,7 +1703,7 @@
                             clearInterval(loading);
                             context.parent.containers.loading.classed('chm-hidden', true);
 
-                            //Update filter object.
+                            //Update filter val
                             context.filters.find(function(filter) {
                                 return filter.col === di.value_col;
                             }).val = _this.multiple
@@ -1465,12 +1715,19 @@
                                       })
                                 : dropdown.selectAll('option:checked').text();
 
+                            //Update filter index
+                            context.filters.find(function(filter) {
+                                return filter.col === di.value_col;
+                            }).index = _this.multiple
+                                ? null
+                                : dropdown.selectAll('option:checked').property('index');
+
                             //Filter data.
                             context.data.initial_filtered = context.data.initial;
                             context.filters
                                 .filter(function(filter) {
                                     return (
-                                        filter.val !== 'All' &&
+                                        !(filter.all === true && filter.index === 0) &&
                                         !(
                                             Array.isArray(filter.val) &&
                                             filter.val.length === filter.choices.length
@@ -1568,7 +1825,7 @@
                     : chart.typeDict[d.col] == 'crfs'
                         ? d.text === 'N/A'
                             ? d.text
-                            : String(Math.floor(d.text * 100)) + '%'
+                            : d3.format('%')(d.text)
                         : d.text;
             });
     }
@@ -1628,7 +1885,7 @@
                 if (!confirmation) {
                     changer_this.checked = false;
                 } else {
-                    var loadingdiv = d3.select('#chm-loading'); // fix this later due to confirm box
+                    var loadingdiv = context.parent.containers.main.select('#chm-loading'); // fix this later due to confirm box
 
                     loadingdiv.classed('chm-hidden', false);
 
@@ -1674,7 +1931,7 @@
             .on('change', function(d) {
                 var changer_this = this;
 
-                var loadingdiv = d3.select('#chm-loading');
+                var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
                 loadingdiv.classed('chm-hidden', false);
 
@@ -1806,14 +2063,14 @@
         });
     }
 
-    function onInput(filter) {
+    function addEventListeners(filter) {
         var context = this;
 
         //Attach an event listener to Sliders
         filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
             var _this = this;
 
-            var loadingdiv = d3.select('#chm-loading');
+            var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
             loadingdiv.classed('chm-hidden', false);
 
@@ -1945,14 +2202,14 @@
             });
     }
 
-    function onInput$1(filter) {
+    function addEventListeners$1(filter) {
         var context = this;
 
         //Attach an event listener to Input Boxes.
         filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function(d) {
             var _this = this;
 
-            var loadingdiv = d3.select('#chm-loading');
+            var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
             loadingdiv.classed('chm-hidden', false);
 
@@ -2004,11 +2261,11 @@
         if (this.initial_config.sliders) {
             layout.call(this, filter);
             update.call(this, filter, true);
-            onInput.call(this, filter);
+            addEventListeners.call(this, filter);
         } else {
             layout$1.call(this, filter);
             update$1.call(this, filter, true);
-            onInput$1.call(this, filter);
+            addEventListeners$1.call(this, filter);
         }
     }
 
@@ -2054,12 +2311,79 @@
             });
     }
 
+    function formatControls() {
+        var context = this;
+
+        var nest_vars = this.initial_config.nestings.map(function(nesting) {
+            return nesting.value_col;
+        });
+
+        // assign classes based on control type and if it's a nesting filter
+        this.controls.controlGroups = this.controls.wrap
+            .selectAll('.control-group')
+            .attr('class', function(d) {
+                return 'control-group chm-' + d.type;
+            })
+            .classed('chm-nesting-filter', function(d) {
+                return nest_vars.includes(d.value_col);
+            });
+
+        if (this.initial_config.nesting_filters) {
+            //Group nesting filters
+            this.controls.filters = {
+                container: this.controls.wrap
+                    .insert('div', '.chm-nesting-filter')
+                    .classed('chm-control-grouping chm-nesting-filters', true)
+            };
+
+            this.controls.filters.container
+                .append('div')
+                .classed('chm-control-grouping--label', true)
+                .text('Nesting Filters');
+
+            this.controls.filters.controlGroups = this.controls.wrap.selectAll(
+                '.chm-nesting-filter'
+            );
+            this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
+                '.wc-control-label'
+            );
+            this.controls.filters.selects = this.controls.filters.controlGroups.selectAll(
+                '.changer'
+            );
+            this.controls.filters.controlGroups.each(function(d) {
+                context.controls.filters.container.node().appendChild(this);
+            });
+        }
+
+        //Group other controls
+        this.controls.otherControls = {
+            container: this.controls.wrap
+                .insert('div', ':first-child')
+                .classed('chm-control-grouping chm-other-controls', true)
+        };
+        this.controls.otherControls.label = this.controls.otherControls.container
+            .append('div')
+            .classed('chm-control-grouping--label', true)
+            .text('Controls');
+
+        this.controls.otherControls.controlGroups = this.controls.wrap.selectAll(
+            '.control-group:not(.chm-nesting-filter)'
+        );
+        this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll(
+            '.wc-control-label'
+        );
+        this.controls.otherControls.controlGroups.each(function(d) {
+            context.controls.otherControls.container.node().appendChild(this);
+        });
+    }
+
     function onLayout() {
         customizeFilters.call(this);
         tweakMultiSelects.call(this);
         customizeCheckboxes.call(this);
         //moveExportButtons.call(this);
         addColumnControls.call(this);
+        formatControls.call(this);
     }
 
     function customizeRows(chart, rows) {
@@ -2120,11 +2444,10 @@
             .select('tr')
             .selectAll('th:not(.id)')
             .data(chart.initial_config.value_cols)
-            .append('span')
-            .html(' &#9432')
             .attr('title', function(d) {
                 return d.description;
-            });
+            })
+            .style('cursor', 'help');
     }
 
     function iterateNest() {
@@ -2165,6 +2488,19 @@
         }
 
         return iterateNest(chart.data.summarized, 0);
+    }
+
+    function addIdHover() {
+        this.cells
+            .filter(function(d) {
+                return d.col === 'id';
+            })
+            .attr('title', function(d) {
+                return d.text
+                    .split('|')
+                    .slice(-1)
+                    .pop();
+            });
     }
 
     function flagParentRows() {
@@ -2276,6 +2612,9 @@
 
             // maintain display cell annotations setting since we are not drawing
             toggleCellAnnotations.call(chart);
+
+            // maintain display cell annotations setting since we are not drawing
+            addIdHover.call(chart);
         }
     }
 
@@ -2322,31 +2661,43 @@
 
         //Capture subject-level information.
         if (subject_id_col) {
-            //Add headers.
-            this.export.headers.push('Site', 'Subject Status', 'Subject Freeze Status');
+            //Add headers and columns
+            if (this.config.site_col) {
+                this.export.headers.push('Site');
+                this.export.cols.push('site');
+            }
 
-            //Add columns.
-            this.export.cols.push('site', 'status', 'freeze');
+            if (this.config.subject_export_cols) {
+                this.config.subject_export_cols.forEach(function(d) {
+                    table.export.headers.push(d.label);
+                    table.export.cols.push(d.value_col);
+                });
+            }
 
             // build look up for subject
-            var subjects = d3
-                .set(
-                    table.data.initial.map(function(d) {
-                        return d[_this.config.id_col];
-                    })
-                )
-                .values();
-            var subjectMap = subjects.reduce(function(acc, cur) {
-                var subjectDatum = _this.data.initial.find(function(d) {
-                    return d[_this.config.id_col] === cur;
-                });
-                acc[cur] = {
-                    site: subjectDatum[_this.config.site_col],
-                    status: subjectDatum[_this.config.id_status_col],
-                    freeze: subjectDatum[_this.config.id_freeze_col]
-                };
-                return acc;
-            }, {});
+            if (this.config.site_col || this.config.subject_export_cols) {
+                var subjects = d3
+                    .set(
+                        table.data.initial.map(function(d) {
+                            return d[_this.config.id_col];
+                        })
+                    )
+                    .values();
+                var subjectMap = subjects.reduce(function(acc, cur) {
+                    var subjectDatum = _this.data.initial.find(function(d) {
+                        return d[_this.config.id_col] === cur;
+                    });
+                    acc[cur] = {};
+                    if (_this.config.site_col)
+                        acc[cur]['site'] = subjectDatum[_this.config.site_col];
+                    if (_this.config.subject_export_cols) {
+                        _this.config.subject_export_cols.forEach(function(d) {
+                            acc[cur][d.value_col] = subjectDatum[d.value_col];
+                        });
+                    }
+                    return acc;
+                }, {});
+            }
         }
 
         // Going to want expanded data - since current data doesn't include child rows unless all are expanded
@@ -2367,7 +2718,10 @@
             });
 
             // Now "join" subject level information to export data
-            if (subject_id_col) {
+            if (
+                (_this.config.site_col || _this.config.subject_export_cols) &&
+                _this.config.id_col
+            ) {
                 var subjectID =
                     d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
@@ -2441,7 +2795,7 @@
                     value_cols.indexOf(col) > -1 &&
                     context.typeDict[col] == 'crfs' &&
                     ['N/A', ''].indexOf(d[col]) < 0
-                        ? Math.floor(d[col] * 100)
+                        ? d[col] * 100
                         : d[col];
 
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
@@ -2490,11 +2844,7 @@
         };
         var arrayOfArrays = this.export.data.map(function(d) {
             return _this.export.cols.map(function(col) {
-                return value_cols.indexOf(col) > -1 &&
-                    context.typeDict[col] == 'crfs' &&
-                    ['N/A', ''].indexOf(d[col]) < 0
-                    ? Math.floor(d[col] * 100) / 100
-                    : d[col];
+                return d[col];
             });
         }); // convert data from array of objects to array of arrays.
         var workbook = {
@@ -2658,6 +3008,7 @@
             addInfoBubbles.call(this);
             addRowDisplayToggle.call(this);
             toggleCellAnnotations.call(this);
+            addIdHover.call(this);
             dataExport.call(this);
             flagParentRows.call(this);
         }
@@ -2678,6 +3029,17 @@
         this.parent.containers.loading.classed('chm-hidden', true);
     }
 
+    function onDestroy() {
+        //remove stylesheet
+        this.parent.style.remove();
+
+        //clear container, removing one child node at a time (fastest method per https://jsperf.com/innerhtml-vs-removechild/37)
+        var node = d3.select(this.parent.element).node();
+        while (node.firstChild) {
+            node.removeChild(node.firstChild);
+        }
+    }
+
     function checkRequiredVariables() {
         var _this = this;
 
@@ -2690,15 +3052,18 @@
                     this.settings.synced.value_cols.map(function(d) {
                         return d.col;
                     }),
-                    this.settings.synced.filter_cols
+                    this.settings.synced.filter_cols.map(function(filter) {
+                        return filter.value_col;
+                    })
                 ])
             )
             .values();
+
         var missingVariables = requiredVariables.filter(function(variable) {
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
         });
         if (missingVariables.length)
-            alert(
+            console.log(
                 'The data are missing ' +
                     (missingVariables.length === 1 ? 'this variable' : 'these variables') +
                     ': ' +
@@ -2761,6 +3126,11 @@
         crfHeatMap.table.on('init', onInit);
         crfHeatMap.table.on('layout', onLayout);
         crfHeatMap.table.on('draw', onDraw);
+        crfHeatMap.table.on('destroy', onDestroy);
+
+        crfHeatMap.destroy = function() {
+            crfHeatMap.table.destroy();
+        };
 
         //stylesheet
         defineStyles.call(crfHeatMap);

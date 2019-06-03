@@ -1,8 +1,9 @@
 import customizeFilters from './onLayout/customizeFilters';
 import tweakMultiSelects from './onLayout/tweakMultiSelects';
 import customizeCheckboxes from './onLayout/customizeCheckboxes';
-import moveExportButtons from './onLayout/moveExportButtons';
+//import moveExportButtons from './onLayout/moveExportButtons';
 import addColumnControls from './onLayout/addColumnControls';
+import formatControls from './onLayout/formatControls';
 
 export default function onLayout() {
     customizeFilters.call(this);
@@ -10,4 +11,5 @@ export default function onLayout() {
     customizeCheckboxes.call(this);
     //moveExportButtons.call(this);
     addColumnControls.call(this);
+    formatControls.call(this);
 }

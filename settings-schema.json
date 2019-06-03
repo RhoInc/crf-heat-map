@@ -2,51 +2,9 @@
     "title": "settings",
     "description": "JSON schema for the configuration of the CRF Heat Map",
     "overview": "The most straightforward way to customize the CRF Heat Map is by using a configuration object whose properties describe the behavior and appearance of the table.  Since the CRF Heat Map is a Webcharts `table` object, many default Webcharts settings are set in the [webchartsSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/webchartsSettings.js) as [described below](#webcharts-settings).  Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality.  These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js).  All defaults can be overwritten by the passed configuration object.",
-    "version": "1.2.3",
+    "version": "1.3.0",
     "type": "object",
     "properties": {
-      "site_col" : {
-        "title": "Site Column",
-        "description": "Specifies variable for use as site ID",
-        "type": "string",
-        "default": "sitename"
-      },
-      "id_col" : {
-        "title": "Subject ID Column",
-        "description": "Specifies variable for use as subject ID",
-        "type": "string",
-        "default": "subjectnameoridentifier"
-      },
-      "visit_col" : {
-        "title": "Visit Column",
-        "description": "Specifies variable for use as Visit ID",
-        "type": "string",
-        "default": "folderinstancename"
-      },
-      "visit_order_col" : {
-        "title": "Visit Order Column",
-        "description": "Specifies variable for determining order of Visit ID",
-        "type": "string",
-        "default": "folder_ordinal"
-      },
-      "form_col" : {
-        "title": "Form Column",
-        "description": "Specifies variable for use as Form ID",
-        "type": "string",
-        "default": "ecrfpagename"
-      },
-      "id_freeze_col" : {
-        "title": "Subject Freeze Column",
-        "description": "Specifies variable for subject-level freeze status",
-        "type": "string",
-        "default": "subjfreezeflg"
-      },
-      "id_status_col" : {
-        "title": "Subject Status Column",
-        "description": "Specifies variable for subject status",
-        "type": "string",
-        "default": "status"
-      },
         "nestings": {
             "title": "Data Nesting",
             "description": "an array of objects specifying the variables to nest the data by for calculations",
@@ -54,10 +12,6 @@
             "items": {
                 "type": "object",
                 "properties":{
-                  "settings_col":{
-                      "title":"Settings Column",
-                      "type":"string"
-                  },
                     "value_col":{
                         "title":"Value Column",
                         "type":"string"
@@ -69,33 +23,37 @@
                     "default_nesting":{
                         "title":"Default Nesting",
                         "type":"boolean"
+                    },
+                    "role":{
+                        "title":"Specify Optional Role",
+                        "type":"string"
                     }
                 }
             },
             "default": [
                 {
-                    "settings_col": "site_col",
-                    "value_col" : null,
+                    "value_col" : "sitename",
                     "label": "Site",
-                    "default_nesting": true
+                    "default_nesting": true,
+                    "role": "site_col"
                 },
                 {
-                    "settings_col": "id_col",
-                    "value_col" : null,
+                    "value_col" : "subjectnameoridentifier",
                     "label": "Subject ID",
-                    "default_nesting": true
+                    "default_nesting": true,
+                    "role": "id_col"
                 },
                 {
-                    "settings_col": "visit_col",
-                    "value_col" : null,
+                    "value_col" : "folderinstancename",
                     "label": "Folder",
-                    "default_nesting": false
+                    "default_nesting": false,
+                    "role": "visit_col"
                 },
                 {
-                    "settings_col": "form_col",
-                    "value_col" : null,
+                    "value_col" : "ecrfpagename",
                     "label": "Form",
-                    "default_nesting": false
+                    "default_nesting": false,
+                    "role": "form_col"
                 }
             ]
         },
@@ -144,15 +102,63 @@
             "description": "variables in the data with which to filter the data",
             "type": "array",
             "items": {
-                "title": "Variable Name",
-                "description": "the name of the filter variable",
-                "type": "string"
+              "type": "object",
+              "properties":{
+                "value_col":{
+                  "title":"Variable Name",
+                  "type":"string"
+                },
+                "label":{
+                    "title":"Label",
+                    "type":"string"
+                },
+                "multiple":{
+                    "title":"Multi-select",
+                    "type": "boolean"
+                },
+                "subject_export":{
+                    "title":"Include variable in subject-level export",
+                    "type":"boolean"
+                }
+              }
             },
             "default": [
-                "subset1",
-                "subset2",
-                "subset3"
+              {
+                "value_col": "subset1",
+                "label": "Subset 1"
+              },
+              {
+                "value_col": "subset2",
+                "label": "Subset 2"
+              },
+              {
+                "value_col": "subset3",
+                "label": "Subset 3"
+              },
+              {
+                "value_col": "subjfreezeflg",
+                "label": "Subject Freeze Status",
+                "subject_export" : true
+              },
+              {
+                "value_col": "status",
+                "label": "Subject Status",
+                "multiple": true,
+                "subject_export" : true
+              }
             ]
+        },
+        "visit_order_col" : {
+          "title": "Visit Order Column",
+          "description": "Specifies variable for determining order of ID with Visit role",
+          "type": "string",
+          "default": "folder_ordinal"
+        },
+        "form_order_col" : {
+          "title": "Form Order Column",
+          "description": "Specifies variable for determining order of ID with Form role",
+          "type": "string",
+          "default": "form_ordinal"
         },
         "display_cell_annotations": {
             "title": "Display Cell Annotations",
@@ -177,6 +183,12 @@
             "description": "If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation",
             "type": "number",
             "default": 10000
+        },
+        "nesting_filters": {
+            "title": "Enable Nesting Variables Filters",
+            "description": "Adds filters for each of the nesting variables",
+            "type": "boolean",
+            "default": true
         }
     }
 }

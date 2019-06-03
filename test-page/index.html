@@ -7,11 +7,11 @@
         <script type = 'text/javascript' src = 'https://d3js.org/d3.v3.min.js'></script>
         <script type = 'text/javascript' src = 'https://cdn.jsdelivr.net/npm/xlsx@0/dist/xlsx.full.min.js'></script>
         <script type = 'text/javascript' src = 'https://cdn.jsdelivr.net/npm/webcharts@1/build/webcharts.min.js'></script>
-        <script type = 'text/javascript' src = '../build/crfHeatMap.js'></script>
+        <script type = 'text/javascript' src = '../crfHeatMap.js'></script>
 
         <link type = 'text/css' rel = 'stylesheet' href = 'https://cdn.jsdelivr.net/npm/webcharts@1/css/webcharts.min.css'>
         <link type = 'text/css' rel = 'stylesheet' href = './index.css'>
-        <link type = 'text/css' rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css' disabled>
+        <link type = 'text/css' rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css'>
     </head>
 
     <body>
@@ -20,5 +20,13 @@
         <div id = 'container'></div>
     </body>
 
+    <script type = 'text/javascript'>
+        //Firefox doesn't respect adding the disabled attribute to the link tag.
+        d3.selectAll('head link')
+            .filter(function() {
+                return d3.select(this).attr('href').indexOf('bootstrap.css') > -1;
+            })
+            .property('disabled', true);
+    </script>
     <script type = 'text/javascript' src = './index.js'></script>
 </html>

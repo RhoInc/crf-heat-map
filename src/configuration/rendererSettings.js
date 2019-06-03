@@ -1,36 +1,29 @@
 export default function rendererSettings() {
     return {
-        site_col: 'sitename',
-        id_col: 'subjectnameoridentifier',
-        visit_col: 'folderinstancename',
-        visit_order_col: 'folder_ordinal',
-        form_col: 'ecrfpagename',
-        id_freeze_col: 'subjfreezeflg',
-        id_status_col: 'status',
         nestings: [
             {
-                settings_col: 'site_col',
-                value_col: null, // set in syncSettings()
+                value_col: 'sitename',
                 label: 'Site',
-                default_nesting: true
+                default_nesting: true,
+                role: 'site_col'
             },
             {
-                settings_col: 'id_col',
-                value_col: null, // set in syncSettings()
+                value_col: 'subjectnameoridentifier',
                 label: 'Subject ID',
-                default_nesting: true
+                default_nesting: true,
+                role: 'id_col'
             },
             {
-                settings_col: 'visit_col',
-                value_col: null, // set in syncSettings(0
+                value_col: 'folderinstancename',
                 label: 'Folder',
-                default_nesting: false
+                default_nesting: false,
+                role: 'visit_col'
             },
             {
-                settings_col: 'form_col',
-                value_col: null, // set in syncSettings()
+                value_col: 'ecrfpagename',
                 label: 'Form',
-                default_nesting: false
+                default_nesting: false,
+                role: 'form_col'
             }
         ],
         value_cols: [
@@ -86,10 +79,37 @@ export default function rendererSettings() {
                 description: 'Site has responded to issue, DM needs to review.'
             }
         ],
-        filter_cols: ['subset1', 'subset2', 'subset3'],
+        filter_cols: [
+            {
+                value_col: 'subset1',
+                label: 'Subset 1'
+            },
+            {
+                value_col: 'subset2',
+                label: 'Subset 2'
+            },
+            {
+                value_col: 'subset3',
+                label: 'Subset 3'
+            },
+            {
+                value_col: 'subjfreezeflg',
+                label: 'Subject Freeze Status',
+                subject_export: true
+            },
+            {
+                value_col: 'status',
+                label: 'Subject Status',
+                multiple: true,
+                subject_export: true
+            }
+        ],
+        visit_order_col: 'folder_ordinal',
+        form_order_col: 'form_ordinal',
         display_cell_annotations: true,
         expand_all: false,
         sliders: false,
-        max_rows_warn: 10000
+        max_rows_warn: 10000,
+        nesting_filters: true
     };
 }

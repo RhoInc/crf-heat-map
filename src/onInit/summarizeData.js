@@ -1,4 +1,5 @@
 import calculateStatistics from './summarizeData/calculateStatistics';
+import sortRows from './summarizeData/sortRows';
 
 export default function summarizeData() {
     const context = this;
@@ -34,51 +35,13 @@ export default function summarizeData() {
                         .join('  |')
                 );
             }
-
-            //  console.log(d)
         });
 
         calculateStatistics.call(this);
     });
 
-    // if there is a visit order column specificed in settings and it's present in the data use it to sort the folder rows
-    if (
-        this.initial_config.visit_order_col &&
-        Object.keys(this.data.initial[0]).includes(this.initial_config.visit_order_col)
-    ) {
-        //Collapse array of arrays to array of objects.
-        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            const visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
-            if (visitIndex > -1) {
-                var aIds = a.id.split('  |');
-                var bIds = b.id.split('  |');
-                var i;
-                for (i = 0; i < context.config.id_cols.length; i++) {
-                    if (aIds[i] === bIds[i]) {
-                        continue;
-                    } else {
-                        // because the visit_order variable is numeric we want to treat it differently
-                        if (i === visitIndex) {
-                            return typeof aIds[i] == 'undefined'
-                                ? -1
-                                : parseFloat(a.folder_ordinal) < parseFloat(b.folder_ordinal)
-                                    ? -1
-                                    : 1;
-                        } else {
-                            return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
-                        }
-                    }
-                }
-            } else {
-                return a.id < b.id ? -1 : 1;
-            }
-        });
-    } else {
-        // otherwise sort alphabetically
-        this.data.summarized = d3.merge(this.data.summaries).sort((a, b) => (a.id < b.id ? -1 : 1));
-    }
-
-    //  this.data.raw = this.data.summarized;
+    // sort rows
+    sortRows.call(this);
 
     //end performance test
     var t1 = performance.now();

@@ -26,7 +26,7 @@ export default function customizeCheckboxes() {
             if (!confirmation) {
                 changer_this.checked = false;
             } else {
-                var loadingdiv = d3.select('#chm-loading'); // fix this later due to confirm box
+                var loadingdiv = context.parent.containers.main.select('#chm-loading'); // fix this later due to confirm box
 
                 loadingdiv.classed('chm-hidden', false);
 
@@ -70,7 +70,7 @@ export default function customizeCheckboxes() {
         .on('change', function(d) {
             var changer_this = this;
 
-            var loadingdiv = d3.select('#chm-loading');
+            var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
             loadingdiv.classed('chm-hidden', false);
 

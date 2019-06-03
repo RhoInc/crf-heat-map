@@ -1,4 +1,6 @@
 import redraw from '../onLayout/customizeFilters/redraw';
+import customizeNestOptions from './createNestControls/customizeNestOptions';
+import customizeNestSelects from './createNestControls/customizeNestSelects';
 
 export default function createNestControls() {
     const context = this;
@@ -11,7 +13,7 @@ export default function createNestControls() {
         .append('span')
         .attr('class', 'chm-control-label')
         .text('');
-    var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+    //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
     var idSelects = this.containers.nestControls
         .selectAll('select')
         .data([0, 1, 2])
@@ -43,6 +45,9 @@ export default function createNestControls() {
             return d.value_col == config.id_cols[levelNum];
         });
 
+    //ensure natural nest control options and behavior
+    customizeNestOptions.call(this, config.id_cols);
+
     idSelects.on('change', function() {
         //indicate loading
         context.containers.loading.classed('chm-hidden', false);
@@ -69,8 +74,14 @@ export default function createNestControls() {
                         return selectedLevels.indexOf(item) == pos;
                     });
 
+                // Enforce Select Logic
+                customizeNestSelects.call(context, idSelects);
+
                 //Update nesting variables.
                 context.table.config.id_cols = uniqueLevels;
+
+                //Maintain nest options logic
+                customizeNestOptions.call(context, uniqueLevels);
 
                 //Summarize filtered data and redraw table.
                 redraw.call(context.table);

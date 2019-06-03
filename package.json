@@ -1,11 +1,15 @@
 {
   "name": "crf-heat-map",
   "description": "Heat Map showing database form status at different levels",
+<<<<<<< HEAD
   "version": "1.2.3",
+=======
+  "version": "1.3.0",
+>>>>>>> dev-v1.3.0
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/crf-heat-map#readme",
-  "main": "./build/crfHeatMap.js",
+  "main": "./crfHeatMap.js",
   "module": "./src/wrapper.js",
   "keywords": [
     "visualization",
@@ -17,12 +21,12 @@
     "xlsx": "^0.13.0"
   },
   "scripts": {
-    "build": "npm audit fix && npm run bundle && npm run format && npm run build-md",
-    "build-md": "node ./scripts/configuration-markdown.js",
+    "build": "npm audit fix && npm run bundle && npm run format && npm run build-wiki",
+    "build-wiki": "node ./scripts/configuration-markdown.js",
     "bundle": "rollup -c",
-    "format": "npm run format-src && npm run format-build",
+    "format": "npm run format-src && npm run format-bundle",
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"src/**/!(*defineLayout|*defineStyles).js\"",
-    "format-build": "prettier --print-width=100 --tab-width=4 --single-quote --write build/crfHeatMap.js",
+    "format-bundle": "prettier --print-width=100 --tab-width=4 --single-quote --write ./crfHeatMap.js",
     "test-page": "start chrome ./test-page/index.html && start firefox ./test-page/index.html && start iexplore file://%CD%/test-page/index.html",
     "watch": "rollup -c -w"
   },

@@ -31,21 +31,26 @@ export default function defineStyles() {
         'body {' +
             '    overflow-y: scroll;' +
             '}',
-        'body #crf-heat-map {' +
+        'body .crf-heat-map {' +
             '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
             '    font-size: 16px;' +
             '    line-height: normal;' +
             '}',
-        '#crf-heat-map {' +
+        '.crf-heat-map {' +
             '}',
-        '#crf-heat-map div {' +
+        '.crf-heat-map div {' +
             '    box-sizing: content-box;' +
             '}',
-        '#crf-heat-map select {' +
+        '.crf-heat-map select {' +
             '    font-size: 12px;' +
             '}',
         '.chm-hidden {' +
             '    display: none !important;' +
+            '}',
+        '.chm-ie-sucks {' +
+            '    color: red;',
+            '    font-size: 20px;',
+            '    padding: 20px;',
             '}',
         '.chm-column {' +
             '    display: inline-block;' +
@@ -116,22 +121,53 @@ export default function defineStyles() {
                     '    margin: 0 0 5px 0;' +
                     '}',
                 '#chm-controls .control-group > * {' +
-                    '    display: inline-block !important;' +
-                    '    margin: 0;' +
+                    '    display: block;' +
+                    '    width: auto;' +
                     '}',
                 '#chm-controls .wc-control-label {' +
-                    '    width: 58%;' +
-                    '    text-align: right;' +
+                    '    text-align: center;' +
                     '}',
                 '#chm-controls .span-description {' +
                     '}',
                 '#chm-controls select.changer {' +
-                    '    width: 40%;' +
-                    '    float: right;' +
-                    '    overflow-y: auto;' +
+                    '    margin: 0 auto;' +
                     '}',
-                '#chm-controls input.changer {' +
-                    '    margin-left: 2% !important;' +
+                '.chm-control-grouping {' +
+                    '    display: inline-block;' +
+                    '}',
+                '.chm-control-grouping .control-group .wc-control-label {' +
+                    '    text-align: center;' +
+                    '}',
+                '.chm-control-grouping--label {' +
+                    '    text-align: center;' +
+                    '    width: 100%;' +
+                    '    font-size: 20px;' +
+                    '}',
+                '.chm-other-controls {' +
+                    '    border-bottom: 1px solid lightgray;' +
+                    '    padding-bottom: 7px;' +
+                    '}',
+                '.chm-nesting-filters {' +
+                    '    display: flex;' +
+                    '    flex-wrap: wrap ;' +
+                    '    margin-top: 10px;' +
+                    '    justify-content: space-evenly;' +
+                    '}',
+                '.chm-nesting-filter {' +
+                    '    width : 100px !important;' +
+                    '    display : block !important;' +
+                    '}',
+
+                //checkboxes
+                '.chm-checkbox {' +
+                    '    display: inline-flex !important;' +
+                    '    justify-content: center;' +
+                    '}',
+                '.chm-checkbox .wc-control-label {' +
+                    '    margin-right: 5px;' +
+                    '}',
+                '.chm-checkbox .changer {' +
+                    '    margin-top: 5px !important;' +
                     '}',
 
         /***--------------------------------------------------------------------------------------\
@@ -163,7 +199,14 @@ export default function defineStyles() {
                     '    display: block;' +
                     '    clear: left;' +
                     `    padding-left: ${paddingLeft}px;` +
+                    '    min-width : 100px;' +
                     '}',
+                  '.chm-nest-control.chm-hide {' +
+                      '    float: left;' +
+                      '    display: none;' +
+                      '    clear: left;' +
+                      `    padding-left: ${paddingLeft}px;` +
+                      '}',
                 '#chm-nest-control--1 {' +
                     '    margin-left: 0;' +
                     '}',
@@ -358,15 +401,19 @@ export default function defineStyles() {
                 '.wc-table table tbody tr:hover td:first-child {' +
                     '    border-left: 1px solid black;' +
                     '}',
-                  '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
+                '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
                   '    background: #CCCCCC;' +
                   '    color: black;' +
                   '}',
 
                 /* ID cells */
 
-                '.chm-cell--id {' + '    background: white;' + '}',
-
+                '.chm-cell--id {' + '    background: white;' +
+                    '   text-overflow: ellipsis;' +
+                    '   white-space: nowrap;' +
+                    '   overflow: hidden;' +
+                    '   max-width: 0px;' +
+                    '}' ,
                 '.chm-table-row--expandable .chm-cell--id {' +
                     '    color: blue;' +
                     '    cursor: pointer;' +

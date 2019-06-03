@@ -7,16 +7,7 @@ export default function xlsx() {
         bookSST: true,
         type: 'binary'
     };
-    const arrayOfArrays = this.export.data.map(d =>
-        this.export.cols.map(
-            col =>
-                value_cols.indexOf(col) > -1 &&
-                context.typeDict[col] == 'crfs' &&
-                ['N/A', ''].indexOf(d[col]) < 0
-                    ? Math.floor(d[col] * 100) / 100
-                    : d[col]
-        )
-    ); // convert data from array of objects to array of arrays.
+    const arrayOfArrays = this.export.data.map(d => this.export.cols.map(col => d[col])); // convert data from array of objects to array of arrays.
     const workbook = {
         SheetNames: [sheetName, 'Current Filters'],
         Sheets: {}
