@@ -35,7 +35,7 @@ export default function formatControls() {
     //Group other controls
     this.controls.otherControls = {
         container: this.controls.wrap
-            .insert('div', ':first-child')
+            .insert('div')
             .classed('chm-control-grouping chm-other-controls', true)
     };
     this.controls.otherControls.label = this.controls.otherControls.container

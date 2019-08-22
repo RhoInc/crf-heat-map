@@ -144,14 +144,15 @@ export default function defineStyles() {
                     '    font-size: 20px;' +
                     '}',
                 '.chm-other-controls {' +
-                    '    border-bottom: 1px solid lightgray;' +
-                    '    padding-bottom: 7px;' +
+                    '    margin-top: 10px;' +
                     '}',
                 '.chm-nesting-filters {' +
                     '    display: flex;' +
                     '    flex-wrap: wrap ;' +
-                    '    margin-top: 10px;' +
+
                     '    justify-content: space-evenly;' +
+                    '    border-bottom: 1px solid lightgray;' +
+                    '    padding-bottom: 7px;' +
                     '}',
                 '.chm-nesting-filter {' +
                     '    width : 100px !important;' +
