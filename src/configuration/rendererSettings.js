@@ -81,6 +81,17 @@ export default function rendererSettings() {
         ],
         filter_cols: [
             {
+                value_col: 'status',
+                label: 'Subject Status',
+                multiple: true,
+                subject_export: true
+            },
+            {
+                value_col: 'subjfreezeflg',
+                label: 'Subject Freeze Status',
+                subject_export: true
+            },
+            {
                 value_col: 'subset1',
                 label: 'Subset 1'
             },
@@ -91,17 +102,6 @@ export default function rendererSettings() {
             {
                 value_col: 'subset3',
                 label: 'Subset 3'
-            },
-            {
-                value_col: 'subjfreezeflg',
-                label: 'Subject Freeze Status',
-                subject_export: true
-            },
-            {
-                value_col: 'status',
-                label: 'Subject Status',
-                multiple: true,
-                subject_export: true
             }
         ],
         visit_order_col: 'folder_ordinal',
