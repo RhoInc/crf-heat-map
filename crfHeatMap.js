@@ -2975,6 +2975,14 @@
         }
     }
 
+    function applyMaxWidth() {
+        var chart = this;
+        //ensure that the legend does not extend wider than the table - this could happen as user zooms browser
+        d3
+            .select('#chm-right-column-row-1')
+            .style('max-width', chart.table.property('clientWidth') + 'px');
+    }
+
     function onDraw() {
         var config = this.config;
         var chart = this;
@@ -3012,6 +3020,9 @@
             dataExport.call(this);
             flagParentRows.call(this);
         }
+
+        //Prevent legend from expanding wider than width of table
+        applyMaxWidth.call(this);
 
         //Make sure 'Expand All' check box is not checked
         this.controls.wrap
@@ -3109,6 +3120,9 @@
         //DOM layout
         defineLayout.call(crfHeatMap);
 
+        //stylesheet
+        defineStyles.call(crfHeatMap);
+
         //controls
         crfHeatMap.controls = webcharts.createControls(
             crfHeatMap.containers.controls.node(),
@@ -3131,9 +3145,6 @@
         crfHeatMap.destroy = function() {
             crfHeatMap.table.destroy();
         };
-
-        //stylesheet
-        defineStyles.call(crfHeatMap);
 
         return crfHeatMap;
     }
