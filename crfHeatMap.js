@@ -446,8 +446,6 @@
 
         this.data.summaries = [];
 
-        console.log(this.config.id_cols);
-
         //Summarize data by each ID variable.
         this.config.id_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
@@ -2722,11 +2720,8 @@
                 d[id_col] = id_val || 'Total';
             });
 
-            // Now "join" subject level information to export data
-            if (
-                (_this.config.site_col || _this.config.subject_export_cols) &&
-                _this.config.subj_col
-            ) {
+            // // Now "join" subject level information to export data
+            if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
                 var subjectID =
                     d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.subj_col];
                 Object.assign(d, subjectMap[subjectID]);
