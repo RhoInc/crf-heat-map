@@ -8,6 +8,8 @@ export default function summarizeData() {
 
     this.data.summaries = [];
 
+    console.log(this.config.id_cols);
+
     //Summarize data by each ID variable.
     this.config.id_cols.forEach((id_col, i) => {
         //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).

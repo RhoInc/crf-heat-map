@@ -5,43 +5,39 @@ In addition to the standard Webcharts settings several custom settings not avail
 # Renderer-specific settings
 The sections below describe each crf-heat-map setting as of version 1.4.0.
 
-## settings.nestings
-`array`
-
-an array of objects specifying the variables to nest the data by for calculations
-
-**default:** 
-```
-undefined
-```
-
-### settings.nestings[].value_col
+## settings.site_col
 `string`
 
-Value Column
+Specifies Site variable for nesting
 
-**default:** none
+**default:** `"sitename"`
 
-### settings.nestings[].label
+
+
+## settings.subj_col
 `string`
 
-Label
+Specifies Subject variable for nesting and subject-level export
 
-**default:** none
+**default:** `"subjectnameoridentifier"`
 
-### settings.nestings[].default_nesting
-`boolean`
 
-Default Nesting
 
-**default:** none
-
-### settings.nestings[].role
+## settings.visit_col
 `string`
 
-Specify Optional Role
+Specifies Visit variable for nesting
 
-**default:** none
+**default:** `"folderinstancename"`
+
+
+
+## settings.form_col
+`string`
+
+Specifies Form variable for nesting
+
+**default:** `"ecrfpagename"`
 
 
 
@@ -150,6 +146,18 @@ Specifies variable for determining order of ID with Form role
 
 
 
+## settings.default_nesting
+`array`
+
+Specifies variable nesting to sumamrize chart by on initial rendering
+
+**default:** 
+```
+undefined
+```
+
+
+
 ## settings.display_cell_annotations
 `boolean`
 
@@ -183,15 +191,6 @@ Replaces input boxes with sliders for filtering rows
 If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation
 
 **default:** `10000`
-
-
-
-## settings.nesting_filters
-`boolean`
-
-Adds filters for each of the nesting variables
-
-**default:** `true`
 
 # Webcharts settings
 The object below contains each Webcharts setting as of version 1.4.0.

@@ -6,31 +6,28 @@ export default function formatControls() {
     // assign classes based on control type and if it's a nesting filter
     this.controls.controlGroups = this.controls.wrap
         .selectAll('.control-group')
-        .attr('class', d => `control-group chm-${d.type}`)
-        .classed('chm-nesting-filter', d => nest_vars.includes(d.value_col));
+        .attr('class', d => `control-group chm-${d.type}`);
 
-    if (this.initial_config.nesting_filters) {
-        //Group nesting filters
-        this.controls.filters = {
-            container: this.controls.wrap
-                .insert('div', '.chm-nesting-filter')
-                .classed('chm-control-grouping chm-nesting-filters', true)
-        };
+    //Group filters
+    this.controls.filters = {
+        container: this.controls.wrap
+            .insert('div')
+            .classed('chm-control-grouping chm-filters', true)
+    };
 
-        this.controls.filters.container
-            .append('div')
-            .classed('chm-control-grouping--label', true)
-            .text('Nesting Filters');
+    this.controls.filters.container
+        .append('div')
+        .classed('chm-control-grouping--label', true)
+        .text('Filters');
 
-        this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-nesting-filter');
-        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
-            '.wc-control-label'
-        );
-        this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
-        this.controls.filters.controlGroups.each(function(d) {
-            context.controls.filters.container.node().appendChild(this);
-        });
-    }
+    this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-subsetter');
+    this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
+        '.wc-control-label'
+    );
+    this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
+    this.controls.filters.controlGroups.each(function(d) {
+        context.controls.filters.container.node().appendChild(this);
+    });
 
     //Group other controls
     this.controls.otherControls = {
@@ -44,7 +41,7 @@ export default function formatControls() {
         .text('Controls');
 
     this.controls.otherControls.controlGroups = this.controls.wrap.selectAll(
-        '.control-group:not(.chm-nesting-filter)'
+        '.control-group:not(.chm-subsetter)'
     );
     this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll(
         '.wc-control-label'

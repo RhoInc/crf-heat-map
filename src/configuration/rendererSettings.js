@@ -1,31 +1,9 @@
 export default function rendererSettings() {
     return {
-        nestings: [
-            {
-                value_col: 'sitename',
-                label: 'Site',
-                default_nesting: true,
-                role: 'site_col'
-            },
-            {
-                value_col: 'subjectnameoridentifier',
-                label: 'Subject ID',
-                default_nesting: true,
-                role: 'id_col'
-            },
-            {
-                value_col: 'folderinstancename',
-                label: 'Folder',
-                default_nesting: false,
-                role: 'visit_col'
-            },
-            {
-                value_col: 'ecrfpagename',
-                label: 'Form',
-                default_nesting: false,
-                role: 'form_col'
-            }
-        ],
+        site_col: 'sitename',
+        subj_col: 'subjectnameoridentifier',
+        visit_col: 'folderinstancename',
+        form_col: 'ecrfpagename',
         value_cols: [
             {
                 col: 'is_partial_entry',
@@ -81,6 +59,22 @@ export default function rendererSettings() {
         ],
         filter_cols: [
             {
+                value_col: 'sitename',
+                label: 'Site'
+            },
+            {
+                value_col: 'subjectnameoridentifier',
+                label: 'Subject ID'
+            },
+            {
+                value_col: 'foldername',
+                label: 'Folder'
+            },
+            {
+                value_col: 'architectformname',
+                label: 'Form'
+            },
+            {
                 value_col: 'status',
                 label: 'Subject Status',
                 multiple: true,
@@ -106,10 +100,10 @@ export default function rendererSettings() {
         ],
         visit_order_col: 'folder_ordinal',
         form_order_col: 'form_ordinal',
+        default_nesting: ['site_col', 'subj_col'],
         display_cell_annotations: true,
         expand_all: false,
         sliders: false,
-        max_rows_warn: 10000,
-        nesting_filters: true
+        max_rows_warn: 10000
     };
 }
