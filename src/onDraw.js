@@ -7,7 +7,6 @@ import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
 import addIdHover from './onDraw/addIdHover';
 import dataExport from './onDraw/dataExport';
 import flagParentRows from './onDraw/flagParentRows';
-import applyMaxWidth from './onDraw/applyMaxWidth';
 
 export default function onDraw() {
     const config = this.config;
@@ -46,9 +45,6 @@ export default function onDraw() {
         dataExport.call(this);
         flagParentRows.call(this);
     }
-
-    //Prevent legend from expanding wider than width of table
-    applyMaxWidth.call(this);
 
     //Make sure 'Expand All' check box is not checked
     this.controls.wrap

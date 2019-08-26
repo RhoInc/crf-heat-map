@@ -989,6 +989,7 @@
                 '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
                 '    font-size: 16px;' +
                 '    line-height: normal;' +
+                '    max-width: 2200px;' +
                 '}',
             '.crf-heat-map {' + '}',
             '.crf-heat-map div {' + '    box-sizing: content-box;' + '}',
@@ -1158,7 +1159,7 @@
         \---------------------------------------------------------------------------------****/
 
             '#chm-table {' + '    width: 100%;' + '}',
-            '#chm-table table {' + '    display: table;' + '}',
+            '#chm-table table {' + '    display: table;' + '    width: 100%;' + '}',
             '.wc-table {' + '    display: block;' + '}',
             '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
@@ -2975,14 +2976,6 @@
         }
     }
 
-    function applyMaxWidth() {
-        var chart = this;
-        //ensure that the legend does not extend wider than the table - this could happen as user zooms browser
-        d3
-            .select('#chm-right-column-row-1')
-            .style('max-width', chart.table.property('clientWidth') + 'px');
-    }
-
     function onDraw() {
         var config = this.config;
         var chart = this;
@@ -3020,9 +3013,6 @@
             dataExport.call(this);
             flagParentRows.call(this);
         }
-
-        //Prevent legend from expanding wider than width of table
-        applyMaxWidth.call(this);
 
         //Make sure 'Expand All' check box is not checked
         this.controls.wrap
