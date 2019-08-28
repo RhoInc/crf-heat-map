@@ -2326,12 +2326,8 @@
 
     function formatControls() {
         var context = this;
-
-        var nest_vars = this.initial_config.nestings.map(function(nesting) {
-            return nesting.value_col;
-        });
-
         // assign classes based on control type and if it's a nesting filter
+
         this.controls.controlGroups = this.controls.wrap
             .selectAll('.control-group')
             .attr('class', function(d) {

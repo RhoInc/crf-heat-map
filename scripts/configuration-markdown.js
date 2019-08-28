@@ -16,7 +16,7 @@ function setDefault(setting) {
     } else {
         settingDefault = settingDefault +
             '\n\`\`\`\n' +
-            JSON.stringify(setting.defaultObject, null, 2) +
+            JSON.stringify(setting.default, null, 2) +
             `\n\`\`\``;
     }
 

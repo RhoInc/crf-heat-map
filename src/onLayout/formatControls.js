@@ -1,9 +1,7 @@
 export default function formatControls() {
     const context = this;
-
-    const nest_vars = this.initial_config.nestings.map(nesting => nesting.value_col);
-
     // assign classes based on control type and if it's a nesting filter
+
     this.controls.controlGroups = this.controls.wrap
         .selectAll('.control-group')
         .attr('class', d => `control-group chm-${d.type}`);
