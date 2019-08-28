@@ -105,35 +105,35 @@ binary CRF flags and query frequencies that capture some status related to the c
 ### settings.value_cols[].col
 `string`
 
-Variable Name
+Variable name
 
 **default:** none
 
 ### settings.value_cols[].type
 `string`
 
-Variable Type
+Variable type
 
 **default:** none
 
 ### settings.value_cols[].denominator
 `string`
 
-Denominator for Proportion Calculation
+Variable to subset proportion calculations with. Generally this impacts only the denominator (e.g. you want the % of signed forms out of those that needed to be signed, not out of any forms that could be signed). Only for use with crfs. 
 
 **default:** none
 
 ### settings.value_cols[].label
 `string`
 
-Table Header Label
+Table header label
 
 **default:** none
 
 ### settings.value_cols[].description
 `string`
 
-Description for Info Bubbles
+Variable description that appears when hovering over table header
 
 **default:** none
 
