@@ -3,14 +3,14 @@ export default function sortRows() {
 
     //Collapse array of arrays to array of objects.
     this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-        const formIndex = context.config.id_cols.indexOf(context.initial_config.form_col);
-        const visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+        const formIndex = context.config.key_cols.indexOf(context.initial_config.form_col);
+        const visitIndex = context.config.key_cols.indexOf(context.initial_config.visit_col);
 
         if (formIndex > -1 || visitIndex > -1) {
             var aIds = a.id.split('  |');
             var bIds = b.id.split('  |');
             var i;
-            for (i = 0; i < context.config.id_cols.length; i++) {
+            for (i = 0; i < context.config.key_cols.length; i++) {
                 if (aIds[i] === bIds[i]) {
                     continue;
                 } else {

@@ -1,7 +1,7 @@
 export default function deriveData() {
     var table = this;
     this.export = {
-        nests: this.config.id_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
+        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
         filters: this.filters.map(
             filter =>
                 this.controls.config.inputs.find(input => input.value_col === filter.col).label
@@ -14,7 +14,7 @@ export default function deriveData() {
     //Define columns.
     this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-    const subject_id_col_index = this.config.id_cols.indexOf(this.config.subj_col);
+    const subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
     const subject_id_col = subject_id_col_index > -1;
 
     //Capture subject-level information.
@@ -34,9 +34,9 @@ export default function deriveData() {
 
         // build look up for subject
         if (this.config.site_col || this.config.subject_export_cols) {
-            var subjects = d3.set(table.data.initial.map(d => d[this.config.subj_col])).values();
+            var subjects = d3.set(table.data.initial.map(d => d[this.config.id_col])).values();
             var subjectMap = subjects.reduce((acc, cur) => {
-                var subjectDatum = this.data.initial.find(d => d[this.config.subj_col] === cur);
+                var subjectDatum = this.data.initial.find(d => d[this.config.id_col] === cur);
                 acc[cur] = {};
                 if (this.config.site_col) acc[cur]['site'] = subjectDatum[this.config.site_col];
                 if (this.config.subject_export_cols) {
@@ -66,7 +66,7 @@ export default function deriveData() {
 
         // // Now "join" subject level information to export data
         if ((this.config.site_col || this.config.subject_export_cols) && subject_id_col) {
-            const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.subj_col}`];
+            const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.id_col}`];
             Object.assign(d, subjectMap[subjectID]);
         }
     });

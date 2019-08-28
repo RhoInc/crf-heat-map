@@ -11,7 +11,7 @@
         "type": "string",
         "default": "sitename"
       },
-      "subj_col" : {
+      "id_col" : {
         "title": "Subject ID Column",
         "description": "Specifies Subject variable for nesting and subject-level export",
         "type": "string",
@@ -155,7 +155,7 @@
           "items": {
                 "type": "string"
             },
-          "default": ["site_col", "subj_col"]
+          "default": ["site_col", "id_col"]
         },
         "display_cell_annotations": {
             "title": "Display Cell Annotations",

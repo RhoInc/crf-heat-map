@@ -14,7 +14,7 @@ Specifies Site variable for nesting
 
 
 
-## settings.subj_col
+## settings.id_col
 `string`
 
 Specifies Subject variable for nesting and subject-level export
@@ -246,7 +246,7 @@ Specifies variable nesting to sumamrize chart by on initial rendering
 ```
 [
   "site_col",
-  "subj_col"
+  "id_col"
 ]
 ```
 
