@@ -119,7 +119,7 @@ Variable type
 ### settings.value_cols[].denominator
 `string`
 
-Variable to subset proportion calculations with. Generally this impacts only the denominator (e.g. you want the % of signed forms out of those that needed to be signed, not out of any forms that could be signed). Only for use with crfs. 
+Variable to subset proportion calculations with. Generally this impacts only the denominator (e.g. you want the % of signed forms out of those that needed to be signed, not out of any forms that could be signed). Only for use with type='crfs'.
 
 **default:** none
 
@@ -142,7 +142,7 @@ Variable description that appears when hovering over table header
 ## settings.filter_cols
 `array`
 
-variables in the data with which to filter the data
+Variables 
 
 **default:** 
 ```
@@ -208,21 +208,21 @@ Label
 
 Multi-select
 
-**default:** none
+**default:** `false`
 
 ### settings.filter_cols[].subject_export
 `boolean`
 
 Include variable in subject-level export
 
-**default:** none
+**default:** `false`
 
 
 
 ## settings.visit_order_col
 `string`
 
-Specifies variable for determining order of ID with Visit role
+Variable for determining order of Visit column
 
 **default:** `"folder_ordinal"`
 
@@ -231,7 +231,7 @@ Specifies variable for determining order of ID with Visit role
 ## settings.form_order_col
 `string`
 
-Specifies variable for determining order of ID with Form role
+Variable for determining order of Form column
 
 **default:** `"form_ordinal"`
 
@@ -240,7 +240,7 @@ Specifies variable for determining order of ID with Form role
 ## settings.default_nesting
 `array`
 
-Specifies variable nesting to sumamrize chart by on initial rendering
+Variables to summarize chart by on initial rendering
 
 **default:** 
 ```
@@ -255,7 +255,7 @@ Specifies variable nesting to sumamrize chart by on initial rendering
 ## settings.display_cell_annotations
 `boolean`
 
-displays cell annotations always or only on hover
+Displays cell annotations always or only on hover
 
 **default:** `true`
 
@@ -264,7 +264,7 @@ displays cell annotations always or only on hover
 ## settings.expand_all
 `boolean`
 
-expands all nests so that no rows are hidden
+Expands all nests so that no rows are hidden
 
 **default:** `false`
 
@@ -282,7 +282,7 @@ Replaces input boxes with sliders for filtering rows
 ## settings.max_rows_warn
 `number`
 
-If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation
+Number of rows above which the user will be prompted for confirmation when expanding rows
 
 **default:** `10000`
 

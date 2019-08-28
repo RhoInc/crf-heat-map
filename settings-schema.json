@@ -45,7 +45,7 @@
                         "type":"string"
                     },
                     "denominator":{
-                        "title":"Variable to subset proportion calculations with. Generally this impacts only the denominator (e.g. you want the % of signed forms out of those that needed to be signed, not out of any forms that could be signed). Only for use with crfs. ",
+                        "title":"Variable to subset proportion calculations with. Generally this impacts only the denominator (e.g. you want the % of signed forms out of those that needed to be signed, not out of any forms that could be signed). Only for use with type='crfs'.",
                         "type":"string"
                     },
                     "label":{
@@ -70,8 +70,8 @@
             ]
         },
         "filter_cols": {
-            "title": "Data Filters",
-            "description": "variables in the data with which to filter the data",
+            "title": "Variables to interactively filter chart with",
+            "description": "Variables ",
             "type": "array",
             "items": {
               "type": "object",
@@ -86,11 +86,13 @@
                 },
                 "multiple":{
                     "title":"Multi-select",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default":false
                 },
                 "subject_export":{
                     "title":"Include variable in subject-level export",
-                    "type":"boolean"
+                    "type":"boolean",
+                    "default":false
                 }
               }
             },
@@ -138,19 +140,19 @@
         },
         "visit_order_col" : {
           "title": "Visit Order Column",
-          "description": "Specifies variable for determining order of ID with Visit role",
+          "description": "Variable for determining order of Visit column",
           "type": "string",
           "default": "folder_ordinal"
         },
         "form_order_col" : {
           "title": "Form Order Column",
-          "description": "Specifies variable for determining order of ID with Form role",
+          "description": "Variable for determining order of Form column",
           "type": "string",
           "default": "form_ordinal"
         },
         "default_nesting" : {
           "title": "Default Nesting",
-          "description": "Specifies variable nesting to sumamrize chart by on initial rendering",
+          "description": "Variables to summarize chart by on initial rendering",
           "type": "array",
           "items": {
                 "type": "string"
@@ -159,13 +161,13 @@
         },
         "display_cell_annotations": {
             "title": "Display Cell Annotations",
-            "description": "displays cell annotations always or only on hover",
+            "description": "Displays cell annotations always or only on hover",
             "type": "boolean",
             "default": true
         },
         "expand_all": {
             "title": "Expand All Rows",
-            "description": "expands all nests so that no rows are hidden",
+            "description": "Expands all nests so that no rows are hidden",
             "type": "boolean",
             "default": false
         },
@@ -177,7 +179,7 @@
         },
         "max_rows_warn": {
             "title": "Maximum Number of Rows Before Warning User",
-            "description": "If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation",
+            "description": "Number of rows above which the user will be prompted for confirmation when expanding rows",
             "type": "number",
             "default": 10000
         }
