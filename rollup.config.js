@@ -22,7 +22,7 @@ module.exports = {
         },
     },
     external: (function() {
-        var dependencies = Object.assign(pkg.dependencies);
+        var dependencies = pkg.dependencies;
 
         return Object.keys(dependencies);
     }()),
@@ -30,10 +30,7 @@ module.exports = {
         babel({
             exclude: 'node_modules/**',
             presets: [
-                [ 'env', {modules: false} ]
-            ],
-            plugins: [
-                'external-helpers'
+                [ '@babel/preset-env' ]
             ],
             babelrc: false
         })

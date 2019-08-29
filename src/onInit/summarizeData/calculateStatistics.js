@@ -50,6 +50,18 @@ export default function calculateStatistics(onInit = true) {
                     var subset = d.filter(row => row[value_col.denominator] === '1');
                     count = d3.sum(subset, di => di[value_col.col]);
                 }
+                summary[value_col.col + "fraction"] =
+                    crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
+                        ? summary.nForms
+                            ? count.toString() + "/" + summary.nForms.toString()
+                            : null
+                        : crfsDenominator.map(m => m.col).indexOf(value_col.col) > -1
+                            ? summary['n' + value_col.denominator]
+                                ? count.toString() + "/" + summary['n' + value_col.denominator].toString()
+                                : null
+                            : null
+
+
                 summary[value_col.col] =
                     crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
                         ? summary.nForms
@@ -72,13 +84,19 @@ export default function calculateStatistics(onInit = true) {
         })
         .entries(this.data.initial_filtered);
 
+
+
     //Convert the nested data array to a flat data array.
     nest.forEach(d => {
         d.id = d.key;
         delete d.key;
         this.config.value_cols.forEach(value_col => {
+            d[value_col.col + "fraction"] = d.values[value_col.col + "fraction"];
             d[value_col.col] = d.values[value_col.col];
+
         });
+
+
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;
         d.visit_order = d.values.visit_order;
@@ -86,6 +104,8 @@ export default function calculateStatistics(onInit = true) {
 
         delete d.values;
     });
+
+console.log(nest)
 
     //Add summarized data to array of summaries.
     if (onInit) {
@@ -100,4 +120,6 @@ export default function calculateStatistics(onInit = true) {
     } else {
         return nest;
     }
+
+    console.log(this);
 }
