@@ -446,6 +446,8 @@
 
         this.data.summaries = [];
 
+        console.log(this.config.id_cols);
+
         //Summarize data by each ID variable.
         this.config.id_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
@@ -1059,20 +1061,20 @@
                 '    text-align: center;' +
                 '    width: 100%;' +
                 '    font-size: 20px;' +
+                '    margin-bottom: 5px;' +
                 '}',
-            '.chm-other-controls {' +
+            '.chm-filters {' +
+                '    display: flex;' +
+                '    flex-wrap: wrap ;' +
+                '    justify-content: space-evenly;' +
                 '    border-bottom: 1px solid lightgray;' +
                 '    padding-bottom: 7px;' +
                 '}',
-            '.chm-nesting-filters {' +
-                '    display: flex;' +
-                '    flex-wrap: wrap ;' +
+            '.chm-other-controls {' +
                 '    margin-top: 10px;' +
+                '    display: flex;' +
+                '    flex-wrap: wrap;' +
                 '    justify-content: space-evenly;' +
-                '}',
-            '.chm-nesting-filter {' +
-                '    width : 100px !important;' +
-                '    display : block !important;' +
                 '}',
 
             //checkboxes
@@ -1331,32 +1333,10 @@
 
     function rendererSettings() {
         return {
-            nestings: [
-                {
-                    value_col: 'sitename',
-                    label: 'Site',
-                    default_nesting: true,
-                    role: 'site_col'
-                },
-                {
-                    value_col: 'subjectnameoridentifier',
-                    label: 'Subject ID',
-                    default_nesting: true,
-                    role: 'id_col'
-                },
-                {
-                    value_col: 'folderinstancename',
-                    label: 'Folder',
-                    default_nesting: false,
-                    role: 'visit_col'
-                },
-                {
-                    value_col: 'ecrfpagename',
-                    label: 'Form',
-                    default_nesting: false,
-                    role: 'form_col'
-                }
-            ],
+            site_col: 'sitename',
+            subj_col: 'subjectnameoridentifier',
+            visit_col: 'folderinstancename',
+            form_col: 'ecrfpagename',
             value_cols: [
                 {
                     col: 'is_partial_entry',
@@ -1413,6 +1393,33 @@
             ],
             filter_cols: [
                 {
+                    value_col: 'sitename',
+                    label: 'Site'
+                },
+                {
+                    value_col: 'subjectnameoridentifier',
+                    label: 'Subject ID'
+                },
+                {
+                    value_col: 'foldername',
+                    label: 'Folder'
+                },
+                {
+                    value_col: 'architectformname',
+                    label: 'Form'
+                },
+                {
+                    value_col: 'status',
+                    label: 'Subject Status',
+                    multiple: true,
+                    subject_export: true
+                },
+                {
+                    value_col: 'subjfreezeflg',
+                    label: 'Subject Freeze Status',
+                    subject_export: true
+                },
+                {
                     value_col: 'subset1',
                     label: 'Subset 1'
                 },
@@ -1423,26 +1430,15 @@
                 {
                     value_col: 'subset3',
                     label: 'Subset 3'
-                },
-                {
-                    value_col: 'subjfreezeflg',
-                    label: 'Subject Freeze Status',
-                    subject_export: true
-                },
-                {
-                    value_col: 'status',
-                    label: 'Subject Status',
-                    multiple: true,
-                    subject_export: true
                 }
             ],
             visit_order_col: 'folder_ordinal',
             form_order_col: 'form_ordinal',
+            default_nesting: ['site_col', 'subj_col'],
             display_cell_annotations: true,
             expand_all: false,
             sliders: false,
-            max_rows_warn: 10000,
-            nesting_filters: true
+            max_rows_warn: 10000
         };
     }
 
@@ -1466,20 +1462,41 @@
             return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
         });
 
-        // Assign nest variables with specfic roles to specific settings
-        settings.nestings.map(function(d) {
-            if (typeof d.role != 'undefined') settings[d.role] = d.value_col;
-        });
+        // catch user providing too many nesting columns
+        if (settings.default_nesting.length > 3) {
+            throw 'More than three default nesting columns were provided [' +
+                settings.default_nesting.join(', ') +
+                ']. Only three variables can be nested at a time. Please reduce the number of variables in the default_nesting setting.';
+        }
 
         //Define initial nesting variables.
-        settings.id_cols = settings.nestings
-            .filter(function(d) {
-                return d.default_nesting === true;
-            })
-            .map(function(f) {
-                return f.value_col;
-            })
-            .slice(0, 3);
+        settings.id_cols = [];
+        settings.default_nesting.forEach(function(d) {
+            settings.id_cols.push(settings[d]);
+        });
+
+        settings.nestings = [
+            {
+                settings_col: 'site_col',
+                label: 'Site'
+            },
+            {
+                settings_col: 'subj_col',
+                label: 'Subject ID'
+            },
+            {
+                settings_col: 'visit_col',
+                label: 'Folder'
+            },
+            {
+                settings_col: 'form_col',
+                label: 'Form'
+            }
+        ];
+
+        settings.nestings.forEach(function(d) {
+            d.value_col = settings[d.settings_col];
+        });
 
         //Define table column variables.
         settings.cols = d3.merge([
@@ -1620,7 +1637,7 @@
             var subjectSetSize = d3
                 .set(
                     this.data.initial.map(function(d) {
-                        return d[_this.config.id_col];
+                        return d[_this.config.subj_col];
                     })
                 )
                 .size();
@@ -1630,7 +1647,7 @@
                     d3
                         .set(
                             context.data.initial.map(function(d) {
-                                return d[context.initial_config.id_col] + d[col];
+                                return d[context.initial_config.subj_col] + d[col];
                             })
                         )
                         .size() !== subjectSetSize
@@ -2320,42 +2337,33 @@
             .selectAll('.control-group')
             .attr('class', function(d) {
                 return 'control-group chm-' + d.type;
-            })
-            .classed('chm-nesting-filter', function(d) {
-                return nest_vars.includes(d.value_col);
             });
 
-        if (this.initial_config.nesting_filters) {
-            //Group nesting filters
-            this.controls.filters = {
-                container: this.controls.wrap
-                    .insert('div', '.chm-nesting-filter')
-                    .classed('chm-control-grouping chm-nesting-filters', true)
-            };
+        //Group filters
+        this.controls.filters = {
+            container: this.controls.wrap
+                .insert('div')
+                .classed('chm-control-grouping chm-filters', true)
+        };
 
-            this.controls.filters.container
-                .append('div')
-                .classed('chm-control-grouping--label', true)
-                .text('Nesting Filters');
+        this.controls.filters.container
+            .append('div')
+            .classed('chm-control-grouping--label', true)
+            .text('Filters');
 
-            this.controls.filters.controlGroups = this.controls.wrap.selectAll(
-                '.chm-nesting-filter'
-            );
-            this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
-                '.wc-control-label'
-            );
-            this.controls.filters.selects = this.controls.filters.controlGroups.selectAll(
-                '.changer'
-            );
-            this.controls.filters.controlGroups.each(function(d) {
-                context.controls.filters.container.node().appendChild(this);
-            });
-        }
+        this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-subsetter');
+        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
+            '.wc-control-label'
+        );
+        this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
+        this.controls.filters.controlGroups.each(function(d) {
+            context.controls.filters.container.node().appendChild(this);
+        });
 
         //Group other controls
         this.controls.otherControls = {
             container: this.controls.wrap
-                .insert('div', ':first-child')
+                .insert('div')
                 .classed('chm-control-grouping chm-other-controls', true)
         };
         this.controls.otherControls.label = this.controls.otherControls.container
@@ -2364,7 +2372,7 @@
             .text('Controls');
 
         this.controls.otherControls.controlGroups = this.controls.wrap.selectAll(
-            '.control-group:not(.chm-nesting-filter)'
+            '.control-group:not(.chm-subsetter)'
         );
         this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll(
             '.wc-control-label'
@@ -2653,7 +2661,7 @@
         //Define columns.
         this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-        var subject_id_col_index = this.config.id_cols.indexOf(this.config.id_col);
+        var subject_id_col_index = this.config.id_cols.indexOf(this.config.subj_col);
         var subject_id_col = subject_id_col_index > -1;
 
         //Capture subject-level information.
@@ -2676,13 +2684,13 @@
                 var subjects = d3
                     .set(
                         table.data.initial.map(function(d) {
-                            return d[_this.config.id_col];
+                            return d[_this.config.subj_col];
                         })
                     )
                     .values();
                 var subjectMap = subjects.reduce(function(acc, cur) {
                     var subjectDatum = _this.data.initial.find(function(d) {
-                        return d[_this.config.id_col] === cur;
+                        return d[_this.config.subj_col] === cur;
                     });
                     acc[cur] = {};
                     if (_this.config.site_col)
@@ -2717,10 +2725,10 @@
             // Now "join" subject level information to export data
             if (
                 (_this.config.site_col || _this.config.subject_export_cols) &&
-                _this.config.id_col
+                _this.config.subj_col
             ) {
                 var subjectID =
-                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
+                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.subj_col];
                 Object.assign(d, subjectMap[subjectID]);
             }
         });

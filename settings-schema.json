@@ -5,58 +5,30 @@
     "version": "1.4.0",
     "type": "object",
     "properties": {
-        "nestings": {
-            "title": "Data Nesting",
-            "description": "an array of objects specifying the variables to nest the data by for calculations",
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties":{
-                    "value_col":{
-                        "title":"Value Column",
-                        "type":"string"
-                    },
-                    "label":{
-                        "title":"Label",
-                        "type":"string"
-                    },
-                    "default_nesting":{
-                        "title":"Default Nesting",
-                        "type":"boolean"
-                    },
-                    "role":{
-                        "title":"Specify Optional Role",
-                        "type":"string"
-                    }
-                }
-            },
-            "default": [
-                {
-                    "value_col" : "sitename",
-                    "label": "Site",
-                    "default_nesting": true,
-                    "role": "site_col"
-                },
-                {
-                    "value_col" : "subjectnameoridentifier",
-                    "label": "Subject ID",
-                    "default_nesting": true,
-                    "role": "id_col"
-                },
-                {
-                    "value_col" : "folderinstancename",
-                    "label": "Folder",
-                    "default_nesting": false,
-                    "role": "visit_col"
-                },
-                {
-                    "value_col" : "ecrfpagename",
-                    "label": "Form",
-                    "default_nesting": false,
-                    "role": "form_col"
-                }
-            ]
-        },
+      "site_col" : {
+        "title": "Site Column",
+        "description": "Specifies Site variable for nesting",
+        "type": "string",
+        "default": "sitename"
+      },
+      "subj_col" : {
+        "title": "Subject ID Column",
+        "description": "Specifies Subject variable for nesting and subject-level export",
+        "type": "string",
+        "default": "subjectnameoridentifier"
+      },
+      "visit_col" : {
+        "title": "Visit Column",
+        "description": "Specifies Visit variable for nesting",
+        "type": "string",
+        "default": "folderinstancename"
+      },
+      "form_col" : {
+        "title": "Form Column",
+        "description": "Specifies Form variable for nesting",
+        "type": "string",
+        "default": "ecrfpagename"
+      },
         "value_cols": {
             "title": "CRF and Query Columns",
             "description": "binary CRF flags and query frequencies that capture some status related to the case report form (CRF)",
@@ -124,27 +96,43 @@
             },
             "default": [
               {
-                "value_col": "subset1",
-                "label": "Subset 1"
+                  "value_col": "sitename",
+                  "label": "Site"
               },
               {
-                "value_col": "subset2",
-                "label": "Subset 2"
+                  "value_col": "subjectnameoridentifier",
+                  "label": "Subject ID"
               },
               {
-                "value_col": "subset3",
-                "label": "Subset 3"
+                  "value_col": "foldername",
+                  "label": "Folder"
               },
               {
-                "value_col": "subjfreezeflg",
-                "label": "Subject Freeze Status",
-                "subject_export" : true
+                  "value_col": "architectformname",
+                  "label": "Form"
               },
               {
-                "value_col": "status",
-                "label": "Subject Status",
-                "multiple": true,
-                "subject_export" : true
+                  "value_col": "status",
+                  "label": "Subject Status",
+                  "multiple": true,
+                  "subject_export": true
+              },
+              {
+                  "value_col": "subjfreezeflg",
+                  "label": "Subject Freeze Status",
+                  "subject_export": true
+              },
+              {
+                  "value_col": "subset1",
+                  "label": "Subset 1"
+              },
+              {
+                  "value_col": "subset2",
+                  "label": "Subset 2"
+              },
+              {
+                  "value_col": "subset3",
+                  "label": "Subset 3"
               }
             ]
         },
@@ -159,6 +147,15 @@
           "description": "Specifies variable for determining order of ID with Form role",
           "type": "string",
           "default": "form_ordinal"
+        },
+        "default_nesting" : {
+          "title": "Default Nesting",
+          "description": "Specifies variable nesting to sumamrize chart by on initial rendering",
+          "type": "array",
+          "items": {
+                "type": "string"
+            },
+          "default": ["site_col", "subj_col"]
         },
         "display_cell_annotations": {
             "title": "Display Cell Annotations",
@@ -183,12 +180,6 @@
             "description": "If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation",
             "type": "number",
             "default": 10000
-        },
-        "nesting_filters": {
-            "title": "Enable Nesting Variables Filters",
-            "description": "Adds filters for each of the nesting variables",
-            "type": "boolean",
-            "default": true
         }
     }
 }

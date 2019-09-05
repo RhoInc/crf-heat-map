@@ -142,21 +142,22 @@ export default function defineStyles() {
                     '    text-align: center;' +
                     '    width: 100%;' +
                     '    font-size: 20px;' +
+                    '    margin-bottom: 5px;' +
                     '}',
-                '.chm-other-controls {' +
+                '.chm-filters {' +
+                    '    display: flex;' +
+                    '    flex-wrap: wrap ;' +
+                    '    justify-content: space-evenly;' +
                     '    border-bottom: 1px solid lightgray;' +
                     '    padding-bottom: 7px;' +
                     '}',
-                '.chm-nesting-filters {' +
-                    '    display: flex;' +
-                    '    flex-wrap: wrap ;' +
+                '.chm-other-controls {' +
                     '    margin-top: 10px;' +
+                    '    display: flex;' +
+                    '    flex-wrap: wrap;' +
                     '    justify-content: space-evenly;' +
                     '}',
-                '.chm-nesting-filter {' +
-                    '    width : 100px !important;' +
-                    '    display : block !important;' +
-                    '}',
+
 
                 //checkboxes
                 '.chm-checkbox {' +
