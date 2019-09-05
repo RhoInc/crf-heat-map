@@ -1,7 +1,7 @@
 export default function rendererSettings() {
     return {
         site_col: 'sitename',
-        subj_col: 'subjectnameoridentifier',
+        id_col: 'subjectnameoridentifier',
         visit_col: 'folderinstancename',
         form_col: 'ecrfpagename',
         value_cols: [
@@ -100,7 +100,7 @@ export default function rendererSettings() {
         ],
         visit_order_col: 'folder_ordinal',
         form_order_col: 'form_ordinal',
-        default_nesting: ['site_col', 'subj_col'],
+        default_nesting: ['site_col', 'id_col'],
         display_cell_annotations: true,
         expand_all: false,
         sliders: false,

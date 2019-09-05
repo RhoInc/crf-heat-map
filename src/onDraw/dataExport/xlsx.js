@@ -44,7 +44,7 @@ export default function xlsx() {
     //Define column widths in spreadsheet.
     workbook.Sheets[sheetName]['!cols'] = this.export.cols.map((col, i) => {
         return {
-            wpx: value_cols.indexOf(col) > -1 ? 75 : i < this.config.id_cols.length ? 125 : 100
+            wpx: value_cols.indexOf(col) > -1 ? 75 : i < this.config.key_cols.length ? 125 : 100
         };
     });
 

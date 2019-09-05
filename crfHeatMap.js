@@ -402,14 +402,14 @@
 
         //Collapse array of arrays to array of objects.
         this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            var formIndex = context.config.id_cols.indexOf(context.initial_config.form_col);
-            var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+            var formIndex = context.config.key_cols.indexOf(context.initial_config.form_col);
+            var visitIndex = context.config.key_cols.indexOf(context.initial_config.visit_col);
 
             if (formIndex > -1 || visitIndex > -1) {
                 var aIds = a.id.split('  |');
                 var bIds = b.id.split('  |');
                 var i;
-                for (i = 0; i < context.config.id_cols.length; i++) {
+                for (i = 0; i < context.config.key_cols.length; i++) {
                     if (aIds[i] === bIds[i]) {
                         continue;
                     } else {
@@ -447,11 +447,11 @@
         this.data.summaries = [];
 
         //Summarize data by each ID variable.
-        this.config.id_cols.forEach(function(id_col, i) {
+        this.config.key_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
             _this.data.initial_filtered.forEach(function(d) {
                 d.nest_level = i;
-                d.id = _this.config.id_cols
+                d.id = _this.config.key_cols
                     .slice(0, i + 1)
                     .map(function(id_col1) {
                         return d[id_col1];
@@ -461,7 +461,7 @@
                 d.parents = [];
                 if (d.nest_level == 2) {
                     d.parents.push(
-                        _this.config.id_cols
+                        _this.config.key_cols
                             .slice(0, 2)
                             .map(function(id_col1) {
                                 return d[id_col1];
@@ -471,7 +471,7 @@
                 }
                 if (d.nest_level == 1) {
                     d.parents.push(
-                        _this.config.id_cols
+                        _this.config.key_cols
                             .slice(0, 1)
                             .map(function(id_col1) {
                                 return d[id_col1];
@@ -601,18 +601,18 @@
         this.draw(this.data.raw);
     }
 
-    function customizeNestOptions(id_cols) {
+    function customizeNestOptions(key_cols) {
         // disable third nest level when the second is not chosen
         this.containers.main
             .selectAll('#chm-nest-control--3')
-            .property('disabled', id_cols.length === 1 ? true : false);
+            .property('disabled', key_cols.length === 1 ? true : false);
 
         // hide options that are selected in higher level nests
         this.containers.nestControls
             .selectAll('#chm-nest-control--3, #chm-nest-control--2')
             .selectAll('option')
             .style('display', function(d) {
-                var ids = id_cols.slice(0, d3.select(this.parentNode).datum());
+                var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
                 return ids.includes(d.value_col) ? 'none' : null;
             });
 
@@ -623,7 +623,7 @@
             .filter(function(d) {
                 return d.label === 'None';
             })
-            .style('display', id_cols.length === 3 ? 'none' : null);
+            .style('display', key_cols.length === 3 ? 'none' : null);
     }
 
     function customizeNestSelects(idSelects) {
@@ -632,12 +632,12 @@
             third_nest = idSelects[0][2];
 
         //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
-        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 2) {
+        if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 2) {
             second_nest.value = 'None';
         }
 
         // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
-        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 3) {
+        if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 3) {
             second_nest.value = third_nest.value;
             third_nest.value = 'None';
         }
@@ -691,11 +691,11 @@
             })
             .property('selected', function(d) {
                 var levelNum = d3.select(this.parentNode).datum();
-                return d.value_col == config.id_cols[levelNum];
+                return d.value_col == config.key_cols[levelNum];
             });
 
         //ensure natural nest control options and behavior
-        customizeNestOptions.call(this, config.id_cols);
+        customizeNestOptions.call(this, config.key_cols);
 
         idSelects.on('change', function() {
             //indicate loading
@@ -733,7 +733,7 @@
                     customizeNestSelects.call(context, idSelects);
 
                     //Update nesting variables.
-                    context.table.config.id_cols = uniqueLevels;
+                    context.table.config.key_cols = uniqueLevels;
 
                     //Maintain nest options logic
                     customizeNestOptions.call(context, uniqueLevels);
@@ -1333,7 +1333,7 @@
     function rendererSettings() {
         return {
             site_col: 'sitename',
-            subj_col: 'subjectnameoridentifier',
+            id_col: 'subjectnameoridentifier',
             visit_col: 'folderinstancename',
             form_col: 'ecrfpagename',
             value_cols: [
@@ -1433,7 +1433,7 @@
             ],
             visit_order_col: 'folder_ordinal',
             form_order_col: 'form_ordinal',
-            default_nesting: ['site_col', 'subj_col'],
+            default_nesting: ['site_col', 'id_col'],
             display_cell_annotations: true,
             expand_all: false,
             sliders: false,
@@ -1469,9 +1469,9 @@
         }
 
         //Define initial nesting variables.
-        settings.id_cols = [];
+        settings.key_cols = [];
         settings.default_nesting.forEach(function(d) {
-            settings.id_cols.push(settings[d]);
+            settings.key_cols.push(settings[d]);
         });
 
         settings.nestings = [
@@ -1480,7 +1480,7 @@
                 label: 'Site'
             },
             {
-                settings_col: 'subj_col',
+                settings_col: 'id_col',
                 label: 'Subject ID'
             },
             {
@@ -1636,7 +1636,7 @@
             var subjectSetSize = d3
                 .set(
                     this.data.initial.map(function(d) {
-                        return d[_this.config.subj_col];
+                        return d[_this.config.id_col];
                     })
                 )
                 .size();
@@ -1646,7 +1646,7 @@
                     d3
                         .set(
                             context.data.initial.map(function(d) {
-                                return d[context.initial_config.subj_col] + d[col];
+                                return d[context.initial_config.id_col] + d[col];
                             })
                         )
                         .size() !== subjectSetSize
@@ -2326,12 +2326,8 @@
 
     function formatControls() {
         var context = this;
-
-        var nest_vars = this.initial_config.nestings.map(function(nesting) {
-            return nesting.value_col;
-        });
-
         // assign classes based on control type and if it's a nesting filter
+
         this.controls.controlGroups = this.controls.wrap
             .selectAll('.control-group')
             .attr('class', function(d) {
@@ -2394,10 +2390,10 @@
         rows
             .classed('chm-table-row', true)
             .classed('chm-table-row--expandable', function(d) {
-                return d.id.split('  |').length < chart.config.id_cols.length;
+                return d.id.split('  |').length < chart.config.key_cols.length;
             })
             .classed('chm-table-row--collapsed', function(d) {
-                return d.id.split('  |').length < chart.config.id_cols.length;
+                return d.id.split('  |').length < chart.config.key_cols.length;
             });
     }
 
@@ -2462,7 +2458,7 @@
         var rows = this.rows[0];
 
         // get the highest id level
-        var max_id_level = chart.config.id_cols.length - 2;
+        var max_id_level = chart.config.key_cols.length - 2;
 
         // loop through levels of nest and develop a dictionary with children for parent keys
         // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
@@ -2470,7 +2466,7 @@
             return d3
                 .nest()
                 .key(function(d) {
-                    return d[config.id_cols[id_level]];
+                    return d[config.key_cols[id_level]];
                 })
                 .rollup(function(rows) {
                     if (id_level + 1 <= max_id_level) {
@@ -2591,7 +2587,7 @@
 
             // add the newly drawn rows to the array of clickable rows
             chart.expandable_rows = chart.rows.filter(function(d) {
-                return d.nest_level < chart.config.id_cols.length - 1;
+                return d.nest_level < chart.config.key_cols.length - 1;
             });
 
             // remove temporary classes
@@ -2631,7 +2627,7 @@
 
         // get all of the clickable rows
         chart.expandable_rows = this.rows.filter(function(d) {
-            return d.nest_level < config.id_cols.length - 1;
+            return d.nest_level < config.key_cols.length - 1;
         });
 
         chart.expandable_rows.on('click', function(d) {
@@ -2644,7 +2640,7 @@
 
         var table = this;
         this.export = {
-            nests: this.config.id_cols.map(function(id_col, i) {
+            nests: this.config.key_cols.map(function(id_col, i) {
                 return 'Nest ' + (i + 1) + ': ' + id_col;
             }),
             filters: this.filters.map(function(filter) {
@@ -2660,7 +2656,7 @@
         //Define columns.
         this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-        var subject_id_col_index = this.config.id_cols.indexOf(this.config.subj_col);
+        var subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
         var subject_id_col = subject_id_col_index > -1;
 
         //Capture subject-level information.
@@ -2683,13 +2679,13 @@
                 var subjects = d3
                     .set(
                         table.data.initial.map(function(d) {
-                            return d[_this.config.subj_col];
+                            return d[_this.config.id_col];
                         })
                     )
                     .values();
                 var subjectMap = subjects.reduce(function(acc, cur) {
                     var subjectDatum = _this.data.initial.find(function(d) {
-                        return d[_this.config.subj_col] === cur;
+                        return d[_this.config.id_col] === cur;
                     });
                     acc[cur] = {};
                     if (_this.config.site_col)
@@ -2724,7 +2720,7 @@
             // // Now "join" subject level information to export data
             if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
                 var subjectID =
-                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.subj_col];
+                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
             }
         });
@@ -2893,7 +2889,8 @@
         //Define column widths in spreadsheet.
         workbook.Sheets[sheetName]['!cols'] = this.export.cols.map(function(col, i) {
             return {
-                wpx: value_cols.indexOf(col) > -1 ? 75 : i < _this.config.id_cols.length ? 125 : 100
+                wpx:
+                    value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
             };
         });
 
@@ -2988,14 +2985,14 @@
         chart.data.summarized.forEach(function(d) {
             id = d['id'].split('  |');
             if (id[2]) {
-                d[config.id_cols[2]] = id[2];
-                d[config.id_cols[1]] = id[1];
-                d[config.id_cols[0]] = id[0];
+                d[config.key_cols[2]] = id[2];
+                d[config.key_cols[1]] = id[1];
+                d[config.key_cols[0]] = id[0];
             } else if (id[1]) {
-                d[config.id_cols[1]] = id[1];
-                d[config.id_cols[0]] = id[0];
+                d[config.key_cols[1]] = id[1];
+                d[config.key_cols[0]] = id[0];
             } else {
-                d[config.id_cols[0]] = id[0];
+                d[config.key_cols[0]] = id[0];
             }
         });
 

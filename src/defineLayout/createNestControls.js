@@ -42,11 +42,11 @@ export default function createNestControls() {
         })
         .property('selected', function(d) {
             var levelNum = d3.select(this.parentNode).datum();
-            return d.value_col == config.id_cols[levelNum];
+            return d.value_col == config.key_cols[levelNum];
         });
 
     //ensure natural nest control options and behavior
-    customizeNestOptions.call(this, config.id_cols);
+    customizeNestOptions.call(this, config.key_cols);
 
     idSelects.on('change', function() {
         //indicate loading
@@ -78,7 +78,7 @@ export default function createNestControls() {
                 customizeNestSelects.call(context, idSelects);
 
                 //Update nesting variables.
-                context.table.config.id_cols = uniqueLevels;
+                context.table.config.key_cols = uniqueLevels;
 
                 //Maintain nest options logic
                 customizeNestOptions.call(context, uniqueLevels);

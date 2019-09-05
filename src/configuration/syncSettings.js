@@ -12,9 +12,9 @@ export default function syncSettings(settings) {
     }
 
     //Define initial nesting variables.
-    settings.id_cols = [];
+    settings.key_cols = [];
     settings.default_nesting.forEach(function(d) {
-        settings.id_cols.push(settings[d]);
+        settings.key_cols.push(settings[d]);
     });
 
     settings.nestings = [
@@ -23,7 +23,7 @@ export default function syncSettings(settings) {
             label: 'Site'
         },
         {
-            settings_col: 'subj_col',
+            settings_col: 'id_col',
             label: 'Subject ID'
         },
         {

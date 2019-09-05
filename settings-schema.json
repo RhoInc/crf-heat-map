@@ -2,7 +2,7 @@
     "title": "settings",
     "description": "JSON schema for the configuration of the CRF Heat Map",
     "overview": "The most straightforward way to customize the CRF Heat Map is by using a configuration object whose properties describe the behavior and appearance of the table.  Since the CRF Heat Map is a Webcharts `table` object, many default Webcharts settings are set in the [webchartsSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/webchartsSettings.js) as [described below](#webcharts-settings).  Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the CRF Heat Map to facilitate data mapping and other custom functionality.  These custom settings are described in detail below and are set in the [rendererSettings.js file](https://github.com/RhoInc/crf-heat-map/blob/master/src/configuration/rendererSettings.js).  All defaults can be overwritten by the passed configuration object.",
-    "version": "1.4.0",
+    "version": "2.0.0",
     "type": "object",
     "properties": {
       "site_col" : {
@@ -11,7 +11,7 @@
         "type": "string",
         "default": "sitename"
       },
-      "subj_col" : {
+      "id_col" : {
         "title": "Subject ID Column",
         "description": "Specifies Subject variable for nesting and subject-level export",
         "type": "string",
@@ -37,23 +37,23 @@
                 "type": "object",
                 "properties":{
                     "col":{
-                      "title":"Variable Name",
+                      "title":"Variable name",
                       "type":"string"
                     },
                     "type":{
-                        "title":"Variable Type",
+                        "title":"Variable type",
                         "type":"string"
                     },
                     "denominator":{
-                        "title":"Denominator for Proportion Calculation",
+                        "title":"Variable to subset proportion calculations with. Generally this impacts only the denominator (e.g. you want the % of signed forms out of those that needed to be signed, not out of any forms that could be signed). Only for use with type='crfs'.",
                         "type":"string"
                     },
                     "label":{
-                        "title":"Table Header Label",
+                        "title":"Table header label",
                         "type":"string"
                     },
                     "description":{
-                        "title":"Description for Info Bubbles",
+                        "title":"Variable description that appears when hovering over table header",
                         "type":"string"
                     }
                 }
@@ -70,8 +70,8 @@
             ]
         },
         "filter_cols": {
-            "title": "Data Filters",
-            "description": "variables in the data with which to filter the data",
+            "title": "Variables to interactively filter chart with",
+            "description": "Variables ",
             "type": "array",
             "items": {
               "type": "object",
@@ -86,11 +86,13 @@
                 },
                 "multiple":{
                     "title":"Multi-select",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default":false
                 },
                 "subject_export":{
                     "title":"Include variable in subject-level export",
-                    "type":"boolean"
+                    "type":"boolean",
+                    "default":false
                 }
               }
             },
@@ -138,34 +140,34 @@
         },
         "visit_order_col" : {
           "title": "Visit Order Column",
-          "description": "Specifies variable for determining order of ID with Visit role",
+          "description": "Variable for determining order of Visit column",
           "type": "string",
           "default": "folder_ordinal"
         },
         "form_order_col" : {
           "title": "Form Order Column",
-          "description": "Specifies variable for determining order of ID with Form role",
+          "description": "Variable for determining order of Form column",
           "type": "string",
           "default": "form_ordinal"
         },
         "default_nesting" : {
           "title": "Default Nesting",
-          "description": "Specifies variable nesting to sumamrize chart by on initial rendering",
+          "description": "Variables to summarize chart by on initial rendering",
           "type": "array",
           "items": {
                 "type": "string"
             },
-          "default": ["site_col", "subj_col"]
+          "default": ["site_col", "id_col"]
         },
         "display_cell_annotations": {
             "title": "Display Cell Annotations",
-            "description": "displays cell annotations always or only on hover",
+            "description": "Displays cell annotations always or only on hover",
             "type": "boolean",
             "default": true
         },
         "expand_all": {
             "title": "Expand All Rows",
-            "description": "expands all nests so that no rows are hidden",
+            "description": "Expands all nests so that no rows are hidden",
             "type": "boolean",
             "default": false
         },
@@ -177,7 +179,7 @@
         },
         "max_rows_warn": {
             "title": "Maximum Number of Rows Before Warning User",
-            "description": "If the number of rows to be drawn exceeds this number when the user checks 'Expand All' they will be prompted for confirmation",
+            "description": "Number of rows above which the user will be prompted for confirmation when expanding rows",
             "type": "number",
             "default": 10000
         }

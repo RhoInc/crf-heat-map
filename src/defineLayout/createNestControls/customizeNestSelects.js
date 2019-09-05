@@ -4,12 +4,12 @@ export default function customizeNestSelects(idSelects) {
         third_nest = idSelects[0][2];
 
     //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
-    if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 2) {
+    if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 2) {
         second_nest.value = 'None';
     }
 
     // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
-    if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 3) {
+    if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 3) {
         second_nest.value = third_nest.value;
         third_nest.value = 'None';
     }
