@@ -43,6 +43,9 @@ export default function crfHeatMap(element, settings) {
     //DOM layout
     defineLayout.call(crfHeatMap);
 
+    //stylesheet
+    defineStyles.call(crfHeatMap);
+
     //controls
     crfHeatMap.controls = createControls(
         crfHeatMap.containers.controls.node(),
@@ -65,9 +68,6 @@ export default function crfHeatMap(element, settings) {
     crfHeatMap.destroy = () => {
         crfHeatMap.table.destroy();
     };
-
-    //stylesheet
-    defineStyles.call(crfHeatMap);
 
     return crfHeatMap;
 }

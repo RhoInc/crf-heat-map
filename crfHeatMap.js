@@ -446,8 +446,6 @@
 
         this.data.summaries = [];
 
-        console.log(this.config.id_cols);
-
         //Summarize data by each ID variable.
         this.config.id_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
@@ -991,6 +989,7 @@
                 '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
                 '    font-size: 16px;' +
                 '    line-height: normal;' +
+                '    max-width: 2200px;' +
                 '}',
             '.crf-heat-map {' + '}',
             '.crf-heat-map div {' + '    box-sizing: content-box;' + '}',
@@ -1160,7 +1159,7 @@
         \---------------------------------------------------------------------------------****/
 
             '#chm-table {' + '    width: 100%;' + '}',
-            '#chm-table table {' + '    display: table;' + '}',
+            '#chm-table table {' + '    display: table;' + '    width: 100%;' + '}',
             '.wc-table {' + '    display: block;' + '}',
             '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
@@ -2722,11 +2721,8 @@
                 d[id_col] = id_val || 'Total';
             });
 
-            // Now "join" subject level information to export data
-            if (
-                (_this.config.site_col || _this.config.subject_export_cols) &&
-                _this.config.subj_col
-            ) {
+            // // Now "join" subject level information to export data
+            if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
                 var subjectID =
                     d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.subj_col];
                 Object.assign(d, subjectMap[subjectID]);
@@ -3114,6 +3110,9 @@
         //DOM layout
         defineLayout.call(crfHeatMap);
 
+        //stylesheet
+        defineStyles.call(crfHeatMap);
+
         //controls
         crfHeatMap.controls = webcharts.createControls(
             crfHeatMap.containers.controls.node(),
@@ -3136,9 +3135,6 @@
         crfHeatMap.destroy = function() {
             crfHeatMap.table.destroy();
         };
-
-        //stylesheet
-        defineStyles.call(crfHeatMap);
 
         return crfHeatMap;
     }

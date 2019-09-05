@@ -35,6 +35,7 @@ export default function defineStyles() {
             '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
             '    font-size: 16px;' +
             '    line-height: normal;' +
+            '    max-width: 2200px;' +
             '}',
         '.crf-heat-map {' +
             '}',
@@ -275,6 +276,7 @@ export default function defineStyles() {
                     '}',
                 '#chm-table table {' +
                     '    display: table;' +
+                    '    width: 100%;' +
                     '}',
                   '.wc-table {' +
                         '    display: block;' +

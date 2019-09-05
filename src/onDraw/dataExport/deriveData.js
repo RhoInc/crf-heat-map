@@ -64,8 +64,8 @@ export default function deriveData() {
             d[id_col] = id_val || 'Total';
         });
 
-        // Now "join" subject level information to export data
-        if ((this.config.site_col || this.config.subject_export_cols) && this.config.subj_col) {
+        // // Now "join" subject level information to export data
+        if ((this.config.site_col || this.config.subject_export_cols) && subject_id_col) {
             const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.subj_col}`];
             Object.assign(d, subjectMap[subjectID]);
         }
