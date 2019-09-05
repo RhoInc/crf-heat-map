@@ -20,14 +20,14 @@ export default function onDraw() {
     chart.data.summarized.forEach(function(d) {
         id = d['id'].split('  |');
         if (id[2]) {
-            d[config.id_cols[2]] = id[2];
-            d[config.id_cols[1]] = id[1];
-            d[config.id_cols[0]] = id[0];
+            d[config.key_cols[2]] = id[2];
+            d[config.key_cols[1]] = id[1];
+            d[config.key_cols[0]] = id[0];
         } else if (id[1]) {
-            d[config.id_cols[1]] = id[1];
-            d[config.id_cols[0]] = id[0];
+            d[config.key_cols[1]] = id[1];
+            d[config.key_cols[0]] = id[0];
         } else {
-            d[config.id_cols[0]] = id[0];
+            d[config.key_cols[0]] = id[0];
         }
     });
 

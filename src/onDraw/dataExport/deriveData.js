@@ -1,7 +1,7 @@
 export default function deriveData() {
     var table = this;
     this.export = {
-        nests: this.config.id_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
+        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
         filters: this.filters.map(
             filter =>
                 this.controls.config.inputs.find(input => input.value_col === filter.col).label
@@ -14,7 +14,7 @@ export default function deriveData() {
     //Define columns.
     this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-    const subject_id_col_index = this.config.id_cols.indexOf(this.config.id_col);
+    const subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
     const subject_id_col = subject_id_col_index > -1;
 
     //Capture subject-level information.
@@ -64,8 +64,8 @@ export default function deriveData() {
             d[id_col] = id_val || 'Total';
         });
 
-        // Now "join" subject level information to export data
-        if ((this.config.site_col || this.config.subject_export_cols) && this.config.id_col) {
+        // // Now "join" subject level information to export data
+        if ((this.config.site_col || this.config.subject_export_cols) && subject_id_col) {
             const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.id_col}`];
             Object.assign(d, subjectMap[subjectID]);
         }

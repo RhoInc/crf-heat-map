@@ -10,7 +10,7 @@ export default function addRowDisplayToggle() {
 
     // get all of the clickable rows
     chart.expandable_rows = this.rows.filter(function(d) {
-        return d.nest_level < config.id_cols.length - 1;
+        return d.nest_level < config.key_cols.length - 1;
     });
 
     chart.expandable_rows.on('click', function(d) {

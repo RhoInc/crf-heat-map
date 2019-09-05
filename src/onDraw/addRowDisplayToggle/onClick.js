@@ -78,7 +78,7 @@ export default function onClick(d, chart) {
 
         // add the newly drawn rows to the array of clickable rows
         chart.expandable_rows = chart.rows.filter(function(d) {
-            return d.nest_level < chart.config.id_cols.length - 1;
+            return d.nest_level < chart.config.key_cols.length - 1;
         });
 
         // remove temporary classes

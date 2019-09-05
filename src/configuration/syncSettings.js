@@ -4,16 +4,41 @@ export default function syncSettings(settings) {
         return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
     });
 
-    // Assign nest variables with specfic roles to specific settings
-    settings.nestings.map(function(d) {
-        if (typeof d.role != 'undefined') settings[d.role] = d.value_col;
-    });
+    // catch user providing too many nesting columns
+    if (settings.default_nesting.length > 3) {
+        throw 'More than three default nesting columns were provided [' +
+            settings.default_nesting.join(', ') +
+            ']. Only three variables can be nested at a time. Please reduce the number of variables in the default_nesting setting.';
+    }
 
     //Define initial nesting variables.
-    settings.id_cols = settings.nestings
-        .filter(d => d.default_nesting === true)
-        .map(f => f.value_col)
-        .slice(0, 3);
+    settings.key_cols = [];
+    settings.default_nesting.forEach(function(d) {
+        settings.key_cols.push(settings[d]);
+    });
+
+    settings.nestings = [
+        {
+            settings_col: 'site_col',
+            label: 'Site'
+        },
+        {
+            settings_col: 'id_col',
+            label: 'Subject ID'
+        },
+        {
+            settings_col: 'visit_col',
+            label: 'Folder'
+        },
+        {
+            settings_col: 'form_col',
+            label: 'Form'
+        }
+    ];
+
+    settings.nestings.forEach(function(d) {
+        d.value_col = settings[d.settings_col];
+    });
 
     //Define table column variables.
     settings.cols = d3.merge([['id'], settings.value_cols.map(d => d.col)]);

@@ -402,14 +402,14 @@
 
         //Collapse array of arrays to array of objects.
         this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            var formIndex = context.config.id_cols.indexOf(context.initial_config.form_col);
-            var visitIndex = context.config.id_cols.indexOf(context.initial_config.visit_col);
+            var formIndex = context.config.key_cols.indexOf(context.initial_config.form_col);
+            var visitIndex = context.config.key_cols.indexOf(context.initial_config.visit_col);
 
             if (formIndex > -1 || visitIndex > -1) {
                 var aIds = a.id.split('  |');
                 var bIds = b.id.split('  |');
                 var i;
-                for (i = 0; i < context.config.id_cols.length; i++) {
+                for (i = 0; i < context.config.key_cols.length; i++) {
                     if (aIds[i] === bIds[i]) {
                         continue;
                     } else {
@@ -447,11 +447,11 @@
         this.data.summaries = [];
 
         //Summarize data by each ID variable.
-        this.config.id_cols.forEach(function(id_col, i) {
+        this.config.key_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
             _this.data.initial_filtered.forEach(function(d) {
                 d.nest_level = i;
-                d.id = _this.config.id_cols
+                d.id = _this.config.key_cols
                     .slice(0, i + 1)
                     .map(function(id_col1) {
                         return d[id_col1];
@@ -461,7 +461,7 @@
                 d.parents = [];
                 if (d.nest_level == 2) {
                     d.parents.push(
-                        _this.config.id_cols
+                        _this.config.key_cols
                             .slice(0, 2)
                             .map(function(id_col1) {
                                 return d[id_col1];
@@ -471,7 +471,7 @@
                 }
                 if (d.nest_level == 1) {
                     d.parents.push(
-                        _this.config.id_cols
+                        _this.config.key_cols
                             .slice(0, 1)
                             .map(function(id_col1) {
                                 return d[id_col1];
@@ -601,18 +601,18 @@
         this.draw(this.data.raw);
     }
 
-    function customizeNestOptions(id_cols) {
+    function customizeNestOptions(key_cols) {
         // disable third nest level when the second is not chosen
         this.containers.main
             .selectAll('#chm-nest-control--3')
-            .property('disabled', id_cols.length === 1 ? true : false);
+            .property('disabled', key_cols.length === 1 ? true : false);
 
         // hide options that are selected in higher level nests
         this.containers.nestControls
             .selectAll('#chm-nest-control--3, #chm-nest-control--2')
             .selectAll('option')
             .style('display', function(d) {
-                var ids = id_cols.slice(0, d3.select(this.parentNode).datum());
+                var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
                 return ids.includes(d.value_col) ? 'none' : null;
             });
 
@@ -623,7 +623,7 @@
             .filter(function(d) {
                 return d.label === 'None';
             })
-            .style('display', id_cols.length === 3 ? 'none' : null);
+            .style('display', key_cols.length === 3 ? 'none' : null);
     }
 
     function customizeNestSelects(idSelects) {
@@ -632,12 +632,12 @@
             third_nest = idSelects[0][2];
 
         //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
-        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 2) {
+        if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 2) {
             second_nest.value = 'None';
         }
 
         // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
-        if (first_nest.value == second_nest.value && this.table.config.id_cols.length == 3) {
+        if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 3) {
             second_nest.value = third_nest.value;
             third_nest.value = 'None';
         }
@@ -691,11 +691,11 @@
             })
             .property('selected', function(d) {
                 var levelNum = d3.select(this.parentNode).datum();
-                return d.value_col == config.id_cols[levelNum];
+                return d.value_col == config.key_cols[levelNum];
             });
 
         //ensure natural nest control options and behavior
-        customizeNestOptions.call(this, config.id_cols);
+        customizeNestOptions.call(this, config.key_cols);
 
         idSelects.on('change', function() {
             //indicate loading
@@ -733,7 +733,7 @@
                     customizeNestSelects.call(context, idSelects);
 
                     //Update nesting variables.
-                    context.table.config.id_cols = uniqueLevels;
+                    context.table.config.key_cols = uniqueLevels;
 
                     //Maintain nest options logic
                     customizeNestOptions.call(context, uniqueLevels);
@@ -989,6 +989,7 @@
                 '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
                 '    font-size: 16px;' +
                 '    line-height: normal;' +
+                '    max-width: 2200px;' +
                 '}',
             '.crf-heat-map {' + '}',
             '.crf-heat-map div {' + '    box-sizing: content-box;' + '}',
@@ -1059,20 +1060,20 @@
                 '    text-align: center;' +
                 '    width: 100%;' +
                 '    font-size: 20px;' +
+                '    margin-bottom: 5px;' +
                 '}',
-            '.chm-other-controls {' +
+            '.chm-filters {' +
+                '    display: flex;' +
+                '    flex-wrap: wrap ;' +
+                '    justify-content: space-evenly;' +
                 '    border-bottom: 1px solid lightgray;' +
                 '    padding-bottom: 7px;' +
                 '}',
-            '.chm-nesting-filters {' +
-                '    display: flex;' +
-                '    flex-wrap: wrap ;' +
+            '.chm-other-controls {' +
                 '    margin-top: 10px;' +
+                '    display: flex;' +
+                '    flex-wrap: wrap;' +
                 '    justify-content: space-evenly;' +
-                '}',
-            '.chm-nesting-filter {' +
-                '    width : 100px !important;' +
-                '    display : block !important;' +
                 '}',
 
             //checkboxes
@@ -1158,7 +1159,7 @@
         \---------------------------------------------------------------------------------****/
 
             '#chm-table {' + '    width: 100%;' + '}',
-            '#chm-table table {' + '    display: table;' + '}',
+            '#chm-table table {' + '    display: table;' + '    width: 100%;' + '}',
             '.wc-table {' + '    display: block;' + '}',
             '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
@@ -1331,32 +1332,10 @@
 
     function rendererSettings() {
         return {
-            nestings: [
-                {
-                    value_col: 'sitename',
-                    label: 'Site',
-                    default_nesting: true,
-                    role: 'site_col'
-                },
-                {
-                    value_col: 'subjectnameoridentifier',
-                    label: 'Subject ID',
-                    default_nesting: true,
-                    role: 'id_col'
-                },
-                {
-                    value_col: 'folderinstancename',
-                    label: 'Folder',
-                    default_nesting: false,
-                    role: 'visit_col'
-                },
-                {
-                    value_col: 'ecrfpagename',
-                    label: 'Form',
-                    default_nesting: false,
-                    role: 'form_col'
-                }
-            ],
+            site_col: 'sitename',
+            id_col: 'subjectnameoridentifier',
+            visit_col: 'folderinstancename',
+            form_col: 'ecrfpagename',
             value_cols: [
                 {
                     col: 'is_partial_entry',
@@ -1413,6 +1392,33 @@
             ],
             filter_cols: [
                 {
+                    value_col: 'sitename',
+                    label: 'Site'
+                },
+                {
+                    value_col: 'subjectnameoridentifier',
+                    label: 'Subject ID'
+                },
+                {
+                    value_col: 'foldername',
+                    label: 'Folder'
+                },
+                {
+                    value_col: 'architectformname',
+                    label: 'Form'
+                },
+                {
+                    value_col: 'status',
+                    label: 'Subject Status',
+                    multiple: true,
+                    subject_export: true
+                },
+                {
+                    value_col: 'subjfreezeflg',
+                    label: 'Subject Freeze Status',
+                    subject_export: true
+                },
+                {
                     value_col: 'subset1',
                     label: 'Subset 1'
                 },
@@ -1423,26 +1429,15 @@
                 {
                     value_col: 'subset3',
                     label: 'Subset 3'
-                },
-                {
-                    value_col: 'subjfreezeflg',
-                    label: 'Subject Freeze Status',
-                    subject_export: true
-                },
-                {
-                    value_col: 'status',
-                    label: 'Subject Status',
-                    multiple: true,
-                    subject_export: true
                 }
             ],
             visit_order_col: 'folder_ordinal',
             form_order_col: 'form_ordinal',
+            default_nesting: ['site_col', 'id_col'],
             display_cell_annotations: true,
             expand_all: false,
             sliders: false,
-            max_rows_warn: 10000,
-            nesting_filters: true
+            max_rows_warn: 10000
         };
     }
 
@@ -1466,20 +1461,41 @@
             return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
         });
 
-        // Assign nest variables with specfic roles to specific settings
-        settings.nestings.map(function(d) {
-            if (typeof d.role != 'undefined') settings[d.role] = d.value_col;
-        });
+        // catch user providing too many nesting columns
+        if (settings.default_nesting.length > 3) {
+            throw 'More than three default nesting columns were provided [' +
+                settings.default_nesting.join(', ') +
+                ']. Only three variables can be nested at a time. Please reduce the number of variables in the default_nesting setting.';
+        }
 
         //Define initial nesting variables.
-        settings.id_cols = settings.nestings
-            .filter(function(d) {
-                return d.default_nesting === true;
-            })
-            .map(function(f) {
-                return f.value_col;
-            })
-            .slice(0, 3);
+        settings.key_cols = [];
+        settings.default_nesting.forEach(function(d) {
+            settings.key_cols.push(settings[d]);
+        });
+
+        settings.nestings = [
+            {
+                settings_col: 'site_col',
+                label: 'Site'
+            },
+            {
+                settings_col: 'id_col',
+                label: 'Subject ID'
+            },
+            {
+                settings_col: 'visit_col',
+                label: 'Folder'
+            },
+            {
+                settings_col: 'form_col',
+                label: 'Form'
+            }
+        ];
+
+        settings.nestings.forEach(function(d) {
+            d.value_col = settings[d.settings_col];
+        });
 
         //Define table column variables.
         settings.cols = d3.merge([
@@ -2310,52 +2326,39 @@
 
     function formatControls() {
         var context = this;
-
-        var nest_vars = this.initial_config.nestings.map(function(nesting) {
-            return nesting.value_col;
-        });
-
         // assign classes based on control type and if it's a nesting filter
+
         this.controls.controlGroups = this.controls.wrap
             .selectAll('.control-group')
             .attr('class', function(d) {
                 return 'control-group chm-' + d.type;
-            })
-            .classed('chm-nesting-filter', function(d) {
-                return nest_vars.includes(d.value_col);
             });
 
-        if (this.initial_config.nesting_filters) {
-            //Group nesting filters
-            this.controls.filters = {
-                container: this.controls.wrap
-                    .insert('div', '.chm-nesting-filter')
-                    .classed('chm-control-grouping chm-nesting-filters', true)
-            };
+        //Group filters
+        this.controls.filters = {
+            container: this.controls.wrap
+                .insert('div')
+                .classed('chm-control-grouping chm-filters', true)
+        };
 
-            this.controls.filters.container
-                .append('div')
-                .classed('chm-control-grouping--label', true)
-                .text('Nesting Filters');
+        this.controls.filters.container
+            .append('div')
+            .classed('chm-control-grouping--label', true)
+            .text('Filters');
 
-            this.controls.filters.controlGroups = this.controls.wrap.selectAll(
-                '.chm-nesting-filter'
-            );
-            this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
-                '.wc-control-label'
-            );
-            this.controls.filters.selects = this.controls.filters.controlGroups.selectAll(
-                '.changer'
-            );
-            this.controls.filters.controlGroups.each(function(d) {
-                context.controls.filters.container.node().appendChild(this);
-            });
-        }
+        this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-subsetter');
+        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
+            '.wc-control-label'
+        );
+        this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
+        this.controls.filters.controlGroups.each(function(d) {
+            context.controls.filters.container.node().appendChild(this);
+        });
 
         //Group other controls
         this.controls.otherControls = {
             container: this.controls.wrap
-                .insert('div', ':first-child')
+                .insert('div')
                 .classed('chm-control-grouping chm-other-controls', true)
         };
         this.controls.otherControls.label = this.controls.otherControls.container
@@ -2364,7 +2367,7 @@
             .text('Controls');
 
         this.controls.otherControls.controlGroups = this.controls.wrap.selectAll(
-            '.control-group:not(.chm-nesting-filter)'
+            '.control-group:not(.chm-subsetter)'
         );
         this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll(
             '.wc-control-label'
@@ -2387,10 +2390,10 @@
         rows
             .classed('chm-table-row', true)
             .classed('chm-table-row--expandable', function(d) {
-                return d.id.split('  |').length < chart.config.id_cols.length;
+                return d.id.split('  |').length < chart.config.key_cols.length;
             })
             .classed('chm-table-row--collapsed', function(d) {
-                return d.id.split('  |').length < chart.config.id_cols.length;
+                return d.id.split('  |').length < chart.config.key_cols.length;
             });
     }
 
@@ -2455,7 +2458,7 @@
         var rows = this.rows[0];
 
         // get the highest id level
-        var max_id_level = chart.config.id_cols.length - 2;
+        var max_id_level = chart.config.key_cols.length - 2;
 
         // loop through levels of nest and develop a dictionary with children for parent keys
         // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
@@ -2463,7 +2466,7 @@
             return d3
                 .nest()
                 .key(function(d) {
-                    return d[config.id_cols[id_level]];
+                    return d[config.key_cols[id_level]];
                 })
                 .rollup(function(rows) {
                     if (id_level + 1 <= max_id_level) {
@@ -2584,7 +2587,7 @@
 
             // add the newly drawn rows to the array of clickable rows
             chart.expandable_rows = chart.rows.filter(function(d) {
-                return d.nest_level < chart.config.id_cols.length - 1;
+                return d.nest_level < chart.config.key_cols.length - 1;
             });
 
             // remove temporary classes
@@ -2624,7 +2627,7 @@
 
         // get all of the clickable rows
         chart.expandable_rows = this.rows.filter(function(d) {
-            return d.nest_level < config.id_cols.length - 1;
+            return d.nest_level < config.key_cols.length - 1;
         });
 
         chart.expandable_rows.on('click', function(d) {
@@ -2637,7 +2640,7 @@
 
         var table = this;
         this.export = {
-            nests: this.config.id_cols.map(function(id_col, i) {
+            nests: this.config.key_cols.map(function(id_col, i) {
                 return 'Nest ' + (i + 1) + ': ' + id_col;
             }),
             filters: this.filters.map(function(filter) {
@@ -2653,7 +2656,7 @@
         //Define columns.
         this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
 
-        var subject_id_col_index = this.config.id_cols.indexOf(this.config.id_col);
+        var subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
         var subject_id_col = subject_id_col_index > -1;
 
         //Capture subject-level information.
@@ -2714,11 +2717,8 @@
                 d[id_col] = id_val || 'Total';
             });
 
-            // Now "join" subject level information to export data
-            if (
-                (_this.config.site_col || _this.config.subject_export_cols) &&
-                _this.config.id_col
-            ) {
+            // // Now "join" subject level information to export data
+            if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
                 var subjectID =
                     d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
@@ -2889,7 +2889,8 @@
         //Define column widths in spreadsheet.
         workbook.Sheets[sheetName]['!cols'] = this.export.cols.map(function(col, i) {
             return {
-                wpx: value_cols.indexOf(col) > -1 ? 75 : i < _this.config.id_cols.length ? 125 : 100
+                wpx:
+                    value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
             };
         });
 
@@ -2984,14 +2985,14 @@
         chart.data.summarized.forEach(function(d) {
             id = d['id'].split('  |');
             if (id[2]) {
-                d[config.id_cols[2]] = id[2];
-                d[config.id_cols[1]] = id[1];
-                d[config.id_cols[0]] = id[0];
+                d[config.key_cols[2]] = id[2];
+                d[config.key_cols[1]] = id[1];
+                d[config.key_cols[0]] = id[0];
             } else if (id[1]) {
-                d[config.id_cols[1]] = id[1];
-                d[config.id_cols[0]] = id[0];
+                d[config.key_cols[1]] = id[1];
+                d[config.key_cols[0]] = id[0];
             } else {
-                d[config.id_cols[0]] = id[0];
+                d[config.key_cols[0]] = id[0];
             }
         });
 
@@ -3106,6 +3107,9 @@
         //DOM layout
         defineLayout.call(crfHeatMap);
 
+        //stylesheet
+        defineStyles.call(crfHeatMap);
+
         //controls
         crfHeatMap.controls = webcharts.createControls(
             crfHeatMap.containers.controls.node(),
@@ -3128,9 +3132,6 @@
         crfHeatMap.destroy = function() {
             crfHeatMap.table.destroy();
         };
-
-        //stylesheet
-        defineStyles.call(crfHeatMap);
 
         return crfHeatMap;
     }
