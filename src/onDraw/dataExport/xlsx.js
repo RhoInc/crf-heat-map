@@ -1,3 +1,5 @@
+import hexToRgb from './xlsx/hexToRgb';
+
 export default function xlsx() {
     const context = this;
     const value_cols = this.config.value_cols.map(d => d.col);
@@ -36,6 +38,40 @@ export default function xlsx() {
         sheet[pctCell].z = '0%';
     });
 
+    const cells = Object.keys(sheet).filter(
+        key => cols.map(col => col.column).indexOf(key.replace(/\d+/, '')) > -1
+    );
+
+console.log(hexToRgb('#32a852'))
+
+    cells.forEach(d => sheet[d].s= {
+    font: {
+        sz: 10,
+        color: {
+            rgb: "FFFFAA00" // set in defineXLSX
+        }
+    },
+    fill: {
+        fgColor: {
+            rgb: "FFFFAA00"
+        }
+    },
+    alignment: {
+        wrapText: true
+    },
+    border: {
+        bottom: {
+            style: 'thick',
+            color: {
+                rgb: "FFFFAA00" // set in defineXLSX
+            }
+        }
+    }
+})
+
+
+console.log(sheet)
+
     //Add filters to spreadsheet.
     workbook.Sheets[sheetName]['!autofilter'] = {
         ref: `A1:${String.fromCharCode(64 + this.export.cols.length)}${this.export.data.length + 1}`
@@ -64,6 +100,8 @@ export default function xlsx() {
         )
     );
 
+
+
     const xlsx = XLSX.write(workbook, options),
         s2ab = function(s) {
             const buffer = new ArrayBuffer(s.length),
@@ -74,7 +112,7 @@ export default function xlsx() {
             return buffer;
         }; // convert spreadsheet to binary or something, i don't know
 
-    //transform CSV array into CSV string
+    //xlsx
     const blob = new Blob([s2ab(xlsx)], { type: 'application/octet-stream;' });
     const fileName = `CRF-Summary-${d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.xlsx`;
     const link = this.wrap.select('.export#xlsx');

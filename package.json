@@ -14,7 +14,7 @@
   "dependencies": {
     "d3": "^3",
     "webcharts": "^1.11.1",
-    "xlsx": "^0.13.0"
+    "xlsx-style": "^0.8.13"
   },
   "scripts": {
     "build": "npm audit fix && npm run bundle && npm run format && npm run build-wiki",
