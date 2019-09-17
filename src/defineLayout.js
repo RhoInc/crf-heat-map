@@ -1,7 +1,8 @@
 import createNestControls from './defineLayout/createNestControls';
 import drawCrfLegend from './defineLayout/drawCrfLegend';
 import drawQueryLegend from './defineLayout/drawQueryLegend';
-var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
+var isIE = typeof(navigator) !== "undefined" && (!!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g));
+
 
 export default function defineLayout() {
     this.containers = {

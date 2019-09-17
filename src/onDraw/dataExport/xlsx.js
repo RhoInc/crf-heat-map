@@ -57,8 +57,8 @@ export default function xlsx() {
                     Array.isArray(filter.val) && filter.val.length < filter.choices.length
                         ? filter.val.join(', ')
                         : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                            ? 'All'
-                            : filter.val
+                        ? 'All'
+                        : filter.val
                 ];
             })
         )

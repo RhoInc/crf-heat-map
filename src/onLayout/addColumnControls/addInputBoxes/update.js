@@ -29,8 +29,7 @@ export default function update(filter, reset = false) {
                     }
                 }
             })
-            .property(
-                'value',
-                d => (context.typeDict[d.variable] == 'crfs' ? filter.upper * 100 : filter.upper)
+            .property('value', d =>
+                context.typeDict[d.variable] == 'crfs' ? filter.upper * 100 : filter.upper
             );
 }

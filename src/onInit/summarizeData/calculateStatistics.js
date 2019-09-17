@@ -50,19 +50,32 @@ export default function calculateStatistics(onInit = true) {
                     var subset = d.filter(row => row[value_col.denominator] === '1');
                     count = d3.sum(subset, di => di[value_col.col]);
                 }
+
                 summary[value_col.col] =
                     crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
                         ? summary.nForms
-                            ? Math.floor(count / summary.nForms * 100) / 100
+                            ? Math.floor((count / summary.nForms) * 100) / 100
                             : 'N/A'
                         : crfsDenominator.map(m => m.col).indexOf(value_col.col) > -1
-                            ? summary['n' + value_col.denominator]
-                                ? Math.floor(count / summary['n' + value_col.denominator] * 100) /
-                                  100
-                                : 'N/A'
-                            : queries.map(m => m.col).indexOf(value_col.col) > -1
-                                ? count
-                                : console.log(`Missed one: ${value_col.col}`);
+                        ? summary['n' + value_col.denominator]
+                            ? Math.floor((count / summary['n' + value_col.denominator]) * 100) / 100
+                            : 'N/A'
+                        : queries.map(m => m.col).indexOf(value_col.col) > -1
+                        ? count
+                        : console.log(`Missed one: ${value_col.col}`);
+
+                summary[value_col.col + '_count'] =
+                    crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
+                        ? summary.nForms
+                            ? ' ' + count
+                            : ''
+                        : crfsDenominator.map(m => m.col).indexOf(value_col.col) > -1
+                        ? summary['n' + value_col.denominator]
+                            ? ' ' + count
+                            : ''
+                        : queries.map(m => m.col).indexOf(value_col.col) > -1
+                        ? ''
+                        : console.log(`Missed one: ${value_col.col}`);
             });
             summary.nest_level = d[0].nest_level;
             summary.parents = d[0].parents;
@@ -77,7 +90,8 @@ export default function calculateStatistics(onInit = true) {
         d.id = d.key;
         delete d.key;
         this.config.value_cols.forEach(value_col => {
-            d[value_col.col] = d.values[value_col.col];
+            d[value_col.col] = d.values[value_col.col] + d.values[value_col.col + '_count'];
+            //      d[value_col.col] =   d.values[value_col.col]
         });
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;

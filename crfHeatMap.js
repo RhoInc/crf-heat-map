@@ -2,8 +2,8 @@
     typeof exports === 'object' && typeof module !== 'undefined'
         ? (module.exports = factory(require('webcharts')))
         : typeof define === 'function' && define.amd
-            ? define(['webcharts'], factory)
-            : (global.crfHeatMap = factory(global.webCharts));
+        ? define(['webcharts'], factory)
+        : ((global = global || self), (global.crfHeatMap = factory(global.webCharts)));
 })(this, function(webcharts) {
     'use strict';
 
@@ -46,37 +46,32 @@
                     throw new TypeError('"this" is null or not defined');
                 }
 
-                var o = Object(this);
+                var o = Object(this); // 2. Let len be ? ToLength(? Get(O, 'length')).
 
-                // 2. Let len be ? ToLength(? Get(O, 'length')).
-                var len = o.length >>> 0;
+                var len = o.length >>> 0; // 3. If IsCallable(predicate) is false, throw a TypeError exception.
 
-                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
                 if (typeof predicate !== 'function') {
                     throw new TypeError('predicate must be a function');
-                }
+                } // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
 
-                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-                var thisArg = arguments[1];
+                var thisArg = arguments[1]; // 5. Let k be 0.
 
-                // 5. Let k be 0.
-                var k = 0;
+                var k = 0; // 6. Repeat, while k < len
 
-                // 6. Repeat, while k < len
                 while (k < len) {
                     // a. Let Pk be ! ToString(k).
                     // b. Let kValue be ? Get(O, Pk).
                     // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
                     // d. If testResult is true, return kValue.
                     var kValue = o[k];
+
                     if (predicate.call(thisArg, kValue, k, o)) {
                         return kValue;
-                    }
-                    // e. Increase k by 1.
-                    k++;
-                }
+                    } // e. Increase k by 1.
 
-                // 7. Return undefined.
+                    k++;
+                } // 7. Return undefined.
+
                 return undefined;
             }
         });
@@ -90,37 +85,32 @@
                     throw new TypeError('"this" is null or not defined');
                 }
 
-                var o = Object(this);
+                var o = Object(this); // 2. Let len be ? ToLength(? Get(O, "length")).
 
-                // 2. Let len be ? ToLength(? Get(O, "length")).
-                var len = o.length >>> 0;
+                var len = o.length >>> 0; // 3. If IsCallable(predicate) is false, throw a TypeError exception.
 
-                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
                 if (typeof predicate !== 'function') {
                     throw new TypeError('predicate must be a function');
-                }
+                } // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
 
-                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-                var thisArg = arguments[1];
+                var thisArg = arguments[1]; // 5. Let k be 0.
 
-                // 5. Let k be 0.
-                var k = 0;
+                var k = 0; // 6. Repeat, while k < len
 
-                // 6. Repeat, while k < len
                 while (k < len) {
                     // a. Let Pk be ! ToString(k).
                     // b. Let kValue be ? Get(O, Pk).
                     // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
                     // d. If testResult is true, return k.
                     var kValue = o[k];
+
                     if (predicate.call(thisArg, kValue, k, o)) {
                         return k;
-                    }
-                    // e. Increase k by 1.
-                    k++;
-                }
+                    } // e. Increase k by 1.
 
-                // 7. Return -1.
+                    k++;
+                } // 7. Return -1.
+
                 return -1;
             }
         });
@@ -131,28 +121,23 @@
             value: function value(valueToFind, fromIndex) {
                 if (this == null) {
                     throw new TypeError('"this" is null or not defined');
-                }
+                } // 1. Let O be ? ToObject(this value).
 
-                // 1. Let O be ? ToObject(this value).
-                var o = Object(this);
+                var o = Object(this); // 2. Let len be ? ToLength(? Get(O, "length")).
 
-                // 2. Let len be ? ToLength(? Get(O, "length")).
-                var len = o.length >>> 0;
+                var len = o.length >>> 0; // 3. If len is 0, return false.
 
-                // 3. If len is 0, return false.
                 if (len === 0) {
                     return false;
-                }
-
-                // 4. Let n be ? ToInteger(fromIndex).
+                } // 4. Let n be ? ToInteger(fromIndex).
                 //    (If fromIndex is undefined, this step produces the value 0.)
-                var n = fromIndex | 0;
 
-                // 5. If n = 0, then
+                var n = fromIndex | 0; // 5. If n = 0, then
                 //  a. Let k be n.
                 // 6. Else n < 0,
                 //  a. Let k be len + n.
                 //  b. If k < 0, let k be 0.
+
                 var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
 
                 function sameValueZero(x, y) {
@@ -160,38 +145,41 @@
                         x === y ||
                         (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y))
                     );
-                }
+                } // 7. Repeat, while k < len
 
-                // 7. Repeat, while k < len
                 while (k < len) {
                     // a. Let elementK be the result of ? Get(O, ! ToString(k)).
                     // b. If SameValueZero(valueToFind, elementK) is true, return true.
                     if (sameValueZero(o[k], valueToFind)) {
                         return true;
-                    }
-                    // c. Increase k by 1.
-                    k++;
-                }
+                    } // c. Increase k by 1.
 
-                // 8. Return false
+                    k++;
+                } // 8. Return false
+
                 return false;
             }
         });
     }
 
-    var _typeof =
-        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-            ? function(obj) {
-                  return typeof obj;
-              }
-            : function(obj) {
-                  return obj &&
-                      typeof Symbol === 'function' &&
-                      obj.constructor === Symbol &&
-                      obj !== Symbol.prototype
-                      ? 'symbol'
-                      : typeof obj;
-              };
+    function _typeof(obj) {
+        if (typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol') {
+            _typeof = function(obj) {
+                return typeof obj;
+            };
+        } else {
+            _typeof = function(obj) {
+                return obj &&
+                    typeof Symbol === 'function' &&
+                    obj.constructor === Symbol &&
+                    obj !== Symbol.prototype
+                    ? 'symbol'
+                    : typeof obj;
+            };
+        }
+
+        return _typeof(obj);
+    }
 
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var propIsEnumerable = Object.prototype.propertyIsEnumerable;
@@ -205,7 +193,8 @@
     }
 
     function isObj(x) {
-        var type = typeof x === 'undefined' ? 'undefined' : _typeof(x);
+        var type = _typeof(x);
+
         return x !== null && (type === 'object' || type === 'function');
     }
 
@@ -268,10 +257,8 @@
         var _this = this;
 
         var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        var context = this; // throw error if any query columns have denominators
 
-        var context = this;
-
-        // throw error if any query columns have denominators
         if (
             context.initial_config.value_cols.filter(function(a) {
                 return a.denominator && a.type == 'queries';
@@ -283,16 +270,13 @@
         var crfsDenominator = context.initial_config.value_cols.filter(function(a) {
             return a.denominator && a.type == 'crfs';
         });
-
         var crfsNoDenominator = context.initial_config.value_cols.filter(function(a) {
             return !a.denominator && a.type == 'crfs';
         });
-
         var queries = context.initial_config.value_cols.filter(function(a) {
             return !a.denominator && a.type == 'queries';
-        });
+        }); //Nest data by the ID variable defined above and calculate statistics for each summary variable.
 
-        //Nest data by the ID variable defined above and calculate statistics for each summary variable.
         var nest = d3
             .nest()
             .key(function(d) {
@@ -302,18 +286,17 @@
                 //Define denominators.
                 var summary = {
                     nForms: d.length
-                };
+                }; //calculate count for denominator
 
-                //calculate count for denominator
                 crfsDenominator.forEach(function(c) {
                     return (summary['n' + c.denominator] = d.filter(function(di) {
                         return di[c.denominator] === '1';
                     }).length);
-                });
+                }); //Define summarized values, either rates or counts.
 
-                //Define summarized values, either rates or counts.
                 context.initial_config.value_cols.forEach(function(value_col) {
                     var count;
+
                     if (typeof value_col.denominator === 'undefined') {
                         count = d3.sum(d, function(di) {
                             return di[value_col.col];
@@ -328,6 +311,7 @@
                             return di[value_col.col];
                         });
                     }
+
                     summary[value_col.col] =
                         crfsNoDenominator
                             .map(function(m) {
@@ -335,25 +319,48 @@
                             })
                             .indexOf(value_col.col) > -1
                             ? summary.nForms
-                                ? Math.floor(count / summary.nForms * 100) / 100
+                                ? Math.floor((count / summary.nForms) * 100) / 100
                                 : 'N/A'
                             : crfsDenominator
                                   .map(function(m) {
                                       return m.col;
                                   })
                                   .indexOf(value_col.col) > -1
-                                ? summary['n' + value_col.denominator]
-                                    ? Math.floor(
-                                          count / summary['n' + value_col.denominator] * 100
-                                      ) / 100
-                                    : 'N/A'
-                                : queries
-                                      .map(function(m) {
-                                          return m.col;
-                                      })
-                                      .indexOf(value_col.col) > -1
-                                    ? count
-                                    : console.log('Missed one: ' + value_col.col);
+                            ? summary['n' + value_col.denominator]
+                                ? Math.floor((count / summary['n' + value_col.denominator]) * 100) /
+                                  100
+                                : 'N/A'
+                            : queries
+                                  .map(function(m) {
+                                      return m.col;
+                                  })
+                                  .indexOf(value_col.col) > -1
+                            ? count
+                            : console.log('Missed one: '.concat(value_col.col));
+                    summary[value_col.col + '_count'] =
+                        crfsNoDenominator
+                            .map(function(m) {
+                                return m.col;
+                            })
+                            .indexOf(value_col.col) > -1
+                            ? summary.nForms
+                                ? ' ' + count
+                                : ''
+                            : crfsDenominator
+                                  .map(function(m) {
+                                      return m.col;
+                                  })
+                                  .indexOf(value_col.col) > -1
+                            ? summary['n' + value_col.denominator]
+                                ? ' ' + count
+                                : ''
+                            : queries
+                                  .map(function(m) {
+                                      return m.col;
+                                  })
+                                  .indexOf(value_col.col) > -1
+                            ? ''
+                            : console.log('Missed one: '.concat(value_col.col));
                 });
                 summary.nest_level = d[0].nest_level;
                 summary.parents = d[0].parents;
@@ -361,28 +368,26 @@
                 summary.form_order = d[0][context.initial_config.form_order_col];
                 return summary;
             })
-            .entries(this.data.initial_filtered);
+            .entries(this.data.initial_filtered); //Convert the nested data array to a flat data array.
 
-        //Convert the nested data array to a flat data array.
         nest.forEach(function(d) {
             d.id = d.key;
             delete d.key;
+
             _this.config.value_cols.forEach(function(value_col) {
-                d[value_col.col] = d.values[value_col.col];
+                d[value_col.col] = d.values[value_col.col] + d.values[value_col.col + '_count']; //      d[value_col.col] =   d.values[value_col.col]
             });
+
             d.nest_level = d.values.nest_level;
             d.parents = d.values.parents;
             d.visit_order = d.values.visit_order;
             d.form_order = d.values.form_order;
-
             delete d.values;
-        });
+        }); //Add summarized data to array of summaries.
 
-        //Add summarized data to array of summaries.
         if (onInit) {
-            this.data.summaries.push(nest);
+            this.data.summaries.push(nest); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
 
-            // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
             context.typeDict = d3
                 .nest()
                 .key(function(d) {
@@ -398,9 +403,8 @@
     }
 
     function sortRows() {
-        var context = this;
+        var context = this; //Collapse array of arrays to array of objects.
 
-        //Collapse array of arrays to array of objects.
         this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
             var formIndex = context.config.key_cols.indexOf(context.initial_config.form_col);
             var visitIndex = context.config.key_cols.indexOf(context.initial_config.visit_col);
@@ -409,6 +413,7 @@
                 var aIds = a.id.split('  |');
                 var bIds = b.id.split('  |');
                 var i;
+
                 for (i = 0; i < context.config.key_cols.length; i++) {
                     if (aIds[i] === bIds[i]) {
                         continue;
@@ -418,16 +423,16 @@
                             return typeof aIds[i] == 'undefined'
                                 ? -1
                                 : parseFloat(a.form_order) < parseFloat(b.form_order)
-                                    ? -1
-                                    : 1;
-                            // use visit_order_col if provided
+                                ? -1
+                                : 1; // use visit_order_col if provided
                         }
+
                         if (i === visitIndex && context.initial_config.visit_order_col) {
                             return typeof aIds[i] == 'undefined'
                                 ? -1
                                 : parseFloat(a.visit_order) < parseFloat(b.visit_order)
-                                    ? -1
-                                    : 1;
+                                ? -1
+                                : 1;
                         } else {
                             return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
                         }
@@ -441,12 +446,10 @@
 
     function summarizeData() {
         var _this = this;
-        var t0 = performance.now();
-        //begin performance test
+        var t0 = performance.now(); //begin performance test
 
-        this.data.summaries = [];
+        this.data.summaries = []; //Summarize data by each ID variable.
 
-        //Summarize data by each ID variable.
         this.config.key_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
             _this.data.initial_filtered.forEach(function(d) {
@@ -457,8 +460,8 @@
                         return d[id_col1];
                     })
                     .join('  |');
-
                 d.parents = [];
+
                 if (d.nest_level == 2) {
                     d.parents.push(
                         _this.config.key_cols
@@ -469,6 +472,7 @@
                             .join('  |')
                     );
                 }
+
                 if (d.nest_level == 1) {
                     d.parents.push(
                         _this.config.key_cols
@@ -482,22 +486,18 @@
             });
 
             calculateStatistics.call(_this);
-        });
+        }); // sort rows
 
-        // sort rows
-        sortRows.call(this);
+        sortRows.call(this); //end performance test
 
-        //end performance test
         var t1 = performance.now();
         console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
     }
 
     function update(filter) {
         var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var context = this; //update lower slider and annotation
 
-        var context = this;
-
-        //update lower slider and annotation
         if (reset)
             filter.lowerSlider
                 .attr({
@@ -506,14 +506,15 @@
                 })
                 .property('value', filter.lower);
         filter.lowerAnnotation.text(
-            '' +
-                (context.typeDict[filter.variable] == 'crfs'
-                    ? Math.round(filter.lower * 100)
-                    : filter.lower) +
-                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
-        );
+            ''
+                .concat(
+                    context.typeDict[filter.variable] == 'crfs'
+                        ? Math.round(filter.lower * 100)
+                        : filter.lower
+                )
+                .concat(context.typeDict[filter.variable] == 'crfs' ? '%' : '')
+        ); //update upper slider and annotation
 
-        //update upper slider and annotation
         if (reset)
             filter.upperSlider
                 .attr({
@@ -522,20 +523,20 @@
                 })
                 .property('value', filter.upper);
         filter.upperAnnotation.text(
-            '' +
-                (context.typeDict[filter.variable] == 'crfs'
-                    ? Math.round(filter.upper * 100)
-                    : filter.upper) +
-                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
+            ''
+                .concat(
+                    context.typeDict[filter.variable] == 'crfs'
+                        ? Math.round(filter.upper * 100)
+                        : filter.upper
+                )
+                .concat(context.typeDict[filter.variable] == 'crfs' ? '%' : '')
         );
     }
 
     function update$1(filter) {
         var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var context = this; //update lower input box
 
-        var context = this;
-
-        //update lower input box
         if (reset)
             filter.lowerBox
                 .attr({
@@ -548,9 +549,8 @@
                         }
                     }
                 })
-                .property('value', filter.lower);
+                .property('value', filter.lower); //update upper input box
 
-        //update upper input box
         if (reset)
             filter.upperBox
                 .attr({
@@ -579,12 +579,11 @@
                 filter.max = d3.max(_this.data.summarized, function(di) {
                     return di[filter.variable];
                 });
-            }
-            //Reset upper and lower bounds.
-            filter.lower = filter.min;
-            filter.upper = filter.max;
+            } //Reset upper and lower bounds.
 
-            //Reset sliders.
+            filter.lower = filter.min;
+            filter.upper = filter.max; //Reset sliders.
+
             _this.initial_config.sliders
                 ? update.call(_this, filter, true)
                 : update$1.call(_this, filter, true);
@@ -605,18 +604,16 @@
         // disable third nest level when the second is not chosen
         this.containers.main
             .selectAll('#chm-nest-control--3')
-            .property('disabled', key_cols.length === 1 ? true : false);
+            .property('disabled', key_cols.length === 1 ? true : false); // hide options that are selected in higher level nests
 
-        // hide options that are selected in higher level nests
         this.containers.nestControls
             .selectAll('#chm-nest-control--3, #chm-nest-control--2')
             .selectAll('option')
             .style('display', function(d) {
                 var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
                 return ids.includes(d.value_col) ? 'none' : null;
-            });
+            }); //hide None option from second nest when third is selected
 
-        //hide None option from second nest when third is selected
         this.containers.main
             .selectAll('#chm-nest-control--2')
             .selectAll('option')
@@ -629,20 +626,17 @@
     function customizeNestSelects(idSelects) {
         var first_nest = idSelects[0][0],
             second_nest = idSelects[0][1],
-            third_nest = idSelects[0][2];
+            third_nest = idSelects[0][2]; //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
 
-        //case 1: Set second nest to None if its value is selected in the first nest and no third nest is present
         if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 2) {
             second_nest.value = 'None';
-        }
+        } // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
 
-        // case 2: Set second nest to the third nest's value if its value is selected in the first nest. Set third nest to none.
         if (first_nest.value == second_nest.value && this.table.config.key_cols.length == 3) {
             second_nest.value = third_nest.value;
             third_nest.value = 'None';
-        }
+        } // case 3: If third nests value is selected for first nest or second nest, set third nest to None
 
-        // case 3: If third nests value is selected for first nest or second nest, set third nest to None
         if (first_nest.value == third_nest.value || second_nest.value == third_nest.value) {
             third_nest.value = 'None';
         }
@@ -651,15 +645,16 @@
     function createNestControls() {
         var context = this;
         var config = this.settings.synced;
-
         var idList = config.nestings.slice();
-        idList.push({ value_col: undefined, label: 'None' });
-
+        idList.push({
+            value_col: undefined,
+            label: 'None'
+        });
         this.containers.nestControls
             .append('span')
             .attr('class', 'chm-control-label')
-            .text('');
-        //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+            .text(''); //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
+
         var idSelects = this.containers.nestControls
             .selectAll('select')
             .data([0, 1, 2])
@@ -674,7 +669,6 @@
                     'These dropdowns control the attributes within which the CRF rates and query counts are aggregated.\n' +
                     'Each row in the table represents a combination of one or more of these attributes.'
             });
-
         idSelects
             .selectAll('option')
             .data(function(d) {
@@ -692,23 +686,19 @@
             .property('selected', function(d) {
                 var levelNum = d3.select(this.parentNode).datum();
                 return d.value_col == config.key_cols[levelNum];
-            });
+            }); //ensure natural nest control options and behavior
 
-        //ensure natural nest control options and behavior
         customizeNestOptions.call(this, config.key_cols);
-
         idSelects.on('change', function() {
             //indicate loading
             context.containers.loading.classed('chm-hidden', false);
-
             var loading = setInterval(function() {
                 var loadingIndicated = context.containers.loading.style('display') !== 'none';
 
                 if (loadingIndicated) {
                     clearInterval(loading);
-                    context.containers.loading.classed('chm-hidden', true);
+                    context.containers.loading.classed('chm-hidden', true); //Capture the currently selected nesting variables.
 
-                    //Capture the currently selected nesting variables.
                     var selectedLevels = [];
                     idSelects.each(function(d, i) {
                         var _this = this;
@@ -718,27 +708,22 @@
                                 return n.label === _this.value;
                             })[0].value_col
                         );
-                    });
+                    }); //Remove duplicate nesting variables.
 
-                    //Remove duplicate nesting variables.
                     var uniqueLevels = selectedLevels
                         .filter(function(f) {
                             return f != undefined;
                         })
                         .filter(function(item, pos) {
                             return selectedLevels.indexOf(item) == pos;
-                        });
+                        }); // Enforce Select Logic
 
-                    // Enforce Select Logic
-                    customizeNestSelects.call(context, idSelects);
+                    customizeNestSelects.call(context, idSelects); //Update nesting variables.
 
-                    //Update nesting variables.
-                    context.table.config.key_cols = uniqueLevels;
+                    context.table.config.key_cols = uniqueLevels; //Maintain nest options logic
 
-                    //Maintain nest options logic
-                    customizeNestOptions.call(context, uniqueLevels);
+                    customizeNestOptions.call(context, uniqueLevels); //Summarize filtered data and redraw table.
 
-                    //Summarize filtered data and redraw table.
                     redraw.call(context.table);
                 }
             }, 25);
@@ -828,8 +813,9 @@
         drawRects(this.containers.queryLegend, queryData);
     }
 
-    var isIE = !!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g);
-
+    var isIE =
+        typeof navigator !== 'undefined' &&
+        (!!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g));
     function defineLayout() {
         this.containers = {
             main: d3
@@ -837,10 +823,12 @@
                 .append('div')
                 .datum(this)
                 .classed('crf-heat-map', true)
-                .attr('id', 'crf-heat-map' + document.querySelectorAll('.crf-heat-map').length)
-        };
+                .attr(
+                    'id',
+                    'crf-heat-map'.concat(document.querySelectorAll('.crf-heat-map').length)
+                )
+        }; // display warning message to user if they are using IE
 
-        // display warning message to user if they are using IE
         if (isIE) {
             this.containers.main
                 .append('p')
@@ -849,25 +837,22 @@
                     'Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.'
                 );
         }
-
         /**-------------------------------------------------------------------------------------------\
-        Left column
-        \-------------------------------------------------------------------------------------------**/
+      Left column
+      \-------------------------------------------------------------------------------------------**/
 
         this.containers.leftColumn = this.containers.main
             .append('div')
             .classed('chm-column', true)
             .attr('id', 'chm-left-column');
-
         /***--------------------------------------------------------------------------------------\
-          Row 1
-        \--------------------------------------------------------------------------------------***/
+        Row 1
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow1 = this.containers.leftColumn
             .append('div')
             .classed('chm-row chm-row--1', true)
             .attr('id', 'chm-left-column-row-1');
-
         this.containers.dataExport = this.containers.leftColumnRow1
             .append('div')
             .classed('chm-section', true)
@@ -886,71 +871,61 @@
             .append('div')
             .attr('id', 'chm-loading')
             .text('Loading...');
-
         /***--------------------------------------------------------------------------------------\
-          Row 2
-        \--------------------------------------------------------------------------------------***/
+        Row 2
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.leftColumnRow2 = this.containers.leftColumn
             .append('div')
             .classed('chm-row chm-row--2', true)
             .attr('id', 'chm-left-column-row-2');
-
         this.containers.controls = this.containers.leftColumnRow2
             .append('div')
             .classed('chm-section', true)
             .attr('id', 'chm-controls');
-
         /**-------------------------------------------------------------------------------------------\
-        Right column
-        \-------------------------------------------------------------------------------------------**/
+      Right column
+      \-------------------------------------------------------------------------------------------**/
 
         this.containers.rightColumn = this.containers.main
             .append('div')
             .classed('chm-column', true)
             .attr('id', 'chm-right-column');
-
         /***--------------------------------------------------------------------------------------\
-          Row 1
-        \--------------------------------------------------------------------------------------***/
+        Row 1
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow1 = this.containers.rightColumn
             .append('div')
             .classed('chm-row chm-row--1', true)
             .attr('id', 'chm-right-column-row-1');
-
         this.containers.nestControls = this.containers.rightColumnRow1
             .append('div')
             .classed('chm-section', true)
             .attr('id', 'chm-nest-controls');
         createNestControls.call(this);
-
         this.containers.legend = this.containers.rightColumnRow1
             .append('div')
             .classed('chm-section', true)
             .attr('id', 'chm-legend-container');
-
         this.containers.crfLegend = this.containers.legend
             .append('div')
             .classed('chm-legend', true)
             .attr('id', 'chm-crf-legend');
         drawCrfLegend.call(this);
-
         this.containers.queryLegend = this.containers.legend
             .append('div')
             .classed('chm-legend', true)
             .attr('id', 'chm-query-legend');
         drawQueryLegend.call(this);
-
         /***--------------------------------------------------------------------------------------\
-          Row 2
-        \--------------------------------------------------------------------------------------***/
+        Row 2
+      \--------------------------------------------------------------------------------------***/
 
         this.containers.rightColumnRow2 = this.containers.rightColumn
             .append('div')
             .classed('chm-row chm-row--2', true)
             .attr('id', 'chm-right-column-row-2');
-
         this.containers.table = this.containers.rightColumnRow2
             .append('div')
             .classed('chm-section', true)
@@ -961,18 +936,15 @@
     var otherColumnWidth = 10.5;
     var paddingRight = 6;
     var paddingLeft = 6;
-
     function defineStyles() {
         // calculate how many crf & query columns there are to dynamically determine width of legend
         var queriesCount = this.settings.synced.value_cols.filter(function(a) {
             return a.type == 'queries';
         }).length;
-
         var crfsCount = this.settings.synced.value_cols.filter(function(a) {
             return a.type == 'crfs';
-        }).length;
+        }).length; // make single column legends little bigger to fit legend
 
-        // make single column legends little bigger to fit legend
         if (queriesCount == 1) {
             queriesCount = queriesCount + 0.5;
             crfsCount = crfsCount - 0.5;
@@ -1010,21 +982,17 @@
                 '    border-bottom: 1px solid lightgray;' +
                 '    margin-bottom: 10px;' +
                 '}',
-
             /***--------------------------------------------------------------------------------------\
-          Left column
-        \--------------------------------------------------------------------------------------***/
-
+        Left column
+      \--------------------------------------------------------------------------------------***/
             '#chm-left-column {' +
                 '    float: left;' +
                 '    width: 19.4%;' +
                 '    padding-right: .5%;' +
                 '}',
-
             /****---------------------------------------------------------------------------------\
-          Row 1 - Data Export
-        \---------------------------------------------------------------------------------****/
-
+        Row 1 - Data Export
+      \---------------------------------------------------------------------------------****/
             '#chm-left-column-row-1 {' + '    position: relative;' + '}',
             '#chm-loading {' +
                 '    font-size: 24px;' +
@@ -1041,11 +1009,9 @@
                 '    font-size: 24px;' +
                 '    font-weight: bold;' +
                 '}',
-
             /****---------------------------------------------------------------------------------\
-          Row 2 - Controls
-        \---------------------------------------------------------------------------------****/
-
+        Row 2 - Controls
+      \---------------------------------------------------------------------------------****/
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
             '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
             '#chm-controls .control-group > * {' + '    display: block;' + '    width: auto;' + '}',
@@ -1074,20 +1040,16 @@
                 '    display: flex;' +
                 '    flex-wrap: wrap;' +
                 '    justify-content: space-evenly;' +
-                '}',
-
-            //checkboxes
+                '}', //checkboxes
             '.chm-checkbox {' +
                 '    display: inline-flex !important;' +
                 '    justify-content: center;' +
                 '}',
             '.chm-checkbox .wc-control-label {' + '    margin-right: 5px;' + '}',
             '.chm-checkbox .changer {' + '    margin-top: 5px !important;' + '}',
-
             /***--------------------------------------------------------------------------------------\
-          Right column
-        \--------------------------------------------------------------------------------------***/
-
+        Right column
+      \--------------------------------------------------------------------------------------***/
             '#chm-right-column {' +
                 '    float: right;' +
                 '    width: 79.4%;' +
@@ -1096,38 +1058,34 @@
                 '}',
             '#chm-right-column-row-1 > * {' + '    display: inline-block;' + '}',
             '#chm-right-column-row-2 > * {' + '}',
-
             /****---------------------------------------------------------------------------------\
-          Nest controls
-        \---------------------------------------------------------------------------------****/
-
+        Nest controls
+      \---------------------------------------------------------------------------------****/
             '#chm-nest-controls {' +
-                ('    width: ' + firstColumnWidth + '%;') +
+                '    width: '.concat(firstColumnWidth, '%;') +
                 '    height: 100%;' +
                 '}',
             '.chm-nest-control {' +
                 '    float: left;' +
                 '    display: block;' +
                 '    clear: left;' +
-                ('    padding-left: ' + paddingLeft + 'px;') +
+                '    padding-left: '.concat(paddingLeft, 'px;') +
                 '    min-width : 100px;' +
                 '}',
             '.chm-nest-control.chm-hide {' +
                 '    float: left;' +
                 '    display: none;' +
                 '    clear: left;' +
-                ('    padding-left: ' + paddingLeft + 'px;') +
+                '    padding-left: '.concat(paddingLeft, 'px;') +
                 '}',
             '#chm-nest-control--1 {' + '    margin-left: 0;' + '}',
             '#chm-nest-control--2 {' + '    margin-left: 1em;' + '}',
             '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
-
             /****---------------------------------------------------------------------------------\
-          Legend
-        \---------------------------------------------------------------------------------****/
-
+        Legend
+      \---------------------------------------------------------------------------------****/
             '#chm-legend-container {' +
-                ('    width: ' + (100 - firstColumnWidth) + '%;') +
+                '    width: '.concat(100 - firstColumnWidth, '%;') +
                 '    float: right;' +
                 '    display: inline-block;' +
                 '    height: 100%;' +
@@ -1136,11 +1094,11 @@
             '.chm-legend > * {' + '}',
             '#chm-crf-legend {' +
                 '    float: left;' +
-                ('    width: ' + 12.5 * crfsCount + '%;') +
+                '    width: '.concat(12.5 * crfsCount, '%;') +
                 '}',
             '#chm-query-legend {' +
                 '    float: right;' +
-                ('    width: ' + 12.5 * queriesCount + '%;') +
+                '    width: '.concat(12.5 * queriesCount, '%;') +
                 '}',
             '.chm-legend-title {' + '    font-size: 20px;' + '    font-weight: bold;' + '}',
             '#chm-query-legend .chm-legend-title {' + '    text-align: right;' + '}',
@@ -1153,33 +1111,29 @@
                 '}',
             '#chm-crf-legend .chm-legend-div {' + '    width: 20%;' + '}',
             '#chm-query-legend .chm-legend-div {' + '    width: 20%;' + '}',
-
             /****---------------------------------------------------------------------------------\
-          Table
-        \---------------------------------------------------------------------------------****/
-
+        Table
+      \---------------------------------------------------------------------------------****/
             '#chm-table {' + '    width: 100%;' + '}',
             '#chm-table table {' + '    display: table;' + '    width: 100%;' + '}',
             '.wc-table {' + '    display: block;' + '}',
             '.wc-table table thead tr th {' + '    cursor: default;' + '}',
             '.wc-table table thead tr th,' +
                 '.wc-table table tbody tr td {' +
-                ('    padding-right: ' + paddingRight + 'px;') +
-                ('    padding-left: ' + paddingLeft + 'px;') +
+                '    padding-right: '.concat(paddingRight, 'px;') +
+                '    padding-left: '.concat(paddingLeft, 'px;') +
                 '}',
             '.wc-table table thead tr th:first-child,' +
                 '.wc-table table tbody tr td:first-child {' +
-                ('    width: ' + firstColumnWidth + '% !important;') +
+                '    width: '.concat(firstColumnWidth, '% !important;') +
                 '    text-align: left;' +
                 '}',
             '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
                 '.wc-table table tbody tr td:nth-child(n + 2) {' +
-                ('    width: ' + otherColumnWidth + '% !important;') +
+                '    width: '.concat(otherColumnWidth, '% !important;') +
                 '    text-align: left;' +
                 '}',
-
             /* range sliders */
-
             '#column-controls th {' + '}',
             '.reset-button {' +
                 '    width: 100%;' +
@@ -1259,9 +1213,7 @@
                 '    padding: 0;' +
                 '}',
             '.chm-text {' + '    font-size: 12px;' + '    font-weight: normal;' + '}',
-
             /* Table body rows */
-
             '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}',
             '.wc-table table tbody tr:hover td:first-child {' +
                 '    border-left: 1px solid black;' +
@@ -1270,9 +1222,7 @@
                 '    background: #CCCCCC;' +
                 '    color: black;' +
                 '}',
-
             /* ID cells */
-
             '.chm-cell--id {' +
                 '    background: white;' +
                 '   text-overflow: ellipsis;' +
@@ -1287,9 +1237,7 @@
                 '}',
             '.chm-cell--id--level2 {' + '    text-indent: 1em;' + '}',
             '.chm-cell--id--level3 {' + '    text-indent: 2em;' + '}',
-
             /* heat cells */
-
             '.chm-cell--heat {' +
                 '    text-align: right;' +
                 '    font-size: 12px;' +
@@ -1321,9 +1269,8 @@
             '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '}',
             '.chm-cell--heat--level10 {' + '    background: #08519c;' + '}',
             '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
-        ];
+        ]; //Attach styles to DOM.
 
-        //Attach styles to DOM.
         this.style = document.createElement('style');
         this.style.type = 'text/css';
         this.style.innerHTML = styles.join('\n');
@@ -1444,7 +1391,8 @@
     function webchartsSettings() {
         return {
             cols: null,
-            headers: null, // set in rendererSettings
+            headers: null,
+            // set in rendererSettings
             applyCSS: true,
             searchable: false,
             sortable: false,
@@ -1459,21 +1407,18 @@
         // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
         settings.value_cols.sort(function(a, b) {
             return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
-        });
+        }); // catch user providing too many nesting columns
 
-        // catch user providing too many nesting columns
         if (settings.default_nesting.length > 3) {
             throw 'More than three default nesting columns were provided [' +
                 settings.default_nesting.join(', ') +
                 ']. Only three variables can be nested at a time. Please reduce the number of variables in the default_nesting setting.';
-        }
+        } //Define initial nesting variables.
 
-        //Define initial nesting variables.
         settings.key_cols = [];
         settings.default_nesting.forEach(function(d) {
             settings.key_cols.push(settings[d]);
         });
-
         settings.nestings = [
             {
                 settings_col: 'site_col',
@@ -1492,21 +1437,19 @@
                 label: 'Form'
             }
         ];
-
         settings.nestings.forEach(function(d) {
             d.value_col = settings[d.settings_col];
-        });
+        }); //Define table column variables.
 
-        //Define table column variables.
         settings.cols = d3.merge([
             ['id'],
             settings.value_cols.map(function(d) {
                 return d.col;
             })
-        ]);
+        ]); // Define nesting filters
 
-        // Define nesting filters
         var nest_settings = [];
+
         if (settings.nesting_filters === true) {
             settings.nestings.forEach(function(setting) {
                 return nest_settings.push({
@@ -1514,31 +1457,25 @@
                     label: setting.label
                 });
             });
-        }
+        } //Define filter variables.
 
-        //Define filter variables.
         settings.filter_cols = Array.isArray(settings.filter_cols)
             ? nest_settings.concat(settings.filter_cols)
-            : nest_settings;
+            : nest_settings; //Define cols to include in subject level export
 
-        //Define cols to include in subject level export
         settings.subject_export_cols = settings.filter_cols.filter(function(filter) {
             return filter.subject_export == true;
-        });
+        }); // add labels specified in rendererSettings as headers
 
-        // add labels specified in rendererSettings as headers
         settings.headers = settings.value_cols.map(function(d) {
             return d.label;
-        });
+        }); // throw an error if there are more than 8 columns (due to current css set up)
 
-        // throw an error if there are more than 8 columns (due to current css set up)
         if (settings.headers.length > 8) {
             throw "A maximum of eight statistic columns is allowed. There are more than 8 value_col entries in rendererSettings currently. Don't be so greedy.";
-        }
+        } //add ID header
 
-        //add ID header
         settings.headers.unshift('ID');
-
         return settings;
     }
 
@@ -1578,7 +1515,6 @@
                 };
                 return filterObject;
             });
-
             return defaultControls.concat(otherFilters);
         } else return defaultControls;
     }
@@ -1599,9 +1535,10 @@
                 return true;
             } else if (!_this.data.raw[0].hasOwnProperty(input.value_col)) {
                 console.warn(
-                    'The [ ' +
-                        input.label +
+                    'The [ '.concat(
+                        input.label,
                         ' ] filter has been removed because the variable does not exist.'
+                    )
                 );
             } else {
                 var levels = d3
@@ -1611,14 +1548,13 @@
                         })
                     )
                     .values();
-
                 if (levels.length === 1)
                     console.warn(
-                        'The [ ' +
-                            input.label +
+                        'The [ '.concat(
+                            input.label,
                             ' ] filter has been removed because the variable has only one level.'
+                        )
                     );
-
                 return levels.length > 1;
             }
         });
@@ -1640,7 +1576,6 @@
                     })
                 )
                 .size();
-
             export_cols.forEach(function(col) {
                 if (
                     d3
@@ -1652,8 +1587,10 @@
                         .size() !== subjectSetSize
                 ) {
                     console.warn(
-                        col +
+                        ''.concat(
+                            col,
                             ' was removed from the subject level export due to multiple values within subject.'
+                        )
                     );
                     context.initial_config.subject_export_cols.splice(
                         context.initial_config.subject_export_cols.findIndex(function(d) {
@@ -1668,32 +1605,25 @@
 
     function onInit() {
         this.data.initial = this.data.raw;
-        this.data.initial_filtered = this.data.initial;
+        this.data.initial_filtered = this.data.initial; //remove subject-level export columns that have multiple values within a subject
 
-        //remove subject-level export columns that have multiple values within a subject
-        removeSubjectExportCols.call(this);
+        removeSubjectExportCols.call(this); //remove single-level or dataless filters
 
-        //remove single-level or dataless filters
-        removeFilters.call(this);
+        removeFilters.call(this); //Summarize raw data.
 
-        //Summarize raw data.
         summarizeData.call(this);
-
         this.data.top = this.data.summarized.filter(function(d) {
             return d.parents.length == 0;
         });
+        this.data.raw = this.data.top; //Manually set controls' data to raw data.
 
-        this.data.raw = this.data.top;
-
-        //Manually set controls' data to raw data.
         this.controls.data = this.data.initial;
         this.controls.ready = true;
     }
 
     function customizeFilters() {
-        var context = this;
+        var context = this; //Redefine change event listener of filters.
 
-        //Redefine change event listener of filters.
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
@@ -1701,22 +1631,19 @@
             })
             .each(function(d) {
                 var dropdown = d3.select(this).select('.changer');
-
                 dropdown.on('change', function(di) {
                     var _this = this;
 
                     //indicate loading
                     context.parent.containers.loading.classed('chm-hidden', false);
-
                     var loading = setInterval(function() {
                         var loadingIndicated =
                             context.parent.containers.loading.style('display') !== 'none';
 
                         if (loadingIndicated) {
                             clearInterval(loading);
-                            context.parent.containers.loading.classed('chm-hidden', true);
+                            context.parent.containers.loading.classed('chm-hidden', true); //Update filter val
 
-                            //Update filter val
                             context.filters.find(function(filter) {
                                 return filter.col === di.value_col;
                             }).val = _this.multiple
@@ -1726,16 +1653,14 @@
                                       .map(function(d) {
                                           return d.textContent;
                                       })
-                                : dropdown.selectAll('option:checked').text();
+                                : dropdown.selectAll('option:checked').text(); //Update filter index
 
-                            //Update filter index
                             context.filters.find(function(filter) {
                                 return filter.col === di.value_col;
                             }).index = _this.multiple
                                 ? null
-                                : dropdown.selectAll('option:checked').property('index');
+                                : dropdown.selectAll('option:checked').property('index'); //Filter data.
 
-                            //Filter data.
                             context.data.initial_filtered = context.data.initial;
                             context.filters
                                 .filter(function(filter) {
@@ -1755,9 +1680,8 @@
                                                 : dii[filter.col] === filter.val;
                                         }
                                     );
-                                });
+                                }); //Summarize filtered data and redraw table.
 
-                            //Summarize filtered data and redraw table.
                             redraw.call(context);
                         }
                     }, 25);
@@ -1767,15 +1691,13 @@
 
     function tweakMultiSelects() {
         var context = this;
-
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
                 return d.type === 'subsetter' && d.multiple;
             })
             .each(function(d) {
-                d3
-                    .select(this)
+                d3.select(this)
                     .select('select')
                     .attr(
                         'size',
@@ -1793,7 +1715,6 @@
         cells
             .attr('class', function(d) {
                 var cellClass = 'chm-cell';
-
                 if (d.col === 'id')
                     cellClass =
                         cellClass +
@@ -1802,44 +1723,43 @@
                         d.text.split('  |').length;
                 else {
                     cellClass = cellClass + ' chm-cell--heat';
-                    var level = void 0;
+                    var level;
                     if (chart.typeDict[d.col] == 'queries')
                         level =
                             d.text === 0
                                 ? 5
                                 : d.text < 9
-                                    ? 4
-                                    : d.text < 17
-                                        ? 3
-                                        : d.text < 25
-                                            ? 2
-                                            : 1;
+                                ? 4
+                                : d.text < 17
+                                ? 3
+                                : d.text < 25
+                                ? 2
+                                : 1;
                     else
                         level =
                             d.text === 'N/A'
                                 ? 11
-                                : d.text === 1
-                                    ? 10
-                                    : d.text > 0.75
-                                        ? 9
-                                        : d.text > 0.5
-                                            ? 8
-                                            : d.text > 0.25
-                                                ? 7
-                                                : 6;
+                                : d.text.split(' ')[0] === 1
+                                ? 10
+                                : d.text.split(' ')[0] > 0.75
+                                ? 9
+                                : d.text.split(' ')[0] > 0.5
+                                ? 8
+                                : d.text.split(' ')[0] > 0.25
+                                ? 7
+                                : 6;
                     cellClass = cellClass + ' chm-cell--heat--level' + level;
                 }
-
                 return cellClass;
             })
             .text(function(d) {
                 return d.col === 'id'
                     ? d.text.split('  |')[d.text.split('  |').length - 1]
                     : chart.typeDict[d.col] == 'crfs'
-                        ? d.text === 'N/A'
-                            ? d.text
-                            : d3.format('%')(d.text)
-                        : d.text;
+                    ? d.text === 'N/A'
+                        ? d.text
+                        : d3.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
+                    : d.text;
             });
     }
 
@@ -1871,9 +1791,8 @@
     }
 
     function customizeCheckboxes() {
-        var context = this;
+        var context = this; //Redefine change event listener of Expand All checkbox.
 
-        //Redefine change event listener of Expand All checkbox.
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
@@ -1882,8 +1801,8 @@
             .select('.changer')
             .on('change', function(d) {
                 var changer_this = this;
-
                 var confirmation = true;
+
                 if (
                     changer_this.checked &&
                     context.data.summarized.length > context.initial_config.max_rows_warn
@@ -1901,28 +1820,27 @@
                     var loadingdiv = context.parent.containers.main.select('#chm-loading'); // fix this later due to confirm box
 
                     loadingdiv.classed('chm-hidden', false);
-
                     var loading = setInterval(function() {
                         var loadingIndicated = loadingdiv.style('display') !== 'none';
 
                         if (loadingIndicated) {
                             clearInterval(loading);
                             loadingdiv.classed('chm-hidden', true);
-
                             context.config[d.option] = changer_this.checked;
 
                             if (changer_this.checked) {
-                                context.data.raw = context.data.summarized;
-                                // need to filter rows when expanding in case some input boxes are in use
+                                context.data.raw = context.data.summarized; // need to filter rows when expanding in case some input boxes are in use
+
                                 if (context.columnControls.filtered) {
                                     context.data.raw = context.data.raw.filter(function(f) {
                                         return !f.filtered || f.visible_child;
                                     });
                                 }
+
                                 context.draw(context.data.raw);
-                                context.expandable_rows.classed('chm-table-row--collapsed', false);
-                                // I'm making the default when the chart is drawn to collapse all rows and (have the box unchecked)
+                                context.expandable_rows.classed('chm-table-row--collapsed', false); // I'm making the default when the chart is drawn to collapse all rows and (have the box unchecked)
                                 // however I do want it to be checked when it's supposed to so flipping it back here
+
                                 changer_this.checked = context.config[d.option];
                             } else {
                                 context.draw(context.data.top);
@@ -1931,10 +1849,10 @@
                         }
                     }, 25);
                 }
-                context.config[d.option] = changer_this.checked;
-            });
 
-        //Redefine change event listener of Display Cell Anntotions checkbox.
+                context.config[d.option] = changer_this.checked;
+            }); //Redefine change event listener of Display Cell Anntotions checkbox.
+
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
@@ -1943,18 +1861,14 @@
             .select('.changer')
             .on('change', function(d) {
                 var changer_this = this;
-
                 var loadingdiv = context.parent.containers.main.select('#chm-loading');
-
                 loadingdiv.classed('chm-hidden', false);
-
                 var loading = setInterval(function() {
                     var loadingIndicated = loadingdiv.style('display') !== 'none';
 
                     if (loadingIndicated) {
                         clearInterval(loading);
                         loadingdiv.classed('chm-hidden', true);
-
                         context.config[d.option] = changer_this.checked;
                         toggleCellAnnotations.call(context);
                     }
@@ -1966,15 +1880,12 @@
         var _this = this;
 
         var context = this;
-
         var resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
-
         var resetButton = {};
         resetButton.container = d3
             .select(th)
             .append('div')
             .classed('reset-button-container', true);
-
         resetButton.button = resetButton.container
             .append('button')
             .classed('reset-button', true)
@@ -1982,22 +1893,22 @@
             .on('click', function() {
                 context.columnControls.filtered = false;
                 resetFilters.call(_this);
+
                 _this.draw(_this.data.top);
+
                 _this.rows.classed('grayParent', false);
             });
         this.columnControls.resetButton = resetButton;
     }
 
     function layout(filter) {
-        var context = this;
+        var context = this; //add containing div to header cell
 
-        //add containing div to header cell
         filter.div = filter.cell
             .append('div')
             .datum(filter)
-            .classed('range-slider-container', true);
+            .classed('range-slider-container', true); //lower slider
 
-        //lower slider
         filter.lowerSlider = filter.div
             .append('input')
             .classed('range-slider filter-slider--lower', true)
@@ -2006,12 +1917,10 @@
                 step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
                 min: 0
             });
-
         filter.lowerAnnotation = filter.div
             .append('span')
-            .classed('range-annotation range-annotation--lower', true);
+            .classed('range-annotation range-annotation--lower', true); //upper slider
 
-        //upper slider
         filter.upperSlider = filter.div
             .append('input')
             .classed('range-slider filter-slider--upper', true)
@@ -2031,9 +1940,8 @@
         this.data.summarized.forEach(function(d) {
             d.filtered = false;
             d.visible_child = false;
-        });
+        }); //First, get all the rows that match the filters
 
-        //First, get all the rows that match the filters
         this.columnControls.filters.forEach(function(filter) {
             _this.data.summarized.forEach(function(d) {
                 // filter N/As (as 100%) too
@@ -2041,17 +1949,16 @@
                     d.filtered = true;
                 } else {
                     var filtered_low = +d[filter.variable] < +filter.lower;
-                    var filtered_high = +d[filter.variable] > +filter.upper;
-                    //filtered_missing = d[filter.variable] === 'N/A'
+                    var filtered_high = +d[filter.variable] > +filter.upper; //filtered_missing = d[filter.variable] === 'N/A'
+
                     if (filtered_low || filtered_high) {
                         d.filtered = true;
                     }
                 }
             });
-        });
-
-        //now, identify hidden parent rows that have visible rowChildren
+        }); //now, identify hidden parent rows that have visible rowChildren
         //for rows that are visible (filtered = false)
+
         var visible_row_parents = this.data.summarized
             .filter(function(f) {
                 return !f.filtered;
@@ -2059,14 +1966,12 @@
             .map(function(f) {
                 return f.parents;
             });
-        var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
+        var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values(); //identifiy the parent rows
 
-        //identifiy the parent rows
         this.data.raw = this.data.summarized.map(function(m) {
             m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
             return m;
         });
-
         this.data.raw = this.data.raw.filter(function(d) {
             return d.parents.length == 0;
         }); // only want to draw top level;
@@ -2077,16 +1982,13 @@
     }
 
     function addEventListeners(filter) {
-        var context = this;
+        var context = this; //Attach an event listener to Sliders
 
-        //Attach an event listener to Sliders
         filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
             var _this = this;
 
             var loadingdiv = context.parent.containers.main.select('#chm-loading');
-
             loadingdiv.classed('chm-hidden', false);
-
             var loading = setInterval(function() {
                 var loadingIndicated = loadingdiv.style('display') !== 'none';
 
@@ -2095,6 +1997,7 @@
                     loadingdiv.classed('chm-hidden', true);
 
                     var sliders = _this.parentNode.getElementsByTagName('input');
+
                     var slider1 = parseFloat(sliders[0].value);
                     var slider2 = parseFloat(sliders[1].value);
 
@@ -2113,7 +2016,6 @@
                 }
             }, 25);
         });
-
         filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
             var sliders = this.parentNode.getElementsByTagName('input');
             var slider1 = parseFloat(sliders[0].value);
@@ -2128,9 +2030,8 @@
             }
 
             update.call(context, d);
-        });
+        }); //allow users to change filter settings by editing text annotations - not handling the flip case for simplicity
 
-        //allow users to change filter settings by editing text annotations - not handling the flip case for simplicity
         filter.upperAnnotation.attr('contenteditable', true).on('blur', function(d) {
             d.upper =
                 context.typeDict[filter.variable] == 'crfs'
@@ -2141,7 +2042,6 @@
             filterData.call(context);
             context.draw(context.data.raw);
         });
-
         filter.lowerAnnotation.attr('contenteditable', true).on('blur', function(d) {
             d.lower =
                 context.typeDict[filter.variable] == 'crfs'
@@ -2155,19 +2055,16 @@
     }
 
     function layout$1(filter) {
-        var context = this;
+        var context = this; //add containing div to header cell
 
-        //add containing div to header cell
         filter.div = filter.cell
             .append('div')
             .datum(filter)
             .classed('range-value-parent', true);
-
         var rangeValueLowerDiv = filter.div
             .append('div')
-            .classed('range-value-container range-value-container--lower', true);
+            .classed('range-value-container range-value-container--lower', true); //lower Input Box
 
-        //lower Input Box
         filter.lowerBox = rangeValueLowerDiv
             .append('input')
             .classed('range-value filter-value--lower', true)
@@ -2177,26 +2074,22 @@
                 step: 1,
                 value: 0
             });
-
         rangeValueLowerDiv
             .append('span')
             .classed('chm-text', true)
             .text(function(d) {
                 return context.typeDict[d.variable] == 'crfs' ? '%' : '';
             });
-
         filter.div
             .append('span')
             .classed('chm-dash', true)
             .text(function(d) {
                 return ' - ';
             });
-
         var rangeValueUpperDiv = filter.div
             .append('div')
-            .classed('range-value-container range-value-container--upper', true);
+            .classed('range-value-container range-value-container--upper', true); //upper Input Box
 
-        //upper Input Box
         filter.upperBox = rangeValueUpperDiv
             .append('input')
             .classed('range-value filter-value--upper', true)
@@ -2206,7 +2099,6 @@
                 step: 1,
                 value: 100
             });
-
         rangeValueUpperDiv
             .append('span')
             .classed('chm-text', true)
@@ -2216,16 +2108,13 @@
     }
 
     function addEventListeners$1(filter) {
-        var context = this;
+        var context = this; //Attach an event listener to Input Boxes.
 
-        //Attach an event listener to Input Boxes.
         filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function(d) {
             var _this = this;
 
             var loadingdiv = context.parent.containers.main.select('#chm-loading');
-
             loadingdiv.classed('chm-hidden', false);
-
             var loading = setInterval(function() {
                 var loadingIndicated = loadingdiv.style('display') !== 'none';
 
@@ -2234,6 +2123,7 @@
                     loadingdiv.classed('chm-hidden', true);
 
                     var boxes = _this.parentNode.parentNode.getElementsByTagName('input');
+
                     var box1 = parseFloat(boxes[0].value);
                     var box2 = parseFloat(boxes[1].value);
 
@@ -2254,6 +2144,7 @@
                             d.upper = box1;
                         }
                     }
+
                     context.columnControls.filtered = true;
                     update$1.call(context, d);
                     filterData.call(context);
@@ -2268,9 +2159,8 @@
         var filter = this.columnControls.filters.find(function(filter) {
             return filter.variable === d;
         });
-        filter.cell = d3.select(th);
+        filter.cell = d3.select(th); //Lay out, initialize, and define event listeners for column filter.
 
-        //Lay out, initialize, and define event listeners for column filter.
         if (this.initial_config.sliders) {
             layout.call(this, filter);
             update.call(this, filter, true);
@@ -2285,9 +2175,8 @@
     function addColumnControls() {
         var _this = this;
 
-        var context = this;
+        var context = this; //Define custom column controls object.
 
-        //Define custom column controls object.
         this.columnControls = {
             header: this.thead.append('tr').attr('id', 'column-controls'),
             filters: this.config.cols
@@ -2307,12 +2196,10 @@
                                   })
                     };
                     filter.upper = filter.max;
-
                     return filter;
                 })
-        };
+        }; //Add cells to header.
 
-        //Add cells to header.
         this.columnControls.cells = this.columnControls.header
             .selectAll('th')
             .data(this.config.cols)
@@ -2325,27 +2212,23 @@
     }
 
     function formatControls() {
-        var context = this;
-        // assign classes based on control type and if it's a nesting filter
+        var context = this; // assign classes based on control type and if it's a nesting filter
 
         this.controls.controlGroups = this.controls.wrap
             .selectAll('.control-group')
             .attr('class', function(d) {
-                return 'control-group chm-' + d.type;
-            });
+                return 'control-group chm-'.concat(d.type);
+            }); //Group filters
 
-        //Group filters
         this.controls.filters = {
             container: this.controls.wrap
                 .insert('div')
                 .classed('chm-control-grouping chm-filters', true)
         };
-
         this.controls.filters.container
             .append('div')
             .classed('chm-control-grouping--label', true)
             .text('Filters');
-
         this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-subsetter');
         this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
             '.wc-control-label'
@@ -2353,9 +2236,8 @@
         this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
         this.controls.filters.controlGroups.each(function(d) {
             context.controls.filters.container.node().appendChild(this);
-        });
+        }); //Group other controls
 
-        //Group other controls
         this.controls.otherControls = {
             container: this.controls.wrap
                 .insert('div')
@@ -2365,7 +2247,6 @@
             .append('div')
             .classed('chm-control-grouping--label', true)
             .text('Controls');
-
         this.controls.otherControls.controlGroups = this.controls.wrap.selectAll(
             '.control-group:not(.chm-subsetter)'
         );
@@ -2380,15 +2261,14 @@
     function onLayout() {
         customizeFilters.call(this);
         tweakMultiSelects.call(this);
-        customizeCheckboxes.call(this);
-        //moveExportButtons.call(this);
+        customizeCheckboxes.call(this); //moveExportButtons.call(this);
+
         addColumnControls.call(this);
         formatControls.call(this);
     }
 
     function customizeRows(chart, rows) {
-        rows
-            .classed('chm-table-row', true)
+        rows.classed('chm-table-row', true)
             .classed('chm-table-row--expandable', function(d) {
                 return d.id.split('  |').length < chart.config.key_cols.length;
             })
@@ -2399,32 +2279,26 @@
 
     function addStudySummary() {
         var tempChart = this;
-
         tempChart.data.initial_filtered.forEach(function(d) {
             return (d['id'] = 'Overall');
-        });
+        }); // calculate statistics across whole study
 
-        // calculate statistics across whole study
         var stats = calculateStatistics.call(tempChart, false);
-
         var summaryData = [
             {
                 col: 'id',
                 text: 'Overall'
             }
-        ];
+        ]; // transform to proper format
 
-        // transform to proper format
         this.config.value_cols.forEach(function(value_col, index) {
             summaryData[index + 1] = {
                 col: value_col.col,
                 text: stats[0][value_col.col]
             };
-        });
+        }); // add study summary row to top of table and bind data
 
-        // add study summary row to top of table and bind data
         this.tbody.insert('tr', ':first-child').classed('summary', true);
-
         this.tbody
             .select('tr')
             .selectAll('td')
@@ -2437,9 +2311,8 @@
     }
 
     function addInfoBubbles() {
-        var chart = this;
+        var chart = this; // add info bubbles and either info text, if defined, or the name of variable
 
-        // add info bubbles and either info text, if defined, or the name of variable
         chart.wrap
             .select('tr')
             .selectAll('th:not(.id)')
@@ -2452,16 +2325,13 @@
 
     function iterateNest() {
         var chart = this;
-        var config = this.config;
+        var config = this.config; // get all table rows
 
-        // get all table rows
-        var rows = this.rows[0];
+        var rows = this.rows[0]; // get the highest id level
 
-        // get the highest id level
-        var max_id_level = chart.config.key_cols.length - 2;
-
-        // loop through levels of nest and develop a dictionary with children for parent keys
+        var max_id_level = chart.config.key_cols.length - 2; // loop through levels of nest and develop a dictionary with children for parent keys
         // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
+
         function iterateNest(d, id_level) {
             return d3
                 .nest()
@@ -2475,6 +2345,7 @@
                     } else {
                         obj = {};
                     }
+
                     obj.ids = rows
                         .filter(function(f) {
                             return f.nest_level == id_level + 1;
@@ -2511,22 +2382,18 @@
 
     function onClick(d, chart) {
         var row = d3.select(this);
+        var collapsed = !row.classed('chm-table-row--collapsed'); // ensure that you don't collapse an already collapsed row or expand an already expanded one
 
-        var collapsed = !row.classed('chm-table-row--collapsed');
-
-        // ensure that you don't collapse an already collapsed row or expand an already expanded one
-        row
-            .classed('chm-table-row--collapsed', collapsed) //toggle the class
+        row.classed('chm-table-row--collapsed', collapsed) //toggle the class
             .classed('chm-table-row--expanded', !collapsed); //toggle the class
-
         // subset the nested child dictionary to create an object with only the ids for the children of the current row
+
         var currentNest = chart.childNest;
         d.id.split('  |').forEach(function(level) {
             currentNest = currentNest[level];
         });
+        var childIds; // when collapsing, if the nest's children have children, loop through and build array with those ids included
 
-        var childIds;
-        // when collapsing, if the nest's children have children, loop through and build array with those ids included
         if (collapsed && Object.keys(currentNest).length > 1) {
             childIds = [];
             Object.keys(currentNest).forEach(function(level) {
@@ -2542,19 +2409,17 @@
             // get an array of the html rows that are children of the current row
             var rowChildren = chart.rows.filter(function(f) {
                 return childIds.indexOf(f.id) > -1;
-            });
-            // remove those rows
+            }); // remove those rows
+
             rowChildren.remove();
         } else {
             // get the data for the child rows as an array
             var childrenData = chart.data.summarized.filter(function(a) {
                 return childIds.includes(a.id) && (a.filtered != true || a.visible_child);
-            });
+            }); // assign a class to the selected row to perform the trick below
 
-            // assign a class to the selected row to perform the trick below
-            row.classed('selected', true);
+            row.classed('selected', true); // repeating *s to place children after their parent in the correct order
 
-            // repeating *s to place children after their parent in the correct order
             childrenData.forEach(function(childData, i) {
                 return chart.tbody
                     .insert('tr', '.selected' + ' + *'.repeat(i + 1))
@@ -2562,74 +2427,61 @@
                     .classed('children', true)
                     .datum(childData)
                     .classed('chm-table-row--collapsed', true);
-            });
+            }); // grab all the new child rows
 
-            // grab all the new child rows
-            var childrenRows = d3.selectAll('.children');
+            var childrenRows = d3.selectAll('.children'); // transform data to required format
 
-            // transform data to required format
             var childrenCells = childrenRows.selectAll('td').data(function(d) {
                 return chart.config.cols.map(function(key) {
-                    return { col: key, text: d[key] };
+                    return {
+                        col: key,
+                        text: d[key]
+                    };
                 });
-            });
+            }); // add cells with text to new rows
 
-            // add cells with text to new rows
             childrenCells
                 .enter()
                 .append('td')
                 .text(function(d) {
                     return d.text;
-                });
+                }); // update chart rows property to include newly added rows
 
-            // update chart rows property to include newly added rows
-            chart.rows = chart.tbody.selectAll('tr');
+            chart.rows = chart.tbody.selectAll('tr'); // add the newly drawn rows to the array of clickable rows
 
-            // add the newly drawn rows to the array of clickable rows
             chart.expandable_rows = chart.rows.filter(function(d) {
                 return d.nest_level < chart.config.key_cols.length - 1;
-            });
+            }); // remove temporary classes
 
-            // remove temporary classes
             childrenRows.classed('children', false);
-            row.classed('selected', false);
+            row.classed('selected', false); // apply coloring based on filters
 
-            // apply coloring based on filters
-            flagParentRows.call(chart);
+            flagParentRows.call(chart); // add on click functionality to new children too
 
-            // add on click functionality to new children too
             chart.expandable_rows.on('click', function(d) {
                 onClick.call(this, d, chart);
-            });
+            }); // apply styling
 
-            // apply styling
             customizeRows(chart, childrenRows);
+            customizeCells(chart, childrenCells); // keep cells on chart object up to date
 
-            customizeCells(chart, childrenCells);
+            chart.cells = chart.tbody.selectAll('td'); // maintain display cell annotations setting since we are not drawing
 
-            // keep cells on chart object up to date
-            chart.cells = chart.tbody.selectAll('td');
+            toggleCellAnnotations.call(chart); // maintain display cell annotations setting since we are not drawing
 
-            // maintain display cell annotations setting since we are not drawing
-            toggleCellAnnotations.call(chart);
-
-            // maintain display cell annotations setting since we are not drawing
             addIdHover.call(chart);
         }
     }
 
     function addRowDisplayToggle() {
         var chart = this;
-        var config = this.config;
+        var config = this.config; // this is a nested object with parent ids as the keys and child ids as the "values"
 
-        // this is a nested object with parent ids as the keys and child ids as the "values"
-        chart.childNest = iterateNest.call(this);
+        chart.childNest = iterateNest.call(this); // get all of the clickable rows
 
-        // get all of the clickable rows
         chart.expandable_rows = this.rows.filter(function(d) {
             return d.nest_level < config.key_cols.length - 1;
         });
-
         chart.expandable_rows.on('click', function(d) {
             onClick.call(this, d, chart);
         });
@@ -2639,42 +2491,37 @@
         var _this = this;
 
         var table = this;
-        this.export = {
+        this['export'] = {
             nests: this.config.key_cols.map(function(id_col, i) {
-                return 'Nest ' + (i + 1) + ': ' + id_col;
+                return 'Nest '.concat(i + 1, ': ').concat(id_col);
             }),
             filters: this.filters.map(function(filter) {
                 return _this.controls.config.inputs.find(function(input) {
                     return input.value_col === filter.col;
                 }).label;
             })
-        };
+        }; //Define headers.
 
-        //Define headers.
-        this.export.headers = d3.merge([this.export.nests, this.config.headers.slice(1)]);
+        this['export'].headers = d3.merge([this['export'].nests, this.config.headers.slice(1)]); //Define columns.
 
-        //Define columns.
-        this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
-
+        this['export'].cols = d3.merge([this['export'].nests, this.config.cols.slice(1)]);
         var subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
-        var subject_id_col = subject_id_col_index > -1;
+        var subject_id_col = subject_id_col_index > -1; //Capture subject-level information.
 
-        //Capture subject-level information.
         if (subject_id_col) {
             //Add headers and columns
             if (this.config.site_col) {
-                this.export.headers.push('Site');
-                this.export.cols.push('site');
+                this['export'].headers.push('Site');
+                this['export'].cols.push('site');
             }
 
             if (this.config.subject_export_cols) {
                 this.config.subject_export_cols.forEach(function(d) {
-                    table.export.headers.push(d.label);
-                    table.export.cols.push(d.value_col);
+                    table['export'].headers.push(d.label);
+                    table['export'].cols.push(d.value_col);
                 });
-            }
+            } // build look up for subject
 
-            // build look up for subject
             if (this.config.site_col || this.config.subject_export_cols) {
                 var subjects = d3
                     .set(
@@ -2687,47 +2534,46 @@
                     var subjectDatum = _this.data.initial.find(function(d) {
                         return d[_this.config.id_col] === cur;
                     });
+
                     acc[cur] = {};
                     if (_this.config.site_col)
                         acc[cur]['site'] = subjectDatum[_this.config.site_col];
+
                     if (_this.config.subject_export_cols) {
                         _this.config.subject_export_cols.forEach(function(d) {
                             acc[cur][d.value_col] = subjectDatum[d.value_col];
                         });
                     }
+
                     return acc;
                 }, {});
             }
-        }
+        } // Going to want expanded data - since current data doesn't include child rows unless all are expanded
 
-        // Going to want expanded data - since current data doesn't include child rows unless all are expanded
-        this.export.data = this.data.summarized;
-        // need to filter rows when expanding in case some input boxes are in use
+        this['export'].data = this.data.summarized; // need to filter rows when expanding in case some input boxes are in use
+
         if (this.columnControls.filtered) {
-            table.export.data = table.export.data.filter(function(f) {
+            table['export'].data = table['export'].data.filter(function(f) {
                 return !f.filtered || f.visible_child;
             });
-        }
+        } //Define data.
 
-        //Define data.
-        this.export.data.forEach(function(d, i, thisArray) {
+        this['export'].data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
-            _this.export.nests.forEach(function(id_col, j) {
+            _this['export'].nests.forEach(function(id_col, j) {
                 var id_val = d.id.split('  |')[j];
                 d[id_col] = id_val || 'Total';
-            });
+            }); // // Now "join" subject level information to export data
 
-            // // Now "join" subject level information to export data
             if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
                 var subjectID =
-                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
+                    d['Nest '.concat(subject_id_col_index + 1, ': ').concat(_this.config.id_col)];
                 Object.assign(d, subjectMap[subjectID]);
             }
-        });
+        }); //Remove total rows.
 
-        //Remove total rows.
-        this.export.data = this.export.data.filter(function(d) {
-            return !_this.export.nests.some(function(nest) {
+        this['export'].data = this['export'].data.filter(function(d) {
+            return !_this['export'].nests.some(function(nest) {
                 return d[nest] === 'Total';
             });
         });
@@ -2741,31 +2587,27 @@
             return d.col;
         });
         var CSVarray = [];
+        var table = this; //add filters info after last column - similar second tab of xlsx
 
-        var table = this;
-
-        //add filters info after last column - similar second tab of xlsx
-        this.export.headers.push('Filter', 'Value');
-        this.export.cols.push('Filter', 'Value');
-
-        this.export.data.forEach(function(d, i) {
+        this['export'].headers.push('Filter', 'Value');
+        this['export'].cols.push('Filter', 'Value');
+        this['export'].data.forEach(function(d, i) {
             d['Filter'] = '';
             d['Value'] = '';
         });
-
         this.filters.forEach(function(filter, i) {
-            if (i < _this.export.data.length) {
-                table.export.data[i]['Filter'] = filter.col;
-                table.export.data[i]['Value'] =
+            if (i < _this['export'].data.length) {
+                table['export'].data[i]['Filter'] = filter.col;
+                table['export'].data[i]['Value'] =
                     Array.isArray(filter.val) && filter.val.length < filter.choices.length
                         ? filter.val.join(', ')
                         : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                            ? 'All'
-                            : filter.val;
+                        ? 'All'
+                        : filter.val;
             } else
-                table.export.data.push(
+                table['export'].data.push(
                     Object.assign(
-                        _this.export.cols.reduce(function(acc, cur) {
+                        _this['export'].cols.reduce(function(acc, cur) {
                             acc[cur] = '';
                             return acc;
                         }, {}),
@@ -2775,37 +2617,37 @@
                         }
                     )
                 );
-        });
+        }); //header row
 
-        //header row
         CSVarray.push(
-            this.export.headers.map(function(header) {
-                return '"' + header.replace(/"/g, '""') + '"';
+            this['export'].headers.map(function(header) {
+                return '"'.concat(header.replace(/"/g, '""'), '"');
             })
-        );
+        ); //data rows
 
-        //data rows
-        this.export.data.forEach(function(d) {
+        this['export'].data.forEach(function(d) {
             //add rows to CSV array
-            var row = _this.export.cols.map(function(col, i) {
+            var row = _this['export'].cols.map(function(col, i) {
                 var value =
                     value_cols.indexOf(col) > -1 &&
                     context.typeDict[col] == 'crfs' &&
                     ['N/A', ''].indexOf(d[col]) < 0
                         ? d[col] * 100
                         : d[col];
-
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
-
-                return '"' + value + '"';
+                return '"'.concat(value, '"');
             });
 
             CSVarray.push(row);
-        });
+        }); //transform CSV array into CSV string
 
-        //transform CSV array into CSV string
-        var CSV = new Blob([CSVarray.join('\n')], { type: 'text/csv;charset=utf-8;' });
-        var fileName = 'CRF-Heat-Map-' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.csv';
+        var CSV = new Blob([CSVarray.join('\n')], {
+            type: 'text/csv;charset=utf-8;'
+        });
+        var fileName = 'CRF-Heat-Map-'.concat(
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            '.csv'
+        );
         var link = this.wrap.select('.export#csv');
 
         if (navigator.msSaveBlob) {
@@ -2839,24 +2681,23 @@
             bookSST: true,
             type: 'binary'
         };
-        var arrayOfArrays = this.export.data.map(function(d) {
-            return _this.export.cols.map(function(col) {
+        var arrayOfArrays = this['export'].data.map(function(d) {
+            return _this['export'].cols.map(function(col) {
                 return d[col];
             });
         }); // convert data from array of objects to array of arrays.
+
         var workbook = {
             SheetNames: [sheetName, 'Current Filters'],
             Sheets: {}
-        };
+        }; //Convert headers and data from array of arrays to sheet.
 
-        //Convert headers and data from array of arrays to sheet.
         workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet(
-            [this.export.headers].concat(arrayOfArrays)
+            [this['export'].headers].concat(arrayOfArrays)
         );
-        var sheet = workbook.Sheets[sheetName];
+        var sheet = workbook.Sheets[sheetName]; //Format percentages.
 
-        //Format percentages.
-        var cols = this.export.cols.map(function(col, i) {
+        var cols = this['export'].cols.map(function(col, i) {
             return {
                 name: col,
                 column: String.fromCharCode(i + 65)
@@ -2876,25 +2717,21 @@
         });
         pctCells.forEach(function(pctCell) {
             sheet[pctCell].z = '0%';
-        });
+        }); //Add filters to spreadsheet.
 
-        //Add filters to spreadsheet.
         workbook.Sheets[sheetName]['!autofilter'] = {
-            ref:
-                'A1:' +
-                String.fromCharCode(64 + this.export.cols.length) +
-                (this.export.data.length + 1)
-        };
+            ref: 'A1:'
+                .concat(String.fromCharCode(64 + this['export'].cols.length))
+                .concat(this['export'].data.length + 1)
+        }; //Define column widths in spreadsheet.
 
-        //Define column widths in spreadsheet.
-        workbook.Sheets[sheetName]['!cols'] = this.export.cols.map(function(col, i) {
+        workbook.Sheets[sheetName]['!cols'] = this['export'].cols.map(function(col, i) {
             return {
                 wpx:
                     value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
             };
-        });
+        }); //Write current filters to second sheet.
 
-        //Write current filters to second sheet.
         workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
             [['Filter', 'Value']].concat(
                 this.filters.map(function(filter) {
@@ -2904,8 +2741,8 @@
                             ? filter.val.join(', ')
                             : Array.isArray(filter.val) &&
                               filter.val.length === filter.choices.length
-                                ? 'All'
-                                : filter.val
+                            ? 'All'
+                            : filter.val
                     ];
                 })
             )
@@ -2919,12 +2756,18 @@
                 for (var i = 0; i !== s.length; ++i) {
                     view[i] = s.charCodeAt(i) & 0xff;
                 }
+
                 return buffer;
             }; // convert spreadsheet to binary or something, i don't know
-
         //transform CSV array into CSV string
-        var blob = new Blob([s2ab(xlsx)], { type: 'application/octet-stream;' });
-        var fileName = 'CRF-Summary-' + d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
+
+        var blob = new Blob([s2ab(xlsx)], {
+            type: 'application/octet-stream;'
+        });
+        var fileName = 'CRF-Summary-'.concat(
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            '.xlsx'
+        );
         var link = this.wrap.select('.export#xlsx');
 
         if (navigator.msSaveBlob) {
@@ -2958,9 +2801,8 @@
                 deriveData.call(_this);
                 csv.call(_this);
             });
-        }
+        } //Export to .xlsx.
 
-        //Export to .xlsx.
         if (
             this.config.exports.find(function(export_) {
                 return export_ === 'xlsx';
@@ -2976,14 +2818,13 @@
     function onDraw() {
         var config = this.config;
         var chart = this;
-
-        var t0 = performance.now();
-        //begin performance test
-
+        var t0 = performance.now(); //begin performance test
         // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
+
         var id;
         chart.data.summarized.forEach(function(d) {
             id = d['id'].split('  |');
+
             if (id[2]) {
                 d[config.key_cols[2]] = id[2];
                 d[config.key_cols[1]] = id[1];
@@ -3000,7 +2841,6 @@
             this.rows = this.tbody.selectAll('tr');
             customizeRows(this, this.rows);
             addStudySummary.call(this);
-
             this.cells = this.tbody.selectAll('td');
             customizeCells(this, this.cells);
             addInfoBubbles.call(this);
@@ -3009,30 +2849,27 @@
             addIdHover.call(this);
             dataExport.call(this);
             flagParentRows.call(this);
-        }
+        } //Make sure 'Expand All' check box is not checked
 
-        //Make sure 'Expand All' check box is not checked
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
                 return d.option === 'expand_all';
             })
             .select('.changer')
-            .property('checked', false);
+            .property('checked', false); //end performance test
 
-        //end performance test
         var t1 = performance.now();
         console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
-
         this.parent.containers.loading.classed('chm-hidden', true);
     }
 
     function onDestroy() {
         //remove stylesheet
-        this.parent.style.remove();
+        this.parent.style.remove(); //clear container, removing one child node at a time (fastest method per https://jsperf.com/innerhtml-vs-removechild/37)
 
-        //clear container, removing one child node at a time (fastest method per https://jsperf.com/innerhtml-vs-removechild/37)
         var node = d3.select(this.parent.element).node();
+
         while (node.firstChild) {
             node.removeChild(node.firstChild);
         }
@@ -3045,7 +2882,7 @@
             .set(
                 d3.merge([
                     this.settings.synced.nestings.map(function(nesting) {
-                        return nesting.value_col + ' (' + nesting.label + ')';
+                        return ''.concat(nesting.value_col, ' (').concat(nesting.label, ')');
                     }),
                     this.settings.synced.value_cols.map(function(d) {
                         return d.col;
@@ -3056,17 +2893,17 @@
                 ])
             )
             .values();
-
         var missingVariables = requiredVariables.filter(function(variable) {
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
         });
         if (missingVariables.length)
             console.log(
-                'The data are missing ' +
-                    (missingVariables.length === 1 ? 'this variable' : 'these variables') +
-                    ': ' +
-                    missingVariables.join(', ') +
-                    '.'
+                'The data are missing '
+                    .concat(
+                        missingVariables.length === 1 ? 'this variable' : 'these variables',
+                        ': '
+                    )
+                    .concat(missingVariables.join(', '), '.')
             );
     }
 
@@ -3080,7 +2917,6 @@
     }
 
     //utility functions
-
     function crfHeatMap(element, settings) {
         //main object
         var crfHeatMap = {
@@ -3090,33 +2926,32 @@
                 user: settings
             },
             init: init
-        };
+        }; //settings
 
-        //settings
         crfHeatMap.settings.defaults = Object.assign(
             {},
             configuration.rendererSettings(),
             configuration.webchartsSettings()
         ); // merge renderer-specific settings with Webcharts settings
+
         crfHeatMap.settings.merged = merge(crfHeatMap.settings.defaults, crfHeatMap.settings.user); // merge user settings with default settings
+
         crfHeatMap.settings.synced = configuration.syncSettings(crfHeatMap.settings.merged); // sync properties within merged settings, e.g. data mappings
+
         crfHeatMap.settings.controls = {
             inputs: configuration.syncControlInputs(crfHeatMap.settings.synced)
         }; // define control settings
-
         //DOM layout
-        defineLayout.call(crfHeatMap);
 
-        //stylesheet
-        defineStyles.call(crfHeatMap);
+        defineLayout.call(crfHeatMap); //stylesheet
 
-        //controls
+        defineStyles.call(crfHeatMap); //controls
+
         crfHeatMap.controls = webcharts.createControls(
             crfHeatMap.containers.controls.node(),
             crfHeatMap.settings.controls
-        );
+        ); //table
 
-        //table
         crfHeatMap.table = webcharts.createTable(
             crfHeatMap.containers.table.node(),
             crfHeatMap.settings.synced,

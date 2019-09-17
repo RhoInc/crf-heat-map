@@ -21,8 +21,8 @@ export default function csv() {
                 Array.isArray(filter.val) && filter.val.length < filter.choices.length
                     ? filter.val.join(', ')
                     : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                        ? 'All'
-                        : filter.val;
+                    ? 'All'
+                    : filter.val;
         } else
             table.export.data.push(
                 Object.assign(
