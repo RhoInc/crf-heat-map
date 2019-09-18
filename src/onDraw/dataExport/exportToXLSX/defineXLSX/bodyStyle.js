@@ -7,7 +7,7 @@ export default {
     },
     fill: {
         fgColor: {
-            rgb: 'FFeeeeee'
+            rgb: '80008000'
         }
     },
     alignment: {
@@ -20,5 +20,5 @@ export default {
                 rgb: null // set in defineXLSX
             }
         }
-    }
+    },
 };

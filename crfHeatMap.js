@@ -1971,7 +1971,7 @@
         }
 
         // Going to want expanded data - since current data doesn't include child rows unless all are expanded
-        this.export.data = this.data.summarized;
+        this.export.data = this.data.summarized.slice();
         // need to filter rows when expanding in case some input boxes are in use
         if (this.columnControls.filtered) {
             table.export.data = table.export.data.filter(function (f) {
@@ -2098,7 +2098,7 @@
         },
         fill: {
             fgColor: {
-                rgb: 'FFeeeeee'
+                rgb: '80008000'
             }
         },
         alignment: {
@@ -2140,30 +2140,29 @@
         var name = 'Participant Visit Listing';
         var wb = new workBook();
         var ws = {};
-        var cols = [];
         var range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
         var wbOptions = {
             bookType: 'xlsx',
-            bookSST: true,
+            bookSST: false,
             type: 'binary'
         };
 
-        var filterRange = 'A1:' + String.fromCharCode(64 + this.export.cols.length) + (this.export.data + 1);
+        var filterRange = 'A1:' + String.fromCharCode(64 + this.export.cols.length) + (this.export.data.length + 1);
 
         // Header row
         this.export.headers.forEach(function (header, col) {
             addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
         });
 
-        //console.log(this.config.headers)
-
         // Data rows
         this.export.data.forEach(function (d, row) {
             _this.export.cols.forEach(function (variable, col) {
-                //    console.log(variable)
-                var visit = variable.replace(/-date$/, '');
+                var value = d[variable];
                 var cellStyle = clone(bodyStyle);
-                var color = 'FF000000'; // d[`${visit}-color`];
+                if (row === 0) {
+                    console.log(variable + ': ' + value); // TODO: import heat somehow and apply to cellStyle.fill.fgColor.rgb.
+                }
+                var color = 'FF000000';
                 var fontColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FF000000';
                 var borderColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FFCCCCCC';
                 if (col > 2) {
@@ -2173,32 +2172,21 @@
                     delete cellStyle.font.color.rgb;
                     delete cellStyle.border.bottom;
                 }
-                addCell(wb, ws, d[variable] || '', 'c', cellStyle, range, row + 1, col);
+                addCell(wb, ws, d[variable] || '', 's', cellStyle, range, row + 1, col);
             });
         });
 
-        // Define column widths.
-        var tr = this.tbody.selectAll('tr').filter(function (d, i) {
-            return i === 0;
-        });
-        tr.selectAll('td').each(function (d, i) {
-            cols.push({ wpx: i > 0 ? this.offsetWidth - 20 : 175 });
-        });
-        console.log(this.export.cols);
-        console.log(wb);
-        //  console.log(range)
-        console.log(range);
         ws['!ref'] = XLSX.utils.encode_range(range);
-        ws['!cols'] = cols;
-        //ws['!autofilter'] = { ref: filterRange };
+        ws['!cols'] = this.export.cols.map(function (col) {
+            return { wpx: 100 };
+        });
+        ws['!autofilter'] = { ref: filterRange };
         // ws['!freeze'] = { xSplit: '1', ySplit: '1', topLeftCell: 'B2', activePane: 'bottomRight', state: 'frozen' };
 
         wb.SheetNames.push(name);
         wb.Sheets[name] = ws;
 
-        console.log('made its');
         this.XLSX = XLSX.write(wb, wbOptions);
-        console.log('made its more');
     }
 
     /* FileSaver.js
@@ -2397,7 +2385,6 @@
 
         var fileName = 'participant-visit-listing-' + d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
         try {
-            console.log(this.XLSX);
             var blob = new Blob([s2ab(this.XLSX)], {
                 type: 'application/octet-stream'
             });

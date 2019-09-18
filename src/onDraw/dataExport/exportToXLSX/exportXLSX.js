@@ -8,7 +8,6 @@ export default function exportXLSX() {
             new Date()
         )}.xlsx`;
         try {
-          console.log(this.XLSX)
             const blob = new Blob([s2ab(this.XLSX)], {
                 type: 'application/octet-stream'
             });
