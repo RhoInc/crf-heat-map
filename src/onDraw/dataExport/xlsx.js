@@ -15,11 +15,11 @@ export default function xlsx() {
         Sheets: {}
     };
 
-    //Convert headers and data from array of arrays to sheet.
-    workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet(
-        [this.export.headers].concat(arrayOfArrays)
-    );
-    const sheet = workbook.Sheets[sheetName];
+    // //Convert headers and data from array of arrays to sheet.
+    // workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet(
+    //     [this.export.headers].concat(arrayOfArrays)
+    // );
+    // const sheet = workbook.Sheets[sheetName];
 
     //Format percentages.
     const cols = this.export.cols.map((col, i) => {
@@ -72,6 +72,36 @@ console.log(hexToRgb('#32a852'))
 
 console.log(sheet)
 
+
+// Header row
+this.config.headers.forEach((header, col) => {
+    addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
+});
+
+// Data rows
+this.data.filtered.forEach((d, row) => {
+    this.config.cols.forEach((variable, col) => {
+        const visit = variable.replace(/-date$/, '');
+        const cellStyle = clone(bodyStyle);
+        const color = d[`${visit}-color`];
+        const fontColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FF000000';
+        const borderColor = /^#[a-z0-9]{6}$/i.test(color)
+            ? color.replace('#', 'FF')
+            : 'FFCCCCCC';
+        if (col > 2) {
+            cellStyle.font.color.rgb = fontColor;
+            cellStyle.border.bottom.color.rgb = borderColor;
+        } else {
+            delete cellStyle.font.color.rgb;
+            delete cellStyle.border.bottom;
+        }
+        addCell(wb, ws, d[variable] || '', 'c', cellStyle, range, row + 1, col);
+    });
+});
+
+
+
+
     //Add filters to spreadsheet.
     workbook.Sheets[sheetName]['!autofilter'] = {
         ref: `A1:${String.fromCharCode(64 + this.export.cols.length)}${this.export.data.length + 1}`
@@ -84,21 +114,21 @@ console.log(sheet)
         };
     });
 
-    //Write current filters to second sheet.
-    workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
-        [['Filter', 'Value']].concat(
-            this.filters.map(filter => {
-                return [
-                    filter.col,
-                    Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                        ? filter.val.join(', ')
-                        : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                            ? 'All'
-                            : filter.val
-                ];
-            })
-        )
-    );
+    // //Write current filters to second sheet.
+    // workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
+    //     [['Filter', 'Value']].concat(
+    //         this.filters.map(filter => {
+    //             return [
+    //                 filter.col,
+    //                 Array.isArray(filter.val) && filter.val.length < filter.choices.length
+    //                     ? filter.val.join(', ')
+    //                     : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+    //                         ? 'All'
+    //                         : filter.val
+    //             ];
+    //         })
+    //     )
+    // );
 
 
 
