@@ -4,7 +4,7 @@ import s2ab from './exportXLSX/s2ab';
 
 export default function exportXLSX() {
 
-        const fileName = `participant-visit-listing-${time.format('%Y-%m-%dT%H-%M-%S')(
+        const fileName = `crf-heatmap-${time.format('%Y-%m-%dT%H-%M-%S')(
             new Date()
         )}.xlsx`;
         try {

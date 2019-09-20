@@ -7,5 +7,13 @@ export default {
     },
     alignment: {
         wrapText: true
-    }
+    },
+    border: {
+        bottom: {
+            style: 'medium',
+            color: {
+                rgb: "FF000000" // set in defineXLSX
+            }
+        },
+      }
 };

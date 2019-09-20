@@ -1,4 +1,4 @@
 export default function workBook() {
-    this.SheetNames = [];
-    this.Sheets = {};
+    this.SheetNames = ['CRF-Heatmap','Filters'];
+    this.Sheets = [];
 }

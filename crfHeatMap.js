@@ -872,7 +872,7 @@
 
         /* heat cells */
 
-        '.chm-cell--heat {' + '    text-align: right;' + '    font-size: 12px;' + '    border: 1px solid white;' + '}', '.chm-cell--heat--level6,' + '.chm-cell--heat--level7,' + '.chm-cell--heat--level8,' + '.chm-cell--heat--level1,' + '.chm-cell--heat--level2,' + '.chm-cell--heat--level3 {' + '    color: black;' + '}', '.chm-cell--heat--level9,' + '.chm-cell--heat--level10,' + '.chm-cell--heat--level11,' + '.chm-cell--heat--level4,' + '.chm-cell--heat--level5 {' + '    color: white;' + '}', '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '}', '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '}', '.chm-cell--heat--level3 {' + '    background: #74c476' + '}', '.chm-cell--heat--level4 {' + '    background: #31a354;' + '}', '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '}', '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '}', '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '}', '.chm-cell--heat--level8 {' + '    background: #6baed6' + '}', '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '}', '.chm-cell--heat--level10 {' + '    background: #08519c;' + '}', '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'];
+        '.chm-cell--heat {' + '    text-align: right;' + '    font-size: 12px;' + '    border: 1px solid white;' + '}', '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '    color: #000000;' + '}', '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '    color: #000000;' + '}', '.chm-cell--heat--level3 {' + '    background: #74c476;' + '    color: #000000;' + '}', '.chm-cell--heat--level4 {' + '    background: #31a354;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '    color: #000000;' + '}', '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '    color: #000000;' + '}', '.chm-cell--heat--level8 {' + '    background: #6baed6;' + '    color: #000000;' + '}', '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level10 {' + '    background: #08519c;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: #ffffff;' + '}'];
 
         //Attach styles to DOM.
         this.style = document.createElement('style');
@@ -2086,6 +2086,14 @@
         },
         alignment: {
             wrapText: true
+        },
+        border: {
+            bottom: {
+                style: 'medium',
+                color: {
+                    rgb: "FF000000" // set in defineXLSX
+                }
+            }
         }
     };
 
@@ -2098,7 +2106,7 @@
         },
         fill: {
             fgColor: {
-                rgb: '80008000'
+                rgb: 'FFffffff'
             }
         },
         alignment: {
@@ -2106,17 +2114,23 @@
         },
         border: {
             bottom: {
-                style: 'thick',
+                style: 'thin',
                 color: {
-                    rgb: null // set in defineXLSX
+                    rgb: "FFffffff" // set in defineXLSX
+                }
+            },
+            right: {
+                style: 'thin',
+                color: {
+                    rgb: "FFffffff" // set in defineXLSX
                 }
             }
         }
     };
 
     function workBook() {
-        this.SheetNames = [];
-        this.Sheets = {};
+        this.SheetNames = ['CRF-Heatmap', 'Filters'];
+        this.Sheets = [];
     }
 
     function updateRange(range, row, col) {
@@ -2128,7 +2142,7 @@
 
     function addCell(wb, ws, value, type, styles, range, row, col) {
         updateRange(range, row, col);
-        styles.fill.fgColor.rgb = row > 0 && row % 2 ? 'FFffffff' : styles.fill.fgColor.rgb;
+        styles.fill.fgColor.rgb = row > 0 ? styles.fill.fgColor.rgb : 'FFffffff';
         var cell = { v: value, t: type, s: styles };
         var cell_ref = XLSX.utils.encode_cell({ c: col, r: row });
         ws[cell_ref] = cell;
@@ -2137,8 +2151,12 @@
     function defineXLSX() {
         var _this = this;
 
-        var name = 'Participant Visit Listing';
+        var value_cols = this.config.value_cols.map(function (d) {
+            return d.col;
+        });
         var wb = new workBook();
+        console.log(wb);
+        console.log(wb);
         var ws = {};
         var range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
         var wbOptions = {
@@ -2146,6 +2164,8 @@
             bookSST: false,
             type: 'binary'
         };
+
+        var chart = this;
 
         var filterRange = 'A1:' + String.fromCharCode(64 + this.export.cols.length) + (this.export.data.length + 1);
 
@@ -2155,36 +2175,76 @@
         });
 
         // Data rows
+        var stylesheet = crfHeatMap().style.textContent;
         this.export.data.forEach(function (d, row) {
             _this.export.cols.forEach(function (variable, col) {
+
                 var value = d[variable];
                 var cellStyle = clone(bodyStyle);
-                if (row === 0) {
-                    console.log(variable + ': ' + value); // TODO: import heat somehow and apply to cellStyle.fill.fgColor.rgb.
-                }
-                var color = 'FF000000';
-                var fontColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FF000000';
-                var borderColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FFCCCCCC';
-                if (col > 2) {
+
+                if (value_cols.indexOf(variable) > -1) {
+                    // amke this small fucntion
+                    var level;
+                    if (chart.typeDict[variable] == 'queries') level = value === 0 ? 5 : value < 9 ? 4 : value < 17 ? 3 : value < 25 ? 2 : 1;else level = value === 'N/A' ? 11 : value === 1 ? 10 : value > 0.75 ? 9 : value > 0.5 ? 8 : value > 0.25 ? 7 : 6;
+
+                    var cellClass = '.chm-cell--heat--level' + level;
+
+                    var cellClassIndex = stylesheet.indexOf(cellClass);
+
+                    var fill = "background: #";
+
+                    var font = "color: #";
+
+                    var fontColor = stylesheet.substring(stylesheet.indexOf(font, cellClassIndex) + font.length, stylesheet.indexOf(font, cellClassIndex) + font.length + 7).replace('#', 'FF');
+
+                    var fillColor = stylesheet.substring(stylesheet.indexOf(fill, cellClassIndex) + fill.length, stylesheet.indexOf(fill, cellClassIndex) + fill.length + 7).replace('#', 'FF');
+
+                    if (chart.typeDict[variable] === "crfs") cellStyle.numFmt = "0%";
+
                     cellStyle.font.color.rgb = fontColor;
-                    cellStyle.border.bottom.color.rgb = borderColor;
-                } else {
-                    delete cellStyle.font.color.rgb;
-                    delete cellStyle.border.bottom;
+                    cellStyle.fill.fgColor.rgb = fillColor;
                 }
-                addCell(wb, ws, d[variable] || '', 's', cellStyle, range, row + 1, col);
+
+                var type = typeof value === 'number' ? "n" : "s";
+
+                addCell(wb, ws, value, type, cellStyle, range, row + 1, col);
             });
         });
-
-        ws['!ref'] = XLSX.utils.encode_range(range);
-        ws['!cols'] = this.export.cols.map(function (col) {
-            return { wpx: 100 };
+        var filter_sheet = {};
+        // add filters tab
+        [['Filter', 'Value']].forEach(function (header, col) {
+            addCell(wb, filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
         });
+        // //Write current filters to second sheet.
+        //     workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
+        //         [['Filter', 'Value']].concat(
+        //             this.filters.map(filter => {
+        //                 return [
+        //                     filter.col,
+        //                     Array.isArray(filter.val) && filter.val.length < filter.choices.length
+        //                         ? filter.val.join(', ')
+        //                         : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+        //                             ? 'All'
+        //                             : filter.val
+        //                 ];
+        //             })
+        //         )
+        //     );
+
+
+        console.log(wb);
+        ws['!ref'] = XLSX.utils.encode_range(range);
+        ws['!cols'] = this.export.cols.map(function (col, i) {
+            return {
+                wpx: value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
+            };
+        });
+
         ws['!autofilter'] = { ref: filterRange };
         // ws['!freeze'] = { xSplit: '1', ySplit: '1', topLeftCell: 'B2', activePane: 'bottomRight', state: 'frozen' };
-
-        wb.SheetNames.push(name);
-        wb.Sheets[name] = ws;
+        console.log(this.export.data);
+        wb.Sheets['CRF-heatmap'] = ws;
+        wb.Sheets['filters'] = filter_sheet;
 
         this.XLSX = XLSX.write(wb, wbOptions);
     }
@@ -2383,7 +2443,7 @@
 
     function exportXLSX() {
 
-        var fileName = 'participant-visit-listing-' + d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
+        var fileName = 'crf-heatmap-' + d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
         try {
             var blob = new Blob([s2ab(this.XLSX)], {
                 type: 'application/octet-stream'
@@ -2514,7 +2574,7 @@
 
     //utility functions
 
-    function crfHeatMap(element, settings) {
+    function crfHeatMap$1(element, settings) {
         //main object
         var crfHeatMap = {
             element: element,
@@ -2558,6 +2618,6 @@
         return crfHeatMap;
     }
 
-    return crfHeatMap;
+    return crfHeatMap$1;
 
 })));
