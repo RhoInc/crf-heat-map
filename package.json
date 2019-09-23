@@ -24,7 +24,7 @@
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"src/**/!(*defineLayout|*defineStyles).js\"",
     "format-bundle": "prettier --print-width=100 --tab-width=4 --single-quote --write ./crfHeatMap.js",
     "save-data": "node ./scripts/save-data.js",
-    "test": "mocha --require @babel/register --recursive ./test/**/*.js",
+    "test": "mocha --require @babel/register ./test/*.js",
     "test-page": "start chrome ./test-page/index.html && start firefox ./test-page/index.html && start iexplore file://%CD%/test-page/index.html",
     "watch": "rollup -c -w"
   },
