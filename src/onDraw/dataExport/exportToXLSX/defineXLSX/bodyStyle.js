@@ -17,13 +17,13 @@ export default {
         bottom: {
             style: 'thin',
             color: {
-                rgb: "FFffffff" // set in defineXLSX
+                rgb: 'FFffffff' // set in defineXLSX
             }
         },
         right: {
             style: 'thin',
             color: {
-                rgb: "FFffffff" // set in defineXLSX
+                rgb: 'FFffffff' // set in defineXLSX
             }
         }
     }

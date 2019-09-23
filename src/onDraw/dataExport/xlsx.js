@@ -42,65 +42,63 @@ export default function xlsx() {
         key => cols.map(col => col.column).indexOf(key.replace(/\d+/, '')) > -1
     );
 
-console.log(hexToRgb('#32a852'))
+    console.log(hexToRgb('#32a852'));
 
-    cells.forEach(d => sheet[d].s= {
-    font: {
-        sz: 10,
-        color: {
-            rgb: "FFFFAA00" // set in defineXLSX
-        }
-    },
-    fill: {
-        fgColor: {
-            rgb: "FFFFAA00"
-        }
-    },
-    alignment: {
-        wrapText: true
-    },
-    border: {
-        bottom: {
-            style: 'thick',
-            color: {
-                rgb: "FFFFAA00" // set in defineXLSX
-            }
-        }
-    }
-})
+    cells.forEach(
+        d =>
+            (sheet[d].s = {
+                font: {
+                    sz: 10,
+                    color: {
+                        rgb: 'FFFFAA00' // set in defineXLSX
+                    }
+                },
+                fill: {
+                    fgColor: {
+                        rgb: 'FFFFAA00'
+                    }
+                },
+                alignment: {
+                    wrapText: true
+                },
+                border: {
+                    bottom: {
+                        style: 'thick',
+                        color: {
+                            rgb: 'FFFFAA00' // set in defineXLSX
+                        }
+                    }
+                }
+            })
+    );
 
+    console.log(sheet);
 
-console.log(sheet)
-
-
-// Header row
-this.config.headers.forEach((header, col) => {
-    addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
-});
-
-// Data rows
-this.data.filtered.forEach((d, row) => {
-    this.config.cols.forEach((variable, col) => {
-        const visit = variable.replace(/-date$/, '');
-        const cellStyle = clone(bodyStyle);
-        const color = d[`${visit}-color`];
-        const fontColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FF000000';
-        const borderColor = /^#[a-z0-9]{6}$/i.test(color)
-            ? color.replace('#', 'FF')
-            : 'FFCCCCCC';
-        if (col > 2) {
-            cellStyle.font.color.rgb = fontColor;
-            cellStyle.border.bottom.color.rgb = borderColor;
-        } else {
-            delete cellStyle.font.color.rgb;
-            delete cellStyle.border.bottom;
-        }
-        addCell(wb, ws, d[variable] || '', 'c', cellStyle, range, row + 1, col);
+    // Header row
+    this.config.headers.forEach((header, col) => {
+        addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
     });
-});
 
-
-
+    // Data rows
+    this.data.filtered.forEach((d, row) => {
+        this.config.cols.forEach((variable, col) => {
+            const visit = variable.replace(/-date$/, '');
+            const cellStyle = clone(bodyStyle);
+            const color = d[`${visit}-color`];
+            const fontColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FF000000';
+            const borderColor = /^#[a-z0-9]{6}$/i.test(color)
+                ? color.replace('#', 'FF')
+                : 'FFCCCCCC';
+            if (col > 2) {
+                cellStyle.font.color.rgb = fontColor;
+                cellStyle.border.bottom.color.rgb = borderColor;
+            } else {
+                delete cellStyle.font.color.rgb;
+                delete cellStyle.border.bottom;
+            }
+            addCell(wb, ws, d[variable] || '', 'c', cellStyle, range, row + 1, col);
+        });
+    });
 
     //Add filters to spreadsheet.
     workbook.Sheets[sheetName]['!autofilter'] = {
@@ -129,8 +127,6 @@ this.data.filtered.forEach((d, row) => {
     //         })
     //     )
     // );
-
-
 
     const xlsx = XLSX.write(workbook, options),
         s2ab = function(s) {

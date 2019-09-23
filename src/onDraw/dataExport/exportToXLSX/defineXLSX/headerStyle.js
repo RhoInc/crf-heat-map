@@ -12,8 +12,8 @@ export default {
         bottom: {
             style: 'medium',
             color: {
-                rgb: "FF000000" // set in defineXLSX
+                rgb: 'FF000000' // set in defineXLSX
             }
-        },
-      }
+        }
+    }
 };

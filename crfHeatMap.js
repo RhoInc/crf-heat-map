@@ -2091,7 +2091,7 @@
             bottom: {
                 style: 'medium',
                 color: {
-                    rgb: "FF000000" // set in defineXLSX
+                    rgb: 'FF000000' // set in defineXLSX
                 }
             }
         }
@@ -2116,13 +2116,13 @@
             bottom: {
                 style: 'thin',
                 color: {
-                    rgb: "FFffffff" // set in defineXLSX
+                    rgb: 'FFffffff' // set in defineXLSX
                 }
             },
             right: {
                 style: 'thin',
                 color: {
-                    rgb: "FFffffff" // set in defineXLSX
+                    rgb: 'FFffffff' // set in defineXLSX
                 }
             }
         }
@@ -2151,21 +2151,20 @@
     function defineXLSX() {
         var _this = this;
 
+        var chart = this;
         var value_cols = this.config.value_cols.map(function (d) {
             return d.col;
         });
         var wb = new workBook();
-        console.log(wb);
-        console.log(wb);
-        var ws = {};
+        var filter_col_width = { wpx: 125 };
+        var ws = {}; //sheet for heatmao
+        var filter_sheet = {}; //sheet for filter values
         var range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
         var wbOptions = {
             bookType: 'xlsx',
             bookSST: false,
             type: 'binary'
         };
-
-        var chart = this;
 
         var filterRange = 'A1:' + String.fromCharCode(64 + this.export.cols.length) + (this.export.data.length + 1);
 
@@ -2178,12 +2177,10 @@
         var stylesheet = crfHeatMap().style.textContent;
         this.export.data.forEach(function (d, row) {
             _this.export.cols.forEach(function (variable, col) {
-
                 var value = d[variable];
                 var cellStyle = clone(bodyStyle);
 
                 if (value_cols.indexOf(variable) > -1) {
-                    // amke this small fucntion
                     var level;
                     if (chart.typeDict[variable] == 'queries') level = value === 0 ? 5 : value < 9 ? 4 : value < 17 ? 3 : value < 25 ? 2 : 1;else level = value === 'N/A' ? 11 : value === 1 ? 10 : value > 0.75 ? 9 : value > 0.5 ? 8 : value > 0.25 ? 7 : 6;
 
@@ -2191,60 +2188,59 @@
 
                     var cellClassIndex = stylesheet.indexOf(cellClass);
 
-                    var fill = "background: #";
+                    var fill = 'background: #';
 
-                    var font = "color: #";
+                    var font = 'color: #';
 
+                    // Start at class index, find fill or font and get color substring
                     var fontColor = stylesheet.substring(stylesheet.indexOf(font, cellClassIndex) + font.length, stylesheet.indexOf(font, cellClassIndex) + font.length + 7).replace('#', 'FF');
 
                     var fillColor = stylesheet.substring(stylesheet.indexOf(fill, cellClassIndex) + fill.length, stylesheet.indexOf(fill, cellClassIndex) + fill.length + 7).replace('#', 'FF');
 
-                    if (chart.typeDict[variable] === "crfs") cellStyle.numFmt = "0%";
+                    // Add % format to crf columns
+                    if (chart.typeDict[variable] === 'crfs') cellStyle.numFmt = '0%';
 
                     cellStyle.font.color.rgb = fontColor;
                     cellStyle.fill.fgColor.rgb = fillColor;
                 }
 
-                var type = typeof value === 'number' ? "n" : "s";
+                // Use numeric type if it's a number
+                var type = typeof value === 'number' ? 'n' : 's';
 
                 addCell(wb, ws, value, type, cellStyle, range, row + 1, col);
             });
         });
-        var filter_sheet = {};
-        // add filters tab
-        [['Filter', 'Value']].forEach(function (header, col) {
+
+        // add headers to filter sheet
+        ['Filter', 'Value'].forEach(function (header, col) {
             addCell(wb, filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
         });
-        // //Write current filters to second sheet.
-        //     workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
-        //         [['Filter', 'Value']].concat(
-        //             this.filters.map(filter => {
-        //                 return [
-        //                     filter.col,
-        //                     Array.isArray(filter.val) && filter.val.length < filter.choices.length
-        //                         ? filter.val.join(', ')
-        //                         : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-        //                             ? 'All'
-        //                             : filter.val
-        //                 ];
-        //             })
-        //         )
-        //     );
 
+        // Add filter names and values to filter sheet
+        this.filters.forEach(function (filter, index) {
+            // Add Filter name to Filter column
+            addCell(wb, filter_sheet, filter.col, 'c', clone(bodyStyle), range, index + 1, 0);
 
-        console.log(wb);
+            // Add Filter value to Value column
+            // Handle multiselect
+            var filterValue = Array.isArray(filter.val) && filter.val.length < filter.choices.length ? filter.val.join(', ') : Array.isArray(filter.val) && filter.val.length === filter.choices.length ? 'All' : filter.val;
+            addCell(wb, filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
+        });
+
         ws['!ref'] = XLSX.utils.encode_range(range);
         ws['!cols'] = this.export.cols.map(function (col, i) {
             return {
                 wpx: value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
             };
         });
-
         ws['!autofilter'] = { ref: filterRange };
+
+        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
+        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
         // ws['!freeze'] = { xSplit: '1', ySplit: '1', topLeftCell: 'B2', activePane: 'bottomRight', state: 'frozen' };
-        console.log(this.export.data);
-        wb.Sheets['CRF-heatmap'] = ws;
-        wb.Sheets['filters'] = filter_sheet;
+
+        wb.Sheets['CRF-Heatmap'] = ws;
+        wb.Sheets['Filters'] = filter_sheet;
 
         this.XLSX = XLSX.write(wb, wbOptions);
     }
@@ -2442,7 +2438,6 @@
     }
 
     function exportXLSX() {
-
         var fileName = 'crf-heatmap-' + d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
         try {
             var blob = new Blob([s2ab(this.XLSX)], {
@@ -2455,10 +2450,9 @@
     }
 
     function exportToXLSX() {
-
-              //  if (this.config.exportable)
-              defineXLSX.call(this);
-              exportXLSX.call(this);
+        //  if (this.config.exportable)
+        defineXLSX.call(this);
+        exportXLSX.call(this);
     }
 
     function dataExport() {
