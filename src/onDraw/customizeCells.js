@@ -1,3 +1,5 @@
+import { format } from 'd3';
+
 export default function customizeCells(chart, cells) {
     cells
         .attr('class', d => {
@@ -39,7 +41,7 @@ export default function customizeCells(chart, cells) {
                 : chart.typeDict[d.col] == 'crfs'
                 ? d.text === 'N/A'
                     ? d.text
-                    : d3.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
+                    : format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
                 : d.text
         );
 }

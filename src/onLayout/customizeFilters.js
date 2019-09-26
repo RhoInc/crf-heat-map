@@ -1,4 +1,5 @@
 import redraw from './customizeFilters/redraw';
+import { select } from 'd3';
 
 export default function customizeFilters() {
     const context = this;
@@ -8,7 +9,7 @@ export default function customizeFilters() {
         .selectAll('.control-group')
         .filter(d => d.type === 'subsetter')
         .each(function(d) {
-            const dropdown = d3.select(this).select('.changer');
+            const dropdown = select(this).select('.changer');
 
             dropdown.on('change', function(di) {
                 //indicate loading

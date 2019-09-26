@@ -1,3 +1,5 @@
+import { set, merge } from 'd3';
+
 export default function filterData() {
     this.data.summarized.forEach(function(d) {
         d.filtered = false;
@@ -24,7 +26,7 @@ export default function filterData() {
     //now, identify hidden parent rows that have visible rowChildren
     //for rows that are visible (filtered = false)
     var visible_row_parents = this.data.summarized.filter(f => !f.filtered).map(f => f.parents);
-    var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
+    var unique_visible_row_parents = set(merge(visible_row_parents)).values();
 
     //identifiy the parent rows
     this.data.raw = this.data.summarized.map(function(m) {

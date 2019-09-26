@@ -1,3 +1,5 @@
+import { time } from 'd3';
+
 export default function xlsx() {
     const context = this;
     const value_cols = this.config.value_cols.map(d => d.col);
@@ -76,7 +78,7 @@ export default function xlsx() {
 
     //transform CSV array into CSV string
     const blob = new Blob([s2ab(xlsx)], { type: 'application/octet-stream;' });
-    const fileName = `CRF-Summary-${d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.xlsx`;
+    const fileName = `CRF-Summary-${time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.xlsx`;
     const link = this.wrap.select('.export#xlsx');
 
     if (navigator.msSaveBlob) {

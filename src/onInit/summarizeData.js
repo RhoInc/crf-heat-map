@@ -3,7 +3,7 @@ import sortRows from './summarizeData/sortRows';
 
 export default function summarizeData() {
     const context = this;
-    var t0 = performance.now();
+    var t0 = this.parent.performance.now();
     //begin performance test
 
     this.data.summaries = [];
@@ -44,6 +44,6 @@ export default function summarizeData() {
     sortRows.call(this);
 
     //end performance test
-    var t1 = performance.now();
+    var t1 = this.parent.performance.now();
     console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
 }

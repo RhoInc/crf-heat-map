@@ -1,16 +1,18 @@
 import createNestControls from './defineLayout/createNestControls';
 import drawCrfLegend from './defineLayout/drawCrfLegend';
 import drawQueryLegend from './defineLayout/drawQueryLegend';
+import { select } from 'd3';
+
 var isIE = typeof(navigator) !== "undefined" && (!!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g));
 
 
 export default function defineLayout() {
     this.containers = {
-        main: d3.select(this.element)
+        main: select(this.element)
             .append('div')
             .datum(this)
             .classed('crf-heat-map', true)
-            .attr('id', `crf-heat-map${document.querySelectorAll('.crf-heat-map').length}`)
+            .attr('id', `crf-heat-map${this.document.querySelectorAll('.crf-heat-map').length}`)
     };
 
     // display warning message to user if they are using IE

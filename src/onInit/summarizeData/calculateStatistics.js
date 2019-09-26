@@ -1,3 +1,5 @@
+import { sum, nest } from 'd3';
+
 export default function calculateStatistics(onInit = true) {
     const context = this;
 
@@ -22,8 +24,7 @@ export default function calculateStatistics(onInit = true) {
     );
 
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
-    const nest = d3
-        .nest()
+    const id_nest = nest()
         .key(d => d.id)
         .rollup(d => {
             //Define denominators.
@@ -43,12 +44,12 @@ export default function calculateStatistics(onInit = true) {
             context.initial_config.value_cols.forEach(value_col => {
                 var count;
                 if (typeof value_col.denominator === 'undefined') {
-                    count = d3.sum(d, di => di[value_col.col]);
+                    count = sum(d, di => di[value_col.col]);
                 } else {
                     // ensure numerator is subsetted in the event that an error is made
                     // and an ID has a value of 1 and a denominator value of 0.
                     var subset = d.filter(row => row[value_col.denominator] === '1');
-                    count = d3.sum(subset, di => di[value_col.col]);
+                    count = sum(subset, di => di[value_col.col]);
                 }
 
                 summary[value_col.col] =
@@ -86,7 +87,7 @@ export default function calculateStatistics(onInit = true) {
         .entries(this.data.initial_filtered);
 
     //Convert the nested data array to a flat data array.
-    nest.forEach(d => {
+    id_nest.forEach(d => {
         d.id = d.key;
         delete d.key;
         this.config.value_cols.forEach(value_col => {
@@ -103,15 +104,14 @@ export default function calculateStatistics(onInit = true) {
 
     //Add summarized data to array of summaries.
     if (onInit) {
-        this.data.summaries.push(nest);
+        this.data.summaries.push(id_nest);
 
         // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
-        context.typeDict = d3
-            .nest()
+        context.typeDict = nest()
             .key(d => d.col)
             .rollup(rows => rows[0].type)
             .map(context.initial_config.value_cols);
     } else {
-        return nest;
+        return id_nest;
     }
 }

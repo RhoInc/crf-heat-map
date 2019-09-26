@@ -13,7 +13,7 @@ describe('The init method is called.', () => {
     before(() => {
         dom = new JSDOM('<!doctype html>');
         container = dom.window.document.createElement('div');
-        instance = crfHeatMap(container, {exportable: false}, {dom,performance});
+        instance = crfHeatMap(container, {exportable: false}, { dom, performance });
         instance.init(data, true);
     });
 
