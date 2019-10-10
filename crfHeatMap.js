@@ -253,29 +253,43 @@
         return target;
     }
 
+    function getStatistic(numerator_count, denominator_count, type) {
+        if (type === 'queries' && denominator_count !== undefined) {
+            throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'.";
+        }
+
+        var statistic =
+            type == 'crfs'
+                ? denominator_count
+                    ? Math.floor((numerator_count / denominator_count) * 100) / 100
+                    : 'N/A'
+                : type == 'queries'
+                ? numerator_count
+                : console.log('Missed a Statistic!');
+        return statistic;
+    }
+
+    function getFraction(numerator_count, denominator_count, type) {
+        if (type === 'queries' && denominator_count !== undefined) {
+            throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'.";
+        }
+
+        var fraction =
+            type == 'crfs'
+                ? denominator_count
+                    ? ' ' + numerator_count + '/' + denominator_count
+                    : ''
+                : type == 'queries'
+                ? ''
+                : console.log('Missed a Fraction!');
+        return fraction;
+    }
+
     function calculateStatistics() {
         var _this = this;
 
         var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-        var context = this; // throw error if any query columns have denominators
-
-        if (
-            context.initial_config.value_cols.filter(function(a) {
-                return a.denominator && a.type == 'queries';
-            }).length != 0
-        ) {
-            throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'. ";
-        }
-
-        var crfsDenominator = context.initial_config.value_cols.filter(function(a) {
-            return a.denominator && a.type == 'crfs';
-        });
-        var crfsNoDenominator = context.initial_config.value_cols.filter(function(a) {
-            return !a.denominator && a.type == 'crfs';
-        });
-        var queries = context.initial_config.value_cols.filter(function(a) {
-            return !a.denominator && a.type == 'queries';
-        }); //Nest data by the ID variable defined above and calculate statistics for each summary variable.
+        var context = this; //Nest data by the ID variable defined above and calculate statistics for each summary variable.
 
         var id_nest = d3$1
             .nest()
@@ -286,81 +300,44 @@
                 //Define denominators.
                 var summary = {
                     nForms: d.length
-                }; //calculate count for denominator
-
-                crfsDenominator.forEach(function(c) {
-                    return (summary['n' + c.denominator] = d.filter(function(di) {
-                        return di[c.denominator] === '1';
-                    }).length);
-                }); //Define summarized values, either rates or counts.
+                }; //Define summarized values, either rates or counts.
 
                 context.initial_config.value_cols.forEach(function(value_col) {
-                    var count;
+                    //calculate numerator and denominator
+                    var numerator_count;
+                    var denominator_count;
 
                     if (typeof value_col.denominator === 'undefined') {
-                        count = d3$1.sum(d, function(di) {
+                        //if no denominator
+                        numerator_count = d3$1.sum(d, function(di) {
                             return di[value_col.col];
                         });
+                        if (value_col.type == 'crfs') denominator_count = summary.nForms;
                     } else {
+                        //if denominator
                         // ensure numerator is subsetted in the event that an error is made
                         // and an ID has a value of 1 and a denominator value of 0.
                         var subset = d.filter(function(row) {
                             return row[value_col.denominator] === '1';
                         });
-                        count = d3$1.sum(subset, function(di) {
+                        numerator_count = d3$1.sum(subset, function(di) {
                             return di[value_col.col];
                         });
+                        denominator_count = d.filter(function(di) {
+                            return di[value_col.denominator] === '1';
+                        }).length;
                     }
 
-                    summary[value_col.col] =
-                        crfsNoDenominator
-                            .map(function(m) {
-                                return m.col;
-                            })
-                            .indexOf(value_col.col) > -1
-                            ? summary.nForms
-                                ? Math.floor((count / summary.nForms) * 100) / 100
-                                : 'N/A'
-                            : crfsDenominator
-                                  .map(function(m) {
-                                      return m.col;
-                                  })
-                                  .indexOf(value_col.col) > -1
-                            ? summary['n' + value_col.denominator]
-                                ? Math.floor((count / summary['n' + value_col.denominator]) * 100) /
-                                  100
-                                : 'N/A'
-                            : queries
-                                  .map(function(m) {
-                                      return m.col;
-                                  })
-                                  .indexOf(value_col.col) > -1
-                            ? count
-                            : console.log('Missed one: '.concat(value_col.col));
-                    summary[value_col.col + '_count'] =
-                        crfsNoDenominator
-                            .map(function(m) {
-                                return m.col;
-                            })
-                            .indexOf(value_col.col) > -1
-                            ? summary.nForms
-                                ? ' ' + count
-                                : ''
-                            : crfsDenominator
-                                  .map(function(m) {
-                                      return m.col;
-                                  })
-                                  .indexOf(value_col.col) > -1
-                            ? summary['n' + value_col.denominator]
-                                ? ' ' + count
-                                : ''
-                            : queries
-                                  .map(function(m) {
-                                      return m.col;
-                                  })
-                                  .indexOf(value_col.col) > -1
-                            ? ''
-                            : console.log('Missed one: '.concat(value_col.col));
+                    summary[value_col.col] = getStatistic(
+                        numerator_count,
+                        denominator_count,
+                        value_col.type
+                    );
+                    summary[value_col.col + '_count'] = getFraction(
+                        numerator_count,
+                        denominator_count,
+                        value_col.type
+                    );
                 });
                 summary.nest_level = d[0].nest_level;
                 summary.parents = d[0].parents;
@@ -375,7 +352,7 @@
             delete d.key;
 
             _this.config.value_cols.forEach(function(value_col) {
-                d[value_col.col] = d.values[value_col.col] + d.values[value_col.col + '_count']; //      d[value_col.col] =   d.values[value_col.col]
+                d[value_col.col] = d.values[value_col.col] + d.values[value_col.col + '_count'];
             });
 
             d.nest_level = d.values.nest_level;

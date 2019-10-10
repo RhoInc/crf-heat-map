@@ -1,27 +1,9 @@
 import { sum, nest } from 'd3';
+import getStatistic from './calculateStatistics/getStatistic';
+import getFraction from './calculateStatistics/getFraction';
 
 export default function calculateStatistics(onInit = true) {
     const context = this;
-
-    // throw error if any query columns have denominators
-    if (
-        context.initial_config.value_cols.filter(a => a.denominator && a.type == 'queries')
-            .length != 0
-    ) {
-        throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'. ";
-    }
-
-    const crfsDenominator = context.initial_config.value_cols.filter(
-        a => a.denominator && a.type == 'crfs'
-    );
-
-    const crfsNoDenominator = context.initial_config.value_cols.filter(
-        a => !a.denominator && a.type == 'crfs'
-    );
-
-    const queries = context.initial_config.value_cols.filter(
-        a => !a.denominator && a.type == 'queries'
-    );
 
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
     const id_nest = nest()
@@ -32,51 +14,36 @@ export default function calculateStatistics(onInit = true) {
                 nForms: d.length
             };
 
-            //calculate count for denominator
-            crfsDenominator.forEach(
-                c =>
-                    (summary['n' + c.denominator] = d.filter(
-                        di => di[c.denominator] === '1'
-                    ).length)
-            );
-
             //Define summarized values, either rates or counts.
             context.initial_config.value_cols.forEach(value_col => {
-                var count;
+                //calculate numerator and denominator
+                var numerator_count;
+                var denominator_count;
+
                 if (typeof value_col.denominator === 'undefined') {
-                    count = sum(d, di => di[value_col.col]);
+                    //if no denominator
+                    numerator_count = sum(d, di => di[value_col.col]);
+                    if (value_col.type == 'crfs') denominator_count = summary.nForms;
                 } else {
+                    //if denominator
                     // ensure numerator is subsetted in the event that an error is made
                     // and an ID has a value of 1 and a denominator value of 0.
                     var subset = d.filter(row => row[value_col.denominator] === '1');
-                    count = sum(subset, di => di[value_col.col]);
+                    numerator_count = sum(subset, di => di[value_col.col]);
+                    denominator_count = d.filter(di => di[value_col.denominator] === '1').length;
                 }
 
-                summary[value_col.col] =
-                    crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
-                        ? summary.nForms
-                            ? Math.floor((count / summary.nForms) * 100) / 100
-                            : 'N/A'
-                        : crfsDenominator.map(m => m.col).indexOf(value_col.col) > -1
-                        ? summary['n' + value_col.denominator]
-                            ? Math.floor((count / summary['n' + value_col.denominator]) * 100) / 100
-                            : 'N/A'
-                        : queries.map(m => m.col).indexOf(value_col.col) > -1
-                        ? count
-                        : console.log(`Missed one: ${value_col.col}`);
+                summary[value_col.col] = getStatistic(
+                    numerator_count,
+                    denominator_count,
+                    value_col.type
+                );
 
-                summary[value_col.col + '_count'] =
-                    crfsNoDenominator.map(m => m.col).indexOf(value_col.col) > -1
-                        ? summary.nForms
-                            ? ' ' + count
-                            : ''
-                        : crfsDenominator.map(m => m.col).indexOf(value_col.col) > -1
-                        ? summary['n' + value_col.denominator]
-                            ? ' ' + count
-                            : ''
-                        : queries.map(m => m.col).indexOf(value_col.col) > -1
-                        ? ''
-                        : console.log(`Missed one: ${value_col.col}`);
+                summary[value_col.col + '_count'] = getFraction(
+                    numerator_count,
+                    denominator_count,
+                    value_col.type
+                );
             });
             summary.nest_level = d[0].nest_level;
             summary.parents = d[0].parents;
@@ -92,7 +59,6 @@ export default function calculateStatistics(onInit = true) {
         delete d.key;
         this.config.value_cols.forEach(value_col => {
             d[value_col.col] = d.values[value_col.col] + d.values[value_col.col + '_count'];
-            //      d[value_col.col] =   d.values[value_col.col]
         });
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;
