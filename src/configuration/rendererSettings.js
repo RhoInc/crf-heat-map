@@ -101,7 +101,7 @@ export default function rendererSettings() {
         visit_order_col: 'folder_ordinal',
         form_order_col: 'form_ordinal',
         default_nesting: ['site_col', 'id_col'],
-        display_cell_annotations: true,
+        display_fractions: false,
         expand_all: false,
         sliders: false,
         max_rows_warn: 10000

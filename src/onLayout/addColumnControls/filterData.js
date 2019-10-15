@@ -13,8 +13,8 @@ export default function filterData() {
             if (d[filter.variable] == 'N/A' && +filter.upper < 1) {
                 d.filtered = true;
             } else {
-                var filtered_low = +d[filter.variable] < +filter.lower;
-                var filtered_high = +d[filter.variable] > +filter.upper;
+                var filtered_low = +d[filter.variable + '_value'] < +filter.lower;
+                var filtered_high = +d[filter.variable + '_value'] > +filter.upper;
                 //filtered_missing = d[filter.variable] === 'N/A'
                 if (filtered_low || filtered_high) {
                     d.filtered = true;

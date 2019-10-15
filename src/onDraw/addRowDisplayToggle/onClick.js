@@ -1,6 +1,5 @@
 import customizeRows from '../customizeRows';
 import customizeCells from '../customizeCells';
-import toggleCellAnnotations from '../toggleCellAnnotations';
 import addIdHover from '../addIdHover';
 import flagParentRows from '../flagParentRows';
 import { select, selectAll } from 'd3';
@@ -100,9 +99,6 @@ export default function onClick(d, chart) {
 
         // keep cells on chart object up to date
         chart.cells = chart.tbody.selectAll('td');
-
-        // maintain display cell annotations setting since we are not drawing
-        toggleCellAnnotations.call(chart);
 
         // maintain display cell annotations setting since we are not drawing
         addIdHover.call(chart);

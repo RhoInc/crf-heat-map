@@ -266,7 +266,7 @@
                 : type == 'queries'
                 ? numerator_count
                 : console.log('Missed a Statistic!');
-        return statistic;
+        return String(statistic); //ensure correct type
     }
 
     function getFraction(numerator_count, denominator_count, type) {
@@ -282,13 +282,14 @@
                 : type == 'queries'
                 ? ''
                 : console.log('Missed a Fraction!');
-        return fraction;
+        return String(fraction); //ensure correct type
     }
 
     function calculateStatistics() {
         var _this = this;
 
         var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        var fractions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         var context = this; //Nest data by the ID variable defined above and calculate statistics for each summary variable.
 
         var id_nest = d3$1
@@ -333,11 +334,14 @@
                         denominator_count,
                         value_col.type
                     );
-                    summary[value_col.col + '_count'] = getFraction(
-                        numerator_count,
-                        denominator_count,
-                        value_col.type
-                    );
+
+                    if (fractions) {
+                        summary[value_col.col + '_count'] = getFraction(
+                            numerator_count,
+                            denominator_count,
+                            value_col.type
+                        );
+                    }
                 });
                 summary.nest_level = d[0].nest_level;
                 summary.parents = d[0].parents;
@@ -352,7 +356,10 @@
             delete d.key;
 
             _this.config.value_cols.forEach(function(value_col) {
-                d[value_col.col] = d.values[value_col.col] + d.values[value_col.col + '_count'];
+                d[value_col.col] = fractions
+                    ? d.values[value_col.col] + d.values[value_col.col + '_count'] // value for display
+                    : d.values[value_col.col];
+                d[value_col.col + '_value'] = parseFloat(d.values[value_col.col]); // value for numeric calcs
             });
 
             d.nest_level = d.values.nest_level;
@@ -423,6 +430,7 @@
 
     function summarizeData() {
         var _this = this;
+        var fractions = this.config.display_fractions;
         var t0 = this.parent.performance.now(); //begin performance test
 
         this.data.summaries = []; //Summarize data by each ID variable.
@@ -462,7 +470,7 @@
                 }
             });
 
-            calculateStatistics.call(_this);
+            calculateStatistics.call(_this, true, fractions); //added true...
         }); // sort rows
 
         sortRows.call(this); //end performance test
@@ -554,8 +562,8 @@
             //Update query maximum.
             if (filter.variable.indexOf('query') > -1) {
                 filter.max = d3$1.max(_this.data.summarized, function(di) {
-                    return di[filter.variable];
-                });
+                    return di[filter.variable + '_value'];
+                }); //ensure numeric maxu
             } //Reset upper and lower bounds.
 
             filter.lower = filter.min;
@@ -1358,7 +1366,7 @@
             visit_order_col: 'folder_ordinal',
             form_order_col: 'form_ordinal',
             default_nesting: ['site_col', 'id_col'],
-            display_cell_annotations: true,
+            display_fractions: false,
             expand_all: false,
             sliders: false,
             max_rows_warn: 10000
@@ -1460,8 +1468,8 @@
         return [
             {
                 type: 'checkbox',
-                option: 'display_cell_annotations',
-                label: 'Display Cell Annotations'
+                option: 'display_fractions',
+                label: 'Display Fractions'
             },
             {
                 type: 'checkbox',
@@ -1688,85 +1696,6 @@
             });
     }
 
-    function customizeCells(chart, cells) {
-        cells
-            .attr('class', function(d) {
-                var cellClass = 'chm-cell';
-                if (d.col === 'id')
-                    cellClass =
-                        cellClass +
-                        ' chm-cell--id' +
-                        ' chm-cell--id--level' +
-                        d.text.split('  |').length;
-                else {
-                    cellClass = cellClass + ' chm-cell--heat';
-                    var level;
-                    if (chart.typeDict[d.col] == 'queries')
-                        level =
-                            d.text === 0
-                                ? 5
-                                : d.text < 9
-                                ? 4
-                                : d.text < 17
-                                ? 3
-                                : d.text < 25
-                                ? 2
-                                : 1;
-                    else
-                        level =
-                            d.text === 'N/A'
-                                ? 11
-                                : d.text.split(' ')[0] === 1
-                                ? 10
-                                : d.text.split(' ')[0] > 0.75
-                                ? 9
-                                : d.text.split(' ')[0] > 0.5
-                                ? 8
-                                : d.text.split(' ')[0] > 0.25
-                                ? 7
-                                : 6;
-                    cellClass = cellClass + ' chm-cell--heat--level' + level;
-                }
-                return cellClass;
-            })
-            .text(function(d) {
-                return d.col === 'id'
-                    ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : chart.typeDict[d.col] == 'crfs'
-                    ? d.text === 'N/A'
-                        ? d.text
-                        : d3$1.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
-                    : d.text;
-            });
-    }
-
-    function toggleCellAnnotations() {
-        // hide annotations and add event handiing to show them on hover
-        if (!this.config.display_cell_annotations) {
-            this.cells
-                .filter(function(d) {
-                    return d.col !== 'id' && !d.hasOwnProperty('id');
-                })
-                .style('color', 'transparent')
-                .on('mouseover', function() {
-                    var level = +this.className.replace(/(.*)(level)(\d+)(.*)/, '$3');
-                    this.style.color = [6, 7, 8, 1, 2, 3].indexOf(level) > -1 ? 'black' : 'white';
-                })
-                .on('mouseout', function() {
-                    this.style.color = 'transparent';
-                });
-        } else {
-            // had back annotations with proper styling and remove hovering events
-            this.cells
-                .filter(function(d) {
-                    return d.col !== 'id' && !d.hasOwnProperty('id');
-                })
-                .style('color', null)
-                .on('mouseover', null)
-                .on('mouseout', null);
-        }
-    }
-
     function customizeCheckboxes() {
         var context = this; //Redefine change event listener of Expand All checkbox.
 
@@ -1833,7 +1762,7 @@
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
-                return d.option === 'display_cell_annotations';
+                return d.option === 'display_fractions';
             })
             .select('.changer')
             .on('change', function(d) {
@@ -1847,7 +1776,7 @@
                         clearInterval(loading);
                         loadingdiv.classed('chm-hidden', true);
                         context.config[d.option] = changer_this.checked;
-                        toggleCellAnnotations.call(context);
+                        redraw.call(context);
                     }
                 }, 25);
             });
@@ -1925,8 +1854,8 @@
                 if (d[filter.variable] == 'N/A' && +filter.upper < 1) {
                     d.filtered = true;
                 } else {
-                    var filtered_low = +d[filter.variable] < +filter.lower;
-                    var filtered_high = +d[filter.variable] > +filter.upper; //filtered_missing = d[filter.variable] === 'N/A'
+                    var filtered_low = +d[filter.variable + '_value'] < +filter.lower;
+                    var filtered_high = +d[filter.variable + '_value'] > +filter.upper; //filtered_missing = d[filter.variable] === 'N/A'
 
                     if (filtered_low || filtered_high) {
                         d.filtered = true;
@@ -2169,7 +2098,7 @@
                             context.typeDict[variable] == 'crfs'
                                 ? 1
                                 : d3$1.max(_this.data.raw, function(di) {
-                                      return di[variable];
+                                      return di[variable + '_value'];
                                   })
                     };
                     filter.upper = filter.max;
@@ -2256,11 +2185,18 @@
 
     function addStudySummary() {
         var tempChart = this;
+        var fractions = this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.option === 'display_fractions';
+            })
+            .select('.changer')
+            .property('checked');
         tempChart.data.initial_filtered.forEach(function(d) {
             return (d['id'] = 'Overall');
         }); // calculate statistics across whole study
 
-        var stats = calculateStatistics.call(tempChart, false);
+        var stats = calculateStatistics.call(tempChart, false, fractions);
         var summaryData = [
             {
                 col: 'id',
@@ -2284,6 +2220,60 @@
             .append('td')
             .text(function(d) {
                 return d.text;
+            });
+    }
+
+    function customizeCells(chart, cells) {
+        cells
+            .attr('class', function(d) {
+                var cellClass = 'chm-cell';
+                if (d.col === 'id')
+                    cellClass =
+                        cellClass +
+                        ' chm-cell--id' +
+                        ' chm-cell--id--level' +
+                        d.text.split('  |').length;
+                else {
+                    cellClass = cellClass + ' chm-cell--heat';
+                    var level;
+                    if (chart.typeDict[d.col] == 'queries')
+                        level =
+                            d.text == 0
+                                ? 5
+                                : d.text < 9
+                                ? 4
+                                : d.text < 17
+                                ? 3
+                                : d.text < 25
+                                ? 2
+                                : 1;
+                    else
+                        level =
+                            d.text === 'N/A'
+                                ? 11
+                                : d.text.split(' ')[0] == 1
+                                ? 10
+                                : d.text.split(' ')[0] > 0.75
+                                ? 9
+                                : d.text.split(' ')[0] > 0.5
+                                ? 8
+                                : d.text.split(' ')[0] > 0.25
+                                ? 7
+                                : 6;
+                    cellClass = cellClass + ' chm-cell--heat--level' + level;
+                }
+                return cellClass;
+            })
+            .text(function(d) {
+                return d.col === 'id'
+                    ? d.text.split('  |')[d.text.split('  |').length - 1]
+                    : chart.typeDict[d.col] == 'crfs'
+                    ? d.text === 'N/A'
+                        ? d.text
+                        : d.text.split(' ')[1]
+                        ? d3$1.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
+                        : d3$1.format('%')(d.text)
+                    : d.text;
             });
     }
 
@@ -2443,8 +2433,6 @@
             customizeCells(chart, childrenCells); // keep cells on chart object up to date
 
             chart.cells = chart.tbody.selectAll('td'); // maintain display cell annotations setting since we are not drawing
-
-            toggleCellAnnotations.call(chart); // maintain display cell annotations setting since we are not drawing
 
             addIdHover.call(chart);
         }
@@ -2822,7 +2810,6 @@
             customizeCells(this, this.cells);
             addInfoBubbles.call(this);
             addRowDisplayToggle.call(this);
-            toggleCellAnnotations.call(this);
             addIdHover.call(this);
             dataExport.call(this);
             flagParentRows.call(this);

@@ -7,7 +7,7 @@ describe('Calculate statistic', () => {
     describe('Calculate CRF Percentage' , () => {
       it('should calculate percentage and round down', function() {
         const percentage = getStatistic(7,9,"crfs");
-        expect(percentage).toEqual(0.77);
+        expect(percentage).toEqual("0.77");
       });
     });
 
@@ -21,7 +21,7 @@ describe('Calculate statistic', () => {
     describe('Calculate QUERY Sum' , () => {
       it('should calculate sum', function() {
         const count = getStatistic(10, undefined,"queries");
-        expect(count).toEqual(10);
+        expect(count).toEqual("10");
       });
     });
 

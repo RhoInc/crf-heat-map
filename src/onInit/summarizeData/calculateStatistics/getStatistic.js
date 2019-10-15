@@ -14,5 +14,5 @@ export default function getStatistic(numerator_count, denominator_count, type) {
             ? numerator_count
             : console.log('Missed a Statistic!');
 
-    return statistic;
+    return String(statistic); //ensure correct type
 }

@@ -2,7 +2,7 @@ import { sum, nest } from 'd3';
 import getStatistic from './calculateStatistics/getStatistic';
 import getFraction from './calculateStatistics/getFraction';
 
-export default function calculateStatistics(onInit = true) {
+export default function calculateStatistics(onInit = true, fractions = false) {
     const context = this;
 
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
@@ -39,11 +39,13 @@ export default function calculateStatistics(onInit = true) {
                     value_col.type
                 );
 
-                summary[value_col.col + '_count'] = getFraction(
-                    numerator_count,
-                    denominator_count,
-                    value_col.type
-                );
+                if (fractions) {
+                    summary[value_col.col + '_count'] = getFraction(
+                        numerator_count,
+                        denominator_count,
+                        value_col.type
+                    );
+                }
             });
             summary.nest_level = d[0].nest_level;
             summary.parents = d[0].parents;
@@ -58,7 +60,10 @@ export default function calculateStatistics(onInit = true) {
         d.id = d.key;
         delete d.key;
         this.config.value_cols.forEach(value_col => {
-            d[value_col.col] = d.values[value_col.col] + d.values[value_col.col + '_count'];
+            d[value_col.col] = fractions
+                ? d.values[value_col.col] + d.values[value_col.col + '_count'] // value for display
+                : d.values[value_col.col];
+            d[value_col.col + '_value'] = parseFloat(d.values[value_col.col]); // value for numeric calcs
         });
         d.nest_level = d.values.nest_level;
         d.parents = d.values.parents;

@@ -14,5 +14,5 @@ export default function getFraction(numerator_count, denominator_count, type) {
             ? ''
             : console.log('Missed a Fraction!');
 
-    return fraction;
+    return String(fraction); //ensure correct type
 }

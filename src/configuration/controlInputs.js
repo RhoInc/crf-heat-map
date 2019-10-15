@@ -2,8 +2,8 @@ export default function controlInputs() {
     return [
         {
             type: 'checkbox',
-            option: 'display_cell_annotations',
-            label: 'Display Cell Annotations'
+            option: 'display_fractions',
+            label: 'Display Fractions'
         },
         {
             type: 'checkbox',

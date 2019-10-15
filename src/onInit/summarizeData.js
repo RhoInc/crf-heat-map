@@ -3,6 +3,7 @@ import sortRows from './summarizeData/sortRows';
 
 export default function summarizeData() {
     const context = this;
+    const fractions = this.config.display_fractions;
     var t0 = this.parent.performance.now();
     //begin performance test
 
@@ -37,7 +38,7 @@ export default function summarizeData() {
             }
         });
 
-        calculateStatistics.call(this);
+        calculateStatistics.call(this, true, fractions); //added true...
     });
 
     // sort rows

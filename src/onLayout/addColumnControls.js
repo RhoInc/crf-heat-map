@@ -18,7 +18,7 @@ export default function addColumnControls() {
                     max:
                         context.typeDict[variable] == 'crfs'
                             ? 1
-                            : max(this.data.raw, di => di[variable])
+                            : max(this.data.raw, di => di[variable + '_value'])
                 };
                 filter.upper = filter.max;
 
