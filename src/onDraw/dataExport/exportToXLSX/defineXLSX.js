@@ -43,14 +43,14 @@ export default function defineXLSX() {
                         value === 'N/A'
                             ? 11
                             : value === 1
-                                ? 10
-                                : value > 0.75
-                                    ? 9
-                                    : value > 0.5
-                                        ? 8
-                                        : value > 0.25
-                                            ? 7
-                                            : 6;
+                            ? 10
+                            : value > 0.75
+                            ? 9
+                            : value > 0.5
+                            ? 8
+                            : value > 0.25
+                            ? 7
+                            : 6;
 
                 const cellClass = '.chm-cell--heat--level' + level;
 
@@ -105,8 +105,8 @@ export default function defineXLSX() {
             Array.isArray(filter.val) && filter.val.length < filter.choices.length
                 ? filter.val.join(', ')
                 : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                    ? 'All'
-                    : filter.val;
+                ? 'All'
+                : filter.val;
         addCell(wb, filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
     });
 
@@ -120,7 +120,6 @@ export default function defineXLSX() {
 
     filter_sheet['!ref'] = XLSX.utils.encode_range(range);
     filter_sheet['!cols'] = [filter_col_width, filter_col_width];
-    // ws['!freeze'] = { xSplit: '1', ySplit: '1', topLeftCell: 'B2', activePane: 'bottomRight', state: 'frozen' };
 
     wb.Sheets['CRF-Heatmap'] = ws;
     wb.Sheets['Filters'] = filter_sheet;

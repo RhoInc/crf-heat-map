@@ -4,18 +4,14 @@ export default function removeFilters() {
             return true;
         } else if (!this.data.raw[0].hasOwnProperty(input.value_col)) {
             console.warn(
-                `The [ ${
-                    input.label
-                } ] filter has been removed because the variable does not exist.`
+                `The [ ${input.label} ] filter has been removed because the variable does not exist.`
             );
         } else {
             const levels = d3.set(this.data.raw.map(d => d[input.value_col])).values();
 
             if (levels.length === 1)
                 console.warn(
-                    `The [ ${
-                        input.label
-                    } ] filter has been removed because the variable has only one level.`
+                    `The [ ${input.label} ] filter has been removed because the variable has only one level.`
                 );
 
             return levels.length > 1;

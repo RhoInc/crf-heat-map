@@ -1,6 +1,5 @@
 export default function customizeRows(chart, rows) {
-    rows
-        .classed('chm-table-row', true)
+    rows.classed('chm-table-row', true)
         .classed(
             'chm-table-row--expandable',
             d => d.id.split('  |').length < chart.config.key_cols.length

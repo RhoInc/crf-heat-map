@@ -20,27 +20,26 @@ export default function customizeCells(chart, cells) {
                         d.text === 'N/A'
                             ? 11
                             : d.text === 1
-                                ? 10
-                                : d.text > 0.75
-                                    ? 9
-                                    : d.text > 0.5
-                                        ? 8
-                                        : d.text > 0.25
-                                            ? 7
-                                            : 6;
+                            ? 10
+                            : d.text > 0.75
+                            ? 9
+                            : d.text > 0.5
+                            ? 8
+                            : d.text > 0.25
+                            ? 7
+                            : 6;
                 cellClass = cellClass + ' chm-cell--heat--level' + level;
             }
 
             return cellClass;
         })
-        .text(
-            d =>
-                d.col === 'id'
-                    ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : chart.typeDict[d.col] == 'crfs'
-                        ? d.text === 'N/A'
-                            ? d.text
-                            : d3.format('%')(d.text)
-                        : d.text
+        .text(d =>
+            d.col === 'id'
+                ? d.text.split('  |')[d.text.split('  |').length - 1]
+                : chart.typeDict[d.col] == 'crfs'
+                ? d.text === 'N/A'
+                    ? d.text
+                    : d3.format('%')(d.text)
+                : d.text
         );
 }
