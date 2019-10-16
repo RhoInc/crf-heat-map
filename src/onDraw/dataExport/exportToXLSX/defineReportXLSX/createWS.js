@@ -81,8 +81,6 @@ export default function createWS(id) {
         });
     });
 
-
-
     ws['!ref'] = XLSX.utils.encode_range(range);
     ws['!cols'] = this.export.cols.map((col, i) => {
         return {
@@ -90,6 +88,5 @@ export default function createWS(id) {
         };
     });
     ws['!autofilter'] = { ref: filterRange };
-return(ws)
-
+    return ws;
 }

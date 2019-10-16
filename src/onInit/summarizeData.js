@@ -49,10 +49,10 @@ export default function summarizeData(key_cols = this.config.key_cols) {
 
     // sort rows
     const data_sorted = sortRows.call(this, data_summarized, key_cols);
-    
+
     //end performance test
     var t1 = performance.now();
     console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
 
-    return data_sorted
+    return data_sorted;
 }

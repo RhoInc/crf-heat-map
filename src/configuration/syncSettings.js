@@ -43,22 +43,6 @@ export default function syncSettings(settings) {
     //Define table column variables.
     settings.cols = d3.merge([['id'], settings.value_cols.map(d => d.col)]);
 
-    // Define nesting filters
-    var nest_settings = [];
-    if (settings.nesting_filters === true) {
-        settings.nestings.forEach(setting =>
-            nest_settings.push({
-                value_col: setting.value_col,
-                label: setting.label
-            })
-        );
-    }
-
-    //Define filter variables.
-    settings.filter_cols = Array.isArray(settings.filter_cols)
-        ? nest_settings.concat(settings.filter_cols)
-        : nest_settings;
-
     //Define cols to include in subject level export
     settings.subject_export_cols = settings.filter_cols.filter(
         filter => filter.subject_export == true

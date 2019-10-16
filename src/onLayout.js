@@ -6,7 +6,6 @@ import addColumnControls from './onLayout/addColumnControls';
 import formatControls from './onLayout/formatControls';
 import addReportExport from './onLayout/addReportExport';
 
-
 export default function onLayout() {
     customizeFilters.call(this);
     tweakMultiSelects.call(this);

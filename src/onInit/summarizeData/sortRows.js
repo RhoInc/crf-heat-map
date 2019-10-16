@@ -38,5 +38,5 @@ export default function sortRows(data_summarized, key_cols) {
             return a.id < b.id ? -1 : 1;
         }
     });
-    return data_sorted
+    return data_sorted;
 }

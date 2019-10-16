@@ -20,8 +20,7 @@ export default function dataExport() {
         });
     }
 
-  this.wrap.select('.export#report').on('click', () => {
-      exportReportToXLSX.call(this)
-})
-
+    this.wrap.select('.export#report').on('click', () => {
+        exportReportToXLSX.call(this);
+    });
 }

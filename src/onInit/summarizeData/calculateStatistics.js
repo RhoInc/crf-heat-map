@@ -86,5 +86,5 @@ export default function calculateStatistics() {
         delete d.values;
     });
 
-        return nest;
-    }
+    return nest;
+}

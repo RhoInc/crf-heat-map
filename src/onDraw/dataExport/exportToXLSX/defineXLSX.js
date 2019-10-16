@@ -97,7 +97,15 @@ export default function defineXLSX() {
     // Add filter names and values to filter sheet
     this.filters.forEach((filter, index) => {
         // Add Filter name to Filter column
-        addCell(filter_sheet, filter.col, 'c', clone(bodyStyle), range, index + 1, 0);
+        addCell(
+            filter_sheet,
+            this.export.filters[index],
+            'c',
+            clone(bodyStyle),
+            range,
+            index + 1,
+            0
+        );
 
         // Add Filter value to Value column
         // Handle multiselect
