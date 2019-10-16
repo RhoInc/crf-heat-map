@@ -1,15 +1,13 @@
-(function(global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('d3'), require('webcharts')))
-        : typeof define === 'function' && define.amd
-        ? define(['d3', 'webcharts'], factory)
-        : (global.crfHeatMap = factory(global.d3, global.webCharts));
-})(this, function(d3$1, webcharts) {
-    'use strict';
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('webcharts')) :
+    typeof define === 'function' && define.amd ? define(['d3', 'webcharts'], factory) :
+    (global.crfHeatMap = factory(global.d3,global.webCharts));
+}(this, (function (d3$1,webcharts) { 'use strict';
 
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
             value: function assign(target, varArgs) {
+
                 if (target == null) {
                     // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
@@ -156,10 +154,7 @@
                 var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
 
                 function sameValueZero(x, y) {
-                    return (
-                        x === y ||
-                        (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y))
-                    );
+                    return x === y || typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y);
                 }
 
                 // 7. Repeat, while k < len
@@ -179,26 +174,17 @@
         });
     }
 
-    var _typeof =
-        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-            ? function(obj) {
-                  return typeof obj;
-              }
-            : function(obj) {
-                  return obj &&
-                      typeof Symbol === 'function' &&
-                      obj.constructor === Symbol &&
-                      obj !== Symbol.prototype
-                      ? 'symbol'
-                      : typeof obj;
-              };
+    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+      return typeof obj;
+    } : function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
 
     function clone(obj) {
         var copy = void 0;
 
         //boolean, number, string, null, undefined
-        if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj)
-            return obj;
+        if ('object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) || null == obj) return obj;
 
         //date
         if (obj instanceof Date) {
@@ -257,8 +243,7 @@
             }
         }
 
-        if (!hasOwnProperty.call(to, key) || !isObj(val)) to[key] = val;
-        else if (val instanceof Array) to[key] = from[key];
+        if (!hasOwnProperty.call(to, key) || !isObj(val)) to[key] = val;else if (val instanceof Array) to[key] = from[key];
         // figure out how to merge arrays without converting them into objects
         else to[key] = assign(Object(to[key]), from[key]);
     }
@@ -302,106 +287,80 @@
     function calculateStatistics() {
         var _this = this;
 
-        var onInit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-
         var context = this;
 
         // throw error if any query columns have denominators
-        if (
-            context.initial_config.value_cols.filter(function(a) {
-                return a.denominator && a.type == 'queries';
-            }).length != 0
-        ) {
+        if (context.initial_config.value_cols.filter(function (a) {
+            return a.denominator && a.type == 'queries';
+        }).length != 0) {
             throw "Query Columns are sums and should not have denominators. Check the renderer settings and verify that there are no columns with denominators in value_cols with the type 'queries'. ";
         }
 
-        var crfsDenominator = context.initial_config.value_cols.filter(function(a) {
+        var crfsDenominator = context.initial_config.value_cols.filter(function (a) {
             return a.denominator && a.type == 'crfs';
         });
 
-        var crfsNoDenominator = context.initial_config.value_cols.filter(function(a) {
+        var crfsNoDenominator = context.initial_config.value_cols.filter(function (a) {
             return !a.denominator && a.type == 'crfs';
         });
 
-        var queries = context.initial_config.value_cols.filter(function(a) {
+        var queries = context.initial_config.value_cols.filter(function (a) {
             return !a.denominator && a.type == 'queries';
         });
 
         //Nest data by the ID variable defined above and calculate statistics for each summary variable.
-        var nest = d3
-            .nest()
-            .key(function(d) {
-                return d.id;
-            })
-            .rollup(function(d) {
-                //Define denominators.
-                var summary = {
-                    nForms: d.length
-                };
+        var nest = d3.nest().key(function (d) {
+            return d.id;
+        }).rollup(function (d) {
+            //Define denominators.
+            var summary = {
+                nForms: d.length
+            };
 
-                //calculate count for denominator
-                crfsDenominator.forEach(function(c) {
-                    return (summary['n' + c.denominator] = d.filter(function(di) {
-                        return di[c.denominator] === '1';
-                    }).length);
-                });
+            //calculate count for denominator
+            crfsDenominator.forEach(function (c) {
+                return summary['n' + c.denominator] = d.filter(function (di) {
+                    return di[c.denominator] === '1';
+                }).length;
+            });
 
-                //Define summarized values, either rates or counts.
-                context.initial_config.value_cols.forEach(function(value_col) {
-                    var count;
-                    if (typeof value_col.denominator === 'undefined') {
-                        count = d3.sum(d, function(di) {
-                            return di[value_col.col];
-                        });
-                    } else {
-                        // ensure numerator is subsetted in the event that an error is made
-                        // and an ID has a value of 1 and a denominator value of 0.
-                        var subset = d.filter(function(row) {
-                            return row[value_col.denominator] === '1';
-                        });
-                        count = d3.sum(subset, function(di) {
-                            return di[value_col.col];
-                        });
-                    }
-                    summary[value_col.col] =
-                        crfsNoDenominator
-                            .map(function(m) {
-                                return m.col;
-                            })
-                            .indexOf(value_col.col) > -1
-                            ? summary.nForms
-                                ? Math.floor((count / summary.nForms) * 100) / 100
-                                : 'N/A'
-                            : crfsDenominator
-                                  .map(function(m) {
-                                      return m.col;
-                                  })
-                                  .indexOf(value_col.col) > -1
-                            ? summary['n' + value_col.denominator]
-                                ? Math.floor((count / summary['n' + value_col.denominator]) * 100) /
-                                  100
-                                : 'N/A'
-                            : queries
-                                  .map(function(m) {
-                                      return m.col;
-                                  })
-                                  .indexOf(value_col.col) > -1
-                            ? count
-                            : console.log('Missed one: ' + value_col.col);
-                });
-                summary.nest_level = d[0].nest_level;
-                summary.parents = d[0].parents;
-                summary.visit_order = d[0][context.initial_config.visit_order_col];
-                summary.form_order = d[0][context.initial_config.form_order_col];
-                return summary;
-            })
-            .entries(this.data.initial_filtered);
+            //Define summarized values, either rates or counts.
+            context.initial_config.value_cols.forEach(function (value_col) {
+                var count;
+                if (typeof value_col.denominator === 'undefined') {
+                    count = d3.sum(d, function (di) {
+                        return di[value_col.col];
+                    });
+                } else {
+                    // ensure numerator is subsetted in the event that an error is made
+                    // and an ID has a value of 1 and a denominator value of 0.
+                    var subset = d.filter(function (row) {
+                        return row[value_col.denominator] === '1';
+                    });
+                    count = d3.sum(subset, function (di) {
+                        return di[value_col.col];
+                    });
+                }
+                summary[value_col.col] = crfsNoDenominator.map(function (m) {
+                    return m.col;
+                }).indexOf(value_col.col) > -1 ? summary.nForms ? Math.floor(count / summary.nForms * 100) / 100 : 'N/A' : crfsDenominator.map(function (m) {
+                    return m.col;
+                }).indexOf(value_col.col) > -1 ? summary['n' + value_col.denominator] ? Math.floor(count / summary['n' + value_col.denominator] * 100) / 100 : 'N/A' : queries.map(function (m) {
+                    return m.col;
+                }).indexOf(value_col.col) > -1 ? count : console.log('Missed one: ' + value_col.col);
+            });
+            summary.nest_level = d[0].nest_level;
+            summary.parents = d[0].parents;
+            summary.visit_order = d[0][context.initial_config.visit_order_col];
+            summary.form_order = d[0][context.initial_config.form_order_col];
+            return summary;
+        }).entries(this.data.initial_filtered);
 
         //Convert the nested data array to a flat data array.
-        nest.forEach(function(d) {
+        nest.forEach(function (d) {
             d.id = d.key;
             delete d.key;
-            _this.config.value_cols.forEach(function(value_col) {
+            _this.config.value_cols.forEach(function (value_col) {
                 d[value_col.col] = d.values[value_col.col];
             });
             d.nest_level = d.values.nest_level;
@@ -412,56 +371,32 @@
             delete d.values;
         });
 
-        //Add summarized data to array of summaries.
-        if (onInit) {
-            this.data.summaries.push(nest);
-
-            // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
-            context.typeDict = d3
-                .nest()
-                .key(function(d) {
-                    return d.col;
-                })
-                .rollup(function(rows) {
-                    return rows[0].type;
-                })
-                .map(context.initial_config.value_cols);
-        } else {
-            return nest;
-        }
+        return nest;
     }
 
-    function sortRows() {
+    function sortRows(data_summarized, key_cols) {
         var context = this;
 
         //Collapse array of arrays to array of objects.
-        this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-            var formIndex = context.config.key_cols.indexOf(context.initial_config.form_col);
-            var visitIndex = context.config.key_cols.indexOf(context.initial_config.visit_col);
+        var data_sorted = d3.merge(data_summarized).sort(function (a, b) {
+            var formIndex = key_cols.indexOf(context.initial_config.form_col);
+            var visitIndex = key_cols.indexOf(context.initial_config.visit_col);
 
             if (formIndex > -1 || visitIndex > -1) {
                 var aIds = a.id.split('  |');
                 var bIds = b.id.split('  |');
                 var i;
-                for (i = 0; i < context.config.key_cols.length; i++) {
+                for (i = 0; i < key_cols.length; i++) {
                     if (aIds[i] === bIds[i]) {
                         continue;
                     } else {
                         // use form_order_col if provided
                         if (i === formIndex && context.initial_config.form_order_col) {
-                            return typeof aIds[i] == 'undefined'
-                                ? -1
-                                : parseFloat(a.form_order) < parseFloat(b.form_order)
-                                ? -1
-                                : 1;
+                            return typeof aIds[i] == 'undefined' ? -1 : parseFloat(a.form_order) < parseFloat(b.form_order) ? -1 : 1;
                             // use visit_order_col if provided
                         }
                         if (i === visitIndex && context.initial_config.visit_order_col) {
-                            return typeof aIds[i] == 'undefined'
-                                ? -1
-                                : parseFloat(a.visit_order) < parseFloat(b.visit_order)
-                                ? -1
-                                : 1;
+                            return typeof aIds[i] == 'undefined' ? -1 : parseFloat(a.visit_order) < parseFloat(b.visit_order) ? -1 : 1;
                         } else {
                             return typeof aIds[i] === 'undefined' ? -1 : aIds[i] < bIds[i] ? -1 : 1;
                         }
@@ -471,59 +406,60 @@
                 return a.id < b.id ? -1 : 1;
             }
         });
+        return data_sorted;
     }
 
     function summarizeData() {
         var _this = this;
+
+        var key_cols = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.config.key_cols;
+
+        var context = this;
         var t0 = performance.now();
         //begin performance test
 
-        this.data.summaries = [];
+        var data_summarized = [];
 
         //Summarize data by each ID variable.
-        this.config.key_cols.forEach(function(id_col, i) {
+        key_cols.forEach(function (id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-            _this.data.initial_filtered.forEach(function(d) {
+            _this.data.initial_filtered.forEach(function (d) {
                 d.nest_level = i;
-                d.id = _this.config.key_cols
-                    .slice(0, i + 1)
-                    .map(function(id_col1) {
-                        return d[id_col1];
-                    })
-                    .join('  |');
+                d.id = key_cols.slice(0, i + 1).map(function (id_col1) {
+                    return d[id_col1];
+                }).join('  |');
 
                 d.parents = [];
                 if (d.nest_level == 2) {
-                    d.parents.push(
-                        _this.config.key_cols
-                            .slice(0, 2)
-                            .map(function(id_col1) {
-                                return d[id_col1];
-                            })
-                            .join('  |')
-                    );
+                    d.parents.push(key_cols.slice(0, 2).map(function (id_col1) {
+                        return d[id_col1];
+                    }).join('  |'));
                 }
                 if (d.nest_level == 1) {
-                    d.parents.push(
-                        _this.config.key_cols
-                            .slice(0, 1)
-                            .map(function(id_col1) {
-                                return d[id_col1];
-                            })
-                            .join('  |')
-                    );
+                    d.parents.push(key_cols.slice(0, 1).map(function (id_col1) {
+                        return d[id_col1];
+                    }).join('  |'));
                 }
             });
 
-            calculateStatistics.call(_this);
+            data_summarized.push(calculateStatistics.call(_this));
+
+            // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
+            context.typeDict = d3.nest().key(function (d) {
+                return d.col;
+            }).rollup(function (rows) {
+                return rows[0].type;
+            }).map(context.initial_config.value_cols);
         });
 
         // sort rows
-        sortRows.call(this);
+        var data_sorted = sortRows.call(this, data_summarized, key_cols);
 
         //end performance test
         var t1 = performance.now();
         console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
+
+        return data_sorted;
     }
 
     function update(filter) {
@@ -532,36 +468,18 @@
         var context = this;
 
         //update lower slider and annotation
-        if (reset)
-            filter.lowerSlider
-                .attr({
-                    min: filter.min,
-                    max: filter.max
-                })
-                .property('value', filter.lower);
-        filter.lowerAnnotation.text(
-            '' +
-                (context.typeDict[filter.variable] == 'crfs'
-                    ? Math.round(filter.lower * 100)
-                    : filter.lower) +
-                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
-        );
+        if (reset) filter.lowerSlider.attr({
+            min: filter.min,
+            max: filter.max
+        }).property('value', filter.lower);
+        filter.lowerAnnotation.text('' + (context.typeDict[filter.variable] == 'crfs' ? Math.round(filter.lower * 100) : filter.lower) + (context.typeDict[filter.variable] == 'crfs' ? '%' : ''));
 
         //update upper slider and annotation
-        if (reset)
-            filter.upperSlider
-                .attr({
-                    min: filter.min,
-                    max: filter.max
-                })
-                .property('value', filter.upper);
-        filter.upperAnnotation.text(
-            '' +
-                (context.typeDict[filter.variable] == 'crfs'
-                    ? Math.round(filter.upper * 100)
-                    : filter.upper) +
-                (context.typeDict[filter.variable] == 'crfs' ? '%' : '')
-        );
+        if (reset) filter.upperSlider.attr({
+            min: filter.min,
+            max: filter.max
+        }).property('value', filter.upper);
+        filter.upperAnnotation.text('' + (context.typeDict[filter.variable] == 'crfs' ? Math.round(filter.upper * 100) : filter.upper) + (context.typeDict[filter.variable] == 'crfs' ? '%' : ''));
     }
 
     function update$1(filter) {
@@ -570,47 +488,39 @@
         var context = this;
 
         //update lower input box
-        if (reset)
-            filter.lowerBox
-                .attr({
-                    min: filter.min,
-                    max: function max(d) {
-                        if (context.typeDict[d.variable] == 'crfs') {
-                            return filter.max * 100;
-                        } else {
-                            return filter.upper;
-                        }
-                    }
-                })
-                .property('value', filter.lower);
+        if (reset) filter.lowerBox.attr({
+            min: filter.min,
+            max: function max(d) {
+                if (context.typeDict[d.variable] == 'crfs') {
+                    return filter.max * 100;
+                } else {
+                    return filter.upper;
+                }
+            }
+        }).property('value', filter.lower);
 
         //update upper input box
-        if (reset)
-            filter.upperBox
-                .attr({
-                    min: filter.min,
-                    max: function max(d) {
-                        if (context.typeDict[d.variable] == 'crfs') {
-                            return filter.max * 100;
-                        } else {
-                            return filter.upper;
-                        }
-                    }
-                })
-                .property('value', function(d) {
-                    return context.typeDict[d.variable] == 'crfs'
-                        ? filter.upper * 100
-                        : filter.upper;
-                });
+        if (reset) filter.upperBox.attr({
+            min: filter.min,
+            max: function max(d) {
+                if (context.typeDict[d.variable] == 'crfs') {
+                    return filter.max * 100;
+                } else {
+                    return filter.upper;
+                }
+            }
+        }).property('value', function (d) {
+            return context.typeDict[d.variable] == 'crfs' ? filter.upper * 100 : filter.upper;
+        });
     }
 
     function resetFilters() {
         var _this = this;
 
-        this.columnControls.filters.forEach(function(filter) {
+        this.columnControls.filters.forEach(function (filter) {
             //Update query maximum.
             if (filter.variable.indexOf('query') > -1) {
-                filter.max = d3.max(_this.data.summarized, function(di) {
+                filter.max = d3.max(_this.data.summarized, function (di) {
                     return di[filter.variable];
                 });
             }
@@ -619,15 +529,13 @@
             filter.upper = filter.max;
 
             //Reset sliders.
-            _this.initial_config.sliders
-                ? update.call(_this, filter, true)
-                : update$1.call(_this, filter, true);
+            _this.initial_config.sliders ? update.call(_this, filter, true) : update$1.call(_this, filter, true);
         });
     }
 
     function redraw() {
-        summarizeData.call(this);
-        this.data.top = this.data.summarized.filter(function(d) {
+        this.data.summarized = summarizeData.call(this);
+        this.data.top = this.data.summarized.filter(function (d) {
             return d.parents.length == 0;
         });
         this.data.raw = this.data.top;
@@ -637,27 +545,18 @@
 
     function customizeNestOptions(key_cols) {
         // disable third nest level when the second is not chosen
-        this.containers.main
-            .selectAll('#chm-nest-control--3')
-            .property('disabled', key_cols.length === 1 ? true : false);
+        this.containers.main.selectAll('#chm-nest-control--3').property('disabled', key_cols.length === 1 ? true : false);
 
         // hide options that are selected in higher level nests
-        this.containers.nestControls
-            .selectAll('#chm-nest-control--3, #chm-nest-control--2')
-            .selectAll('option')
-            .style('display', function(d) {
-                var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
-                return ids.includes(d.value_col) ? 'none' : null;
-            });
+        this.containers.nestControls.selectAll('#chm-nest-control--3, #chm-nest-control--2').selectAll('option').style('display', function (d) {
+            var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
+            return ids.includes(d.value_col) ? 'none' : null;
+        });
 
         //hide None option from second nest when third is selected
-        this.containers.main
-            .selectAll('#chm-nest-control--2')
-            .selectAll('option')
-            .filter(function(d) {
-                return d.label === 'None';
-            })
-            .style('display', key_cols.length === 3 ? 'none' : null);
+        this.containers.main.selectAll('#chm-nest-control--2').selectAll('option').filter(function (d) {
+            return d.label === 'None';
+        }).style('display', key_cols.length === 3 ? 'none' : null);
     }
 
     function customizeNestSelects(idSelects) {
@@ -689,53 +588,35 @@
         var idList = config.nestings.slice();
         idList.push({ value_col: undefined, label: 'None' });
 
-        this.containers.nestControls
-            .append('span')
-            .attr('class', 'chm-control-label')
-            .text('');
+        this.containers.nestControls.append('span').attr('class', 'chm-control-label').text('');
         //  var idNote = this.containers.nestControls.append('span').attr('class', 'span-description');
-        var idSelects = this.containers.nestControls
-            .selectAll('select')
-            .data([0, 1, 2])
-            .enter()
-            .append('select')
-            .classed('chm-nest-control', true)
-            .attr({
-                id: function id(d) {
-                    return 'chm-nest-control--' + (d + 1);
-                },
-                title:
-                    'These dropdowns control the attributes within which the CRF rates and query counts are aggregated.\n' +
-                    'Each row in the table represents a combination of one or more of these attributes.'
-            });
+        var idSelects = this.containers.nestControls.selectAll('select').data([0, 1, 2]).enter().append('select').classed('chm-nest-control', true).attr({
+            id: function id(d) {
+                return 'chm-nest-control--' + (d + 1);
+            },
+            title: 'These dropdowns control the attributes within which the CRF rates and query counts are aggregated.\n' + 'Each row in the table represents a combination of one or more of these attributes.'
+        });
 
-        idSelects
-            .selectAll('option')
-            .data(function(d) {
-                return d === 0 // first dropdown shouldn't have "None" option
-                    ? idList.filter(function(n) {
-                          return n.value_col !== undefined;
-                      })
-                    : idList;
-            })
-            .enter()
-            .append('option')
-            .text(function(d) {
-                return d.label;
-            })
-            .property('selected', function(d) {
-                var levelNum = d3.select(this.parentNode).datum();
-                return d.value_col == config.key_cols[levelNum];
-            });
+        idSelects.selectAll('option').data(function (d) {
+            return d === 0 // first dropdown shouldn't have "None" option
+            ? idList.filter(function (n) {
+                return n.value_col !== undefined;
+            }) : idList;
+        }).enter().append('option').text(function (d) {
+            return d.label;
+        }).property('selected', function (d) {
+            var levelNum = d3.select(this.parentNode).datum();
+            return d.value_col == config.key_cols[levelNum];
+        });
 
         //ensure natural nest control options and behavior
         customizeNestOptions.call(this, config.key_cols);
 
-        idSelects.on('change', function() {
+        idSelects.on('change', function () {
             //indicate loading
             context.containers.loading.classed('chm-hidden', false);
 
-            var loading = setInterval(function() {
+            var loading = setInterval(function () {
                 var loadingIndicated = context.containers.loading.style('display') !== 'none';
 
                 if (loadingIndicated) {
@@ -744,24 +625,20 @@
 
                     //Capture the currently selected nesting variables.
                     var selectedLevels = [];
-                    idSelects.each(function(d, i) {
+                    idSelects.each(function (d, i) {
                         var _this = this;
 
-                        selectedLevels.push(
-                            idList.filter(function(n) {
-                                return n.label === _this.value;
-                            })[0].value_col
-                        );
+                        selectedLevels.push(idList.filter(function (n) {
+                            return n.label === _this.value;
+                        })[0].value_col);
                     });
 
                     //Remove duplicate nesting variables.
-                    var uniqueLevels = selectedLevels
-                        .filter(function(f) {
-                            return f != undefined;
-                        })
-                        .filter(function(item, pos) {
-                            return selectedLevels.indexOf(item) == pos;
-                        });
+                    var uniqueLevels = selectedLevels.filter(function (f) {
+                        return f != undefined;
+                    }).filter(function (item, pos) {
+                        return selectedLevels.indexOf(item) == pos;
+                    });
 
                     // Enforce Select Logic
                     customizeNestSelects.call(context, idSelects);
@@ -780,84 +657,60 @@
     }
 
     function addTitle(container, text) {
-        container
-            .append('div')
-            .classed('chm-legend-component chm-legend-title', true)
-            .text(text);
+        container.append('div').classed('chm-legend-component chm-legend-title', true).text(text);
     }
 
     function drawRects(container, data) {
-        container
-            .append('div')
-            .classed('chm-legend-component chm-legend-blocks', true)
-            .selectAll('div.chm-legend-block')
-            .data(data)
-            .enter()
-            .append('div')
-            .classed('chm-legend-div chm-legend-color-block', true)
-            .style({
-                background: function background(d) {
-                    return d.color;
-                },
-                color: function color(d, i) {
-                    return i < 3 ? 'black' : 'white';
-                }
-            })
-            .text(function(d) {
-                return d.label;
-            });
+        container.append('div').classed('chm-legend-component chm-legend-blocks', true).selectAll('div.chm-legend-block').data(data).enter().append('div').classed('chm-legend-div chm-legend-color-block', true).style({
+            background: function background(d) {
+                return d.color;
+            },
+            color: function color(d, i) {
+                return i < 3 ? 'black' : 'white';
+            }
+        }).text(function (d) {
+            return d.label;
+        });
     }
 
     function drawCrfLegend() {
-        var crfData = [
-            {
-                label: '0-25%',
-                color: '#eff3ff'
-            },
-            {
-                label: '25-50%',
-                color: '#bdd7e7'
-            },
-            {
-                label: '50-75%',
-                color: '#6baed6'
-            },
-            {
-                label: '75-99%',
-                color: '#3182bd'
-            },
-            {
-                label: '100%',
-                color: '#08519c'
-            }
-        ];
+        var crfData = [{
+            label: '0-25%',
+            color: '#eff3ff'
+        }, {
+            label: '25-50%',
+            color: '#bdd7e7'
+        }, {
+            label: '50-75%',
+            color: '#6baed6'
+        }, {
+            label: '75-99%',
+            color: '#3182bd'
+        }, {
+            label: '100%',
+            color: '#08519c'
+        }];
         addTitle(this.containers.crfLegend, 'CRFs');
         drawRects(this.containers.crfLegend, crfData);
     }
 
     function drawQueryLegend() {
-        var queryData = [
-            {
-                label: '>24',
-                color: '#edf8e9'
-            },
-            {
-                label: '17-24',
-                color: '#bae4b3'
-            },
-            {
-                label: '9-16',
-                color: '#74c476'
-            },
-            {
-                label: '1-8',
-                color: '#31a354'
-            },
-            {
-                label: '0',
-                color: '#006d2c'
-            }
-        ];
+        var queryData = [{
+            label: '>24',
+            color: '#edf8e9'
+        }, {
+            label: '17-24',
+            color: '#bae4b3'
+        }, {
+            label: '9-16',
+            color: '#74c476'
+        }, {
+            label: '1-8',
+            color: '#31a354'
+        }, {
+            label: '0',
+            color: '#006d2c'
+        }];
         addTitle(this.containers.queryLegend, 'Queries');
         drawRects(this.containers.queryLegend, queryData);
     }
@@ -866,129 +719,69 @@
 
     function defineLayout() {
         this.containers = {
-            main: d3
-                .select(this.element)
-                .append('div')
-                .datum(this)
-                .classed('crf-heat-map', true)
-                .attr('id', 'crf-heat-map' + document.querySelectorAll('.crf-heat-map').length)
+            main: d3.select(this.element).append('div').datum(this).classed('crf-heat-map', true).attr('id', 'crf-heat-map' + document.querySelectorAll('.crf-heat-map').length)
         };
 
         // display warning message to user if they are using IE
         if (isIE) {
-            this.containers.main
-                .append('p')
-                .classed('chm-ie-sucks', true)
-                .text(
-                    'Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.'
-                );
+            this.containers.main.append('p').classed('chm-ie-sucks', true).text('Internet Explorer use is not recommended with the CRF Heat Map. You are likely to experience slower loading times.');
         }
 
         /**-------------------------------------------------------------------------------------------\
         Left column
         \-------------------------------------------------------------------------------------------**/
 
-        this.containers.leftColumn = this.containers.main
-            .append('div')
-            .classed('chm-column', true)
-            .attr('id', 'chm-left-column');
+        this.containers.leftColumn = this.containers.main.append('div').classed('chm-column', true).attr('id', 'chm-left-column');
 
         /***--------------------------------------------------------------------------------------\
           Row 1
         \--------------------------------------------------------------------------------------***/
 
-        this.containers.leftColumnRow1 = this.containers.leftColumn
-            .append('div')
-            .classed('chm-row chm-row--1', true)
-            .attr('id', 'chm-left-column-row-1');
+        this.containers.leftColumnRow1 = this.containers.leftColumn.append('div').classed('chm-row chm-row--1', true).attr('id', 'chm-left-column-row-1');
 
-        this.containers.dataExport = this.containers.leftColumnRow1
-            .append('div')
-            .classed('chm-section', true)
-            .attr('id', 'chm-data-export');
-        this.containers.leftColumnRow1
-            .append('div')
-            .classed('chm-label', true)
-            .attr('id', 'chm-nest-label')
-            .text('Summarize by:');
-        this.containers.leftColumnRow1
-            .append('div')
-            .classed('chm-label', true)
-            .attr('id', 'chm-controls-label')
-            .text('');
-        this.containers.loading = this.containers.leftColumnRow1
-            .append('div')
-            .attr('id', 'chm-loading')
-            .text('Loading...');
+        this.containers.dataExport = this.containers.leftColumnRow1.append('div').classed('chm-section', true).attr('id', 'chm-data-export');
+        this.containers.leftColumnRow1.append('div').classed('chm-label', true).attr('id', 'chm-nest-label').text('Summarize by:');
+        this.containers.leftColumnRow1.append('div').classed('chm-label', true).attr('id', 'chm-controls-label').text('');
+        this.containers.loading = this.containers.leftColumnRow1.append('div').attr('id', 'chm-loading').text('Loading...');
 
         /***--------------------------------------------------------------------------------------\
           Row 2
         \--------------------------------------------------------------------------------------***/
 
-        this.containers.leftColumnRow2 = this.containers.leftColumn
-            .append('div')
-            .classed('chm-row chm-row--2', true)
-            .attr('id', 'chm-left-column-row-2');
+        this.containers.leftColumnRow2 = this.containers.leftColumn.append('div').classed('chm-row chm-row--2', true).attr('id', 'chm-left-column-row-2');
 
-        this.containers.controls = this.containers.leftColumnRow2
-            .append('div')
-            .classed('chm-section', true)
-            .attr('id', 'chm-controls');
+        this.containers.controls = this.containers.leftColumnRow2.append('div').classed('chm-section', true).attr('id', 'chm-controls');
 
         /**-------------------------------------------------------------------------------------------\
         Right column
         \-------------------------------------------------------------------------------------------**/
 
-        this.containers.rightColumn = this.containers.main
-            .append('div')
-            .classed('chm-column', true)
-            .attr('id', 'chm-right-column');
+        this.containers.rightColumn = this.containers.main.append('div').classed('chm-column', true).attr('id', 'chm-right-column');
 
         /***--------------------------------------------------------------------------------------\
           Row 1
         \--------------------------------------------------------------------------------------***/
 
-        this.containers.rightColumnRow1 = this.containers.rightColumn
-            .append('div')
-            .classed('chm-row chm-row--1', true)
-            .attr('id', 'chm-right-column-row-1');
+        this.containers.rightColumnRow1 = this.containers.rightColumn.append('div').classed('chm-row chm-row--1', true).attr('id', 'chm-right-column-row-1');
 
-        this.containers.nestControls = this.containers.rightColumnRow1
-            .append('div')
-            .classed('chm-section', true)
-            .attr('id', 'chm-nest-controls');
+        this.containers.nestControls = this.containers.rightColumnRow1.append('div').classed('chm-section', true).attr('id', 'chm-nest-controls');
         createNestControls.call(this);
 
-        this.containers.legend = this.containers.rightColumnRow1
-            .append('div')
-            .classed('chm-section', true)
-            .attr('id', 'chm-legend-container');
+        this.containers.legend = this.containers.rightColumnRow1.append('div').classed('chm-section', true).attr('id', 'chm-legend-container');
 
-        this.containers.crfLegend = this.containers.legend
-            .append('div')
-            .classed('chm-legend', true)
-            .attr('id', 'chm-crf-legend');
+        this.containers.crfLegend = this.containers.legend.append('div').classed('chm-legend', true).attr('id', 'chm-crf-legend');
         drawCrfLegend.call(this);
 
-        this.containers.queryLegend = this.containers.legend
-            .append('div')
-            .classed('chm-legend', true)
-            .attr('id', 'chm-query-legend');
+        this.containers.queryLegend = this.containers.legend.append('div').classed('chm-legend', true).attr('id', 'chm-query-legend');
         drawQueryLegend.call(this);
 
         /***--------------------------------------------------------------------------------------\
           Row 2
         \--------------------------------------------------------------------------------------***/
 
-        this.containers.rightColumnRow2 = this.containers.rightColumn
-            .append('div')
-            .classed('chm-row chm-row--2', true)
-            .attr('id', 'chm-right-column-row-2');
+        this.containers.rightColumnRow2 = this.containers.rightColumn.append('div').classed('chm-row chm-row--2', true).attr('id', 'chm-right-column-row-2');
 
-        this.containers.table = this.containers.rightColumnRow2
-            .append('div')
-            .classed('chm-section', true)
-            .attr('id', 'chm-table');
+        this.containers.table = this.containers.rightColumnRow2.append('div').classed('chm-section', true).attr('id', 'chm-table');
     }
 
     var firstColumnWidth = 16;
@@ -997,350 +790,89 @@
     var paddingLeft = 6;
 
     function defineStyles() {
+
         // calculate how many crf & query columns there are to dynamically determine width of legend
-        var queriesCount = this.settings.synced.value_cols.filter(function(a) {
+        var queriesCount = this.settings.synced.value_cols.filter(function (a) {
             return a.type == 'queries';
         }).length;
 
-        var crfsCount = this.settings.synced.value_cols.filter(function(a) {
+        var crfsCount = this.settings.synced.value_cols.filter(function (a) {
             return a.type == 'crfs';
         }).length;
 
         // make single column legends little bigger to fit legend
         if (queriesCount == 1) {
-            queriesCount = queriesCount + 0.5;
-            crfsCount = crfsCount - 0.5;
+            queriesCount = queriesCount + .5;
+            crfsCount = crfsCount - .5;
         }
 
         if (crfsCount == 1) {
-            crfsCount = crfsCount + 0.5;
-            queriesCount = queriesCount - 0.5;
+            crfsCount = crfsCount + .5;
+            queriesCount = queriesCount - .5;
         }
 
-        var styles = [
-            'body {' + '    overflow-y: scroll;' + '}',
-            'body .crf-heat-map {' +
-                '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' +
-                '    font-size: 16px;' +
-                '    line-height: normal;' +
-                '    max-width: 2200px;' +
-                '}',
-            '.crf-heat-map {' + '}',
-            '.crf-heat-map div {' + '    box-sizing: content-box;' + '}',
-            '.crf-heat-map select {' + '    font-size: 12px;' + '}',
-            '.chm-hidden {' + '    display: none !important;' + '}',
-            '.chm-ie-sucks {' + '    color: red;',
-            '    font-size: 20px;',
-            '    padding: 20px;',
-            '}',
-            '.chm-column {' + '    display: inline-block;' + '}',
-            '.chm-column > * {' + '    width: 100%;' + '}',
-            '.chm-row {' + '    display: inline-block;' + '}',
-            '.summary {' + 'border-bottom:2px solid;' + '}',
-            '.chm-row > * {' + '    display: inline-block;' + '}',
-            '.chm-row--1 {' +
-                '    height: 6em;' +
-                '    padding-bottom: 10px;' +
-                '    border-bottom: 1px solid lightgray;' +
-                '    margin-bottom: 10px;' +
-                '}',
+        var styles = ['body {' + '    overflow-y: scroll;' + '}', 'body .crf-heat-map {' + '    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;' + '    font-size: 16px;' + '    line-height: normal;' + '    max-width: 2200px;' + '}', '.crf-heat-map {' + '}', '.crf-heat-map div {' + '    box-sizing: content-box;' + '}', '.crf-heat-map select {' + '    font-size: 12px;' + '}', '.chm-hidden {' + '    display: none !important;' + '}', '.chm-ie-sucks {' + '    color: red;', '    font-size: 20px;', '    padding: 20px;', '}', '.chm-column {' + '    display: inline-block;' + '}', '.chm-column > * {' + '    width: 100%;' + '}', '.chm-row {' + '    display: inline-block;' + '}', '.summary {' + 'border-bottom:2px solid;' + '}', '.chm-row > * {' + '    display: inline-block;' + '}', '.chm-row--1 {' + '    height: 6em;' + '    padding-bottom: 10px;' + '    border-bottom: 1px solid lightgray;' + '    margin-bottom: 10px;' + '}',
 
-            /***--------------------------------------------------------------------------------------\
+        /***--------------------------------------------------------------------------------------\
           Left column
         \--------------------------------------------------------------------------------------***/
 
-            '#chm-left-column {' +
-                '    float: left;' +
-                '    width: 19.4%;' +
-                '    padding-right: .5%;' +
-                '}',
+        '#chm-left-column {' + '    float: left;' + '    width: 19.4%;' + '    padding-right: .5%;' + '}',
 
-            /****---------------------------------------------------------------------------------\
+        /****---------------------------------------------------------------------------------\
           Row 1 - Data Export
         \---------------------------------------------------------------------------------****/
 
-            '#chm-left-column-row-1 {' + '    position: relative;' + '}',
-            '#chm-loading {' +
-                '    font-size: 24px;' +
-                '    font-weight: bold;' +
-                '    color: #045a8d;' +
-                '}',
-            '#chm-nest-label {' + '    float: right;' + '}',
-            '#chm-controls-label {' +
-                '    position: absolute;' +
-                '    bottom: 0;' +
-                '    width: 100%;' +
-                '    text-align: center;' +
-                '    vertical-align: bottom;' +
-                '    font-size: 24px;' +
-                '    font-weight: bold;' +
-                '}',
+        '#chm-left-column-row-1 {' + '    position: relative;' + '}', '#chm-loading {' + '    font-size: 24px;' + '    font-weight: bold;' + '    color: #045a8d;' + '}', '#chm-nest-label {' + '    float: right;' + '}', '#chm-controls-label {' + '    position: absolute;' + '    bottom: 0;' + '    width: 100%;' + '    text-align: center;' + '    vertical-align: bottom;' + '    font-size: 24px;' + '    font-weight: bold;' + '}',
 
-            /****---------------------------------------------------------------------------------\
+        /****---------------------------------------------------------------------------------\
           Row 2 - Controls
         \---------------------------------------------------------------------------------****/
 
-            '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
-            '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
-            '#chm-controls .control-group > * {' + '    display: block;' + '    width: auto;' + '}',
-            '#chm-controls .wc-control-label {' + '    text-align: center;' + '}',
-            '#chm-controls .span-description {' + '}',
-            '#chm-controls select.changer {' + '    margin: 0 auto;' + '}',
-            '.chm-control-grouping {' + '    display: inline-block;' + '}',
-            '.chm-control-grouping .control-group .wc-control-label {' +
-                '    text-align: center;' +
-                '}',
-            '.chm-control-grouping--label {' +
-                '    text-align: center;' +
-                '    width: 100%;' +
-                '    font-size: 20px;' +
-                '    margin-bottom: 5px;' +
-                '}',
-            '.chm-filters {' +
-                '    display: flex;' +
-                '    flex-wrap: wrap ;' +
-                '    justify-content: space-evenly;' +
-                '    border-bottom: 1px solid lightgray;' +
-                '    padding-bottom: 7px;' +
-                '}',
-            '.chm-other-controls {' +
-                '    margin-top: 10px;' +
-                '    display: flex;' +
-                '    flex-wrap: wrap;' +
-                '    justify-content: space-evenly;' +
-                '}',
+        '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}', '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}', '#chm-controls .control-group > * {' + '    display: block;' + '    width: auto;' + '}', '#chm-controls .wc-control-label {' + '    text-align: center;' + '}', '#chm-controls .span-description {' + '}', '#chm-controls select.changer {' + '    margin: 0 auto;' + '}', '.chm-control-grouping {' + '    display: inline-block;' + '}', '.chm-control-grouping .control-group .wc-control-label {' + '    text-align: center;' + '}', '.chm-control-grouping--label {' + '    text-align: center;' + '    width: 100%;' + '    font-size: 20px;' + '    margin-bottom: 5px;' + '}', '.chm-filters {' + '    display: flex;' + '    flex-wrap: wrap ;' + '    justify-content: space-evenly;' + '    border-bottom: 1px solid lightgray;' + '    padding-bottom: 7px;' + '}', '.chm-other-controls {' + '    margin-top: 10px;' + '    display: flex;' + '    flex-wrap: wrap;' + '    justify-content: space-evenly;' + '}',
 
-            //checkboxes
-            '.chm-checkbox {' +
-                '    display: inline-flex !important;' +
-                '    justify-content: center;' +
-                '}',
-            '.chm-checkbox .wc-control-label {' + '    margin-right: 5px;' + '}',
-            '.chm-checkbox .changer {' + '    margin-top: 5px !important;' + '}',
+        //checkboxes
+        '.chm-checkbox {' + '    display: inline-flex !important;' + '    justify-content: center;' + '}', '.chm-checkbox .wc-control-label {' + '    margin-right: 5px;' + '}', '.chm-checkbox .changer {' + '    margin-top: 5px !important;' + '}',
 
-            /***--------------------------------------------------------------------------------------\
+        /***--------------------------------------------------------------------------------------\
           Right column
         \--------------------------------------------------------------------------------------***/
 
-            '#chm-right-column {' +
-                '    float: right;' +
-                '    width: 79.4%;' +
-                '    border-left: 1px solid lightgray;' +
-                '    padding-left: .5%;' +
-                '}',
-            '#chm-right-column-row-1 > * {' + '    display: inline-block;' + '}',
-            '#chm-right-column-row-2 > * {' + '}',
+        '#chm-right-column {' + '    float: right;' + '    width: 79.4%;' + '    border-left: 1px solid lightgray;' + '    padding-left: .5%;' + '}', '#chm-right-column-row-1 > * {' + '    display: inline-block;' + '}', '#chm-right-column-row-2 > * {' + '}',
 
-            /****---------------------------------------------------------------------------------\
+        /****---------------------------------------------------------------------------------\
           Nest controls
         \---------------------------------------------------------------------------------****/
 
-            '#chm-nest-controls {' +
-                ('    width: ' + firstColumnWidth + '%;') +
-                '    height: 100%;' +
-                '}',
-            '.chm-nest-control {' +
-                '    float: left;' +
-                '    display: block;' +
-                '    clear: left;' +
-                ('    padding-left: ' + paddingLeft + 'px;') +
-                '    min-width : 100px;' +
-                '}',
-            '.chm-nest-control.chm-hide {' +
-                '    float: left;' +
-                '    display: none;' +
-                '    clear: left;' +
-                ('    padding-left: ' + paddingLeft + 'px;') +
-                '}',
-            '#chm-nest-control--1 {' + '    margin-left: 0;' + '}',
-            '#chm-nest-control--2 {' + '    margin-left: 1em;' + '}',
-            '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
+        '#chm-nest-controls {' + ('    width: ' + firstColumnWidth + '%;') + '    height: 100%;' + '}', '.chm-nest-control {' + '    float: left;' + '    display: block;' + '    clear: left;' + ('    padding-left: ' + paddingLeft + 'px;') + '    min-width : 100px;' + '}', '.chm-nest-control.chm-hide {' + '    float: left;' + '    display: none;' + '    clear: left;' + ('    padding-left: ' + paddingLeft + 'px;') + '}', '#chm-nest-control--1 {' + '    margin-left: 0;' + '}', '#chm-nest-control--2 {' + '    margin-left: 1em;' + '}', '#chm-nest-control--3 {' + '    margin-left: 2em;' + '}',
 
-            /****---------------------------------------------------------------------------------\
+        /****---------------------------------------------------------------------------------\
           Legend
         \---------------------------------------------------------------------------------****/
 
-            '#chm-legend-container {' +
-                ('    width: ' + (100 - firstColumnWidth) + '%;') +
-                '    float: right;' +
-                '    display: inline-block;' +
-                '    height: 100%;' +
-                '}',
-            '.chm-legend {' + '    padding-top: 17px;' + '    display: inline-block;' + '}',
-            '.chm-legend > * {' + '}',
-            '#chm-crf-legend {' +
-                '    float: left;' +
-                ('    width: ' + 12.5 * crfsCount + '%;') +
-                '}',
-            '#chm-query-legend {' +
-                '    float: right;' +
-                ('    width: ' + 12.5 * queriesCount + '%;') +
-                '}',
-            '.chm-legend-title {' + '    font-size: 20px;' + '    font-weight: bold;' + '}',
-            '#chm-query-legend .chm-legend-title {' + '    text-align: right;' + '}',
-            '.chm-legend-div {' +
-                '    display: inline-block;' +
-                '    height: 20px;' +
-                '    text-align: center;' +
-                '    font-weight: bold;' +
-                '    font-size: 14px;' +
-                '}',
-            '#chm-crf-legend .chm-legend-div {' + '    width: 20%;' + '}',
-            '#chm-query-legend .chm-legend-div {' + '    width: 20%;' + '}',
+        '#chm-legend-container {' + ('    width: ' + (100 - firstColumnWidth) + '%;') + '    float: right;' + '    display: inline-block;' + '    height: 100%;' + '}', '.chm-legend {' + '    padding-top: 17px;' + '    display: inline-block;' + '}', '.chm-legend > * {' + '}', '#chm-crf-legend {' + '    float: left;' + ('    width: ' + 12.5 * crfsCount + '%;') + '}', '#chm-query-legend {' + '    float: right;' + ('    width: ' + 12.5 * queriesCount + '%;') + '}', '.chm-legend-title {' + '    font-size: 20px;' + '    font-weight: bold;' + '}', '#chm-query-legend .chm-legend-title {' + '    text-align: right;' + '}', '.chm-legend-div {' + '    display: inline-block;' + '    height: 20px;' + '    text-align: center;' + '    font-weight: bold;' + '    font-size: 14px;' + '}', '#chm-crf-legend .chm-legend-div {' + '    width: 20%;' + '}', '#chm-query-legend .chm-legend-div {' + '    width: 20%;' + '}',
 
-            /****---------------------------------------------------------------------------------\
+        /****---------------------------------------------------------------------------------\
           Table
         \---------------------------------------------------------------------------------****/
 
-            '#chm-table {' + '    width: 100%;' + '}',
-            '#chm-table table {' + '    display: table;' + '    width: 100%;' + '}',
-            '.wc-table {' + '    display: block;' + '}',
-            '.wc-table table thead tr th {' + '    cursor: default;' + '}',
-            '.wc-table table thead tr th,' +
-                '.wc-table table tbody tr td {' +
-                ('    padding-right: ' + paddingRight + 'px;') +
-                ('    padding-left: ' + paddingLeft + 'px;') +
-                '}',
-            '.wc-table table thead tr th:first-child,' +
-                '.wc-table table tbody tr td:first-child {' +
-                ('    width: ' + firstColumnWidth + '% !important;') +
-                '    text-align: left;' +
-                '}',
-            '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' +
-                '.wc-table table tbody tr td:nth-child(n + 2) {' +
-                ('    width: ' + otherColumnWidth + '% !important;') +
-                '    text-align: left;' +
-                '}',
+        '#chm-table {' + '    width: 100%;' + '}', '#chm-table table {' + '    display: table;' + '    width: 100%;' + '}', '.wc-table {' + '    display: block;' + '}', '.wc-table table thead tr th {' + '    cursor: default;' + '}', '.wc-table table thead tr th,' + '.wc-table table tbody tr td {' + ('    padding-right: ' + paddingRight + 'px;') + ('    padding-left: ' + paddingLeft + 'px;') + '}', '.wc-table table thead tr th:first-child,' + '.wc-table table tbody tr td:first-child {' + ('    width: ' + firstColumnWidth + '% !important;') + '    text-align: left;' + '}', '.wc-table table thead tr:not(#column-controls) th:nth-child(n + 2),' + '.wc-table table tbody tr td:nth-child(n + 2) {' + ('    width: ' + otherColumnWidth + '% !important;') + '    text-align: left;' + '}',
 
-            /* range sliders */
+        /* range sliders */
 
-            '#column-controls th {' + '}',
-            '.reset-button {' +
-                '    width: 100%;' +
-                '    font-weight: bold;' +
-                '    font-size: 15px;' +
-                '}',
-            '.range-slider-container {' +
-                '    position: relative;' +
-                '    width: 100%;' +
-                '    height: 30px;' +
-                '}',
-            '.range-slider {' +
-                '    width: 100%;' +
-                '    pointer-events: none;' +
-                '    position: absolute;' +
-                '    height: 15px;' +
-                '    top: 1px;' +
-                '    overflow: hidden;' +
-                '    outline: none;' +
-                '}',
-            '.range-annotation {' +
-                '    width: 100%;' +
-                '    position: absolute;' +
-                '    font-size: 12px;' +
-                '    top: 16px;' +
-                '    overflow: hidden;' +
-                '    font-weight: normal;' +
-                '}',
-            '.range-annotation--lower {' + '    text-align: left;' + '}',
-            '.range-annotation--upper {' +
-                '    text-align: right;' +
-                '    width: 50%;' +
-                '    position: absolute;' +
-                '    right: 0;' +
-                '    bottom: 0;' +
-                '}',
-            '.range-slider::-webkit-slider-thumb {' +
-                '    pointer-events: all;' +
-                '    position: relative;' +
-                '    z-index: 1;' +
-                '    outline: 0;' +
-                '}',
-            '.range-slider::-moz-range-thumb {' +
-                '    pointer-events: all;' +
-                '    position: relative;' +
-                '    z-index: 10;' +
-                '    -moz-appearance: none;' +
-                '    width: 9px;' +
-                '}',
-            '.range-slider::-moz-range-track {' +
-                '    position: relative;' +
-                '    z-index: -1;' +
-                '    background-color: rgba(0, 0, 0, 1);' +
-                '    border: 0;' +
-                '}',
-            '.range-slider::-moz-range-track {' +
-                '    -moz-appearance: none;' +
-                '    background: none transparent;' +
-                '    border: 0;' +
-                '}',
-            '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}',
-            '.range-value-container {' + '    display: inline-block;' + '    width: 45%;' + '}',
-            '.range-value-parent {' +
-                'display: inline-block;' +
-                '    position: relative;' +
-                '    width: 100%;' +
-                '  vertical-align: middle;' +
-                '    text-align: center;' +
-                '}',
-            '.range-value-container > * {' + '    text-align: right;' + '}',
-            '.range-value-container--lower {' + '    float: left;' + '    width: 55px;' + '}',
-            '.range-value-container--upper {' + '    float: right;' + '    width: 55px;' + '}',
-            '.range-value {' +
-                '    width: 74%;' +
-                '    font-weight: normal;' +
-                '    font-size: small;' +
-                '    padding: 0;' +
-                '}',
-            '.chm-text {' + '    font-size: 12px;' + '    font-weight: normal;' + '}',
+        '#column-controls th {' + '}', '.reset-button {' + '    width: 100%;' + '    font-weight: bold;' + '    font-size: 15px;' + '}', '.range-slider-container {' + '    position: relative;' + '    width: 100%;' + '    height: 30px;' + '}', '.range-slider {' + '    width: 100%;' + '    pointer-events: none;' + '    position: absolute;' + '    height: 15px;' + '    top: 1px;' + '    overflow: hidden;' + '    outline: none;' + '}', '.range-annotation {' + '    width: 100%;' + '    position: absolute;' + '    font-size: 12px;' + '    top: 16px;' + '    overflow: hidden;' + '    font-weight: normal;' + '}', '.range-annotation--lower {' + '    text-align: left;' + '}', '.range-annotation--upper {' + '    text-align: right;' + '    width: 50%;' + '    position: absolute;' + '    right: 0;' + '    bottom: 0;' + '}', '.range-slider::-webkit-slider-thumb {' + '    pointer-events: all;' + '    position: relative;' + '    z-index: 1;' + '    outline: 0;' + '}', '.range-slider::-moz-range-thumb {' + '    pointer-events: all;' + '    position: relative;' + '    z-index: 10;' + '    -moz-appearance: none;' + '    width: 9px;' + '}', '.range-slider::-moz-range-track {' + '    position: relative;' + '    z-index: -1;' + '    background-color: rgba(0, 0, 0, 1);' + '    border: 0;' + '}', '.range-slider::-moz-range-track {' + '    -moz-appearance: none;' + '    background: none transparent;' + '    border: 0;' + '}', '.range-slider::-moz-focus-outer {' + '    border: 0;' + '}', '.range-value-container {' + '    display: inline-block;' + '    width: 45%;' + '}', '.range-value-parent {' + 'display: inline-block;' + '    position: relative;' + '    width: 100%;' + '  vertical-align: middle;' + '    text-align: center;' + '}', '.range-value-container > * {' + '    text-align: right;' + '}', '.range-value-container--lower {' + '    float: left;' + '    width: 55px;' + '}', '.range-value-container--upper {' + '    float: right;' + '    width: 55px;' + '}', '.range-value {' + '    width: 74%;' + '    font-weight: normal;' + '    font-size: small;' + '    padding: 0;' + '}', '.chm-text {' + '    font-size: 12px;' + '    font-weight: normal;' + '}',
 
-            /* Table body rows */
+        /* Table body rows */
 
-            '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}',
-            '.wc-table table tbody tr:hover td:first-child {' +
-                '    border-left: 1px solid black;' +
-                '}',
-            '.wc-table table tbody tr.grayParent td:not(:first-child) {' +
-                '    background: #CCCCCC;' +
-                '    color: black;' +
-                '}',
+        '.wc-table table tbody tr:hover td {' + '    border-bottom: 1px solid black;' + '}', '.wc-table table tbody tr:hover td:first-child {' + '    border-left: 1px solid black;' + '}', '.wc-table table tbody tr.grayParent td:not(:first-child) {' + '    background: #CCCCCC;' + '    color: black;' + '}',
 
-            /* ID cells */
+        /* ID cells */
 
-            '.chm-cell--id {' +
-                '    background: white;' +
-                '   text-overflow: ellipsis;' +
-                '   white-space: nowrap;' +
-                '   overflow: hidden;' +
-                '   max-width: 0px;' +
-                '}',
-            '.chm-table-row--expandable .chm-cell--id {' +
-                '    color: blue;' +
-                '    cursor: pointer;' +
-                '    text-decoration: underline;' +
-                '}',
-            '.chm-cell--id--level2 {' + '    text-indent: 1em;' + '}',
-            '.chm-cell--id--level3 {' + '    text-indent: 2em;' + '}',
+        '.chm-cell--id {' + '    background: white;' + '   text-overflow: ellipsis;' + '   white-space: nowrap;' + '   overflow: hidden;' + '   max-width: 0px;' + '}', '.chm-table-row--expandable .chm-cell--id {' + '    color: blue;' + '    cursor: pointer;' + '    text-decoration: underline;' + '}', '.chm-cell--id--level2 {' + '    text-indent: 1em;' + '}', '.chm-cell--id--level3 {' + '    text-indent: 2em;' + '}',
 
-            /* heat cells */
+        /* heat cells */
 
-            '.chm-cell--heat {' +
-                '    text-align: right;' +
-                '    font-size: 12px;' +
-                '    border: 1px solid white;' +
-                '}',
-            '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '    color: #000000;' + '}',
-            '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '    color: #000000;' + '}',
-            '.chm-cell--heat--level3 {' + '    background: #74c476;' + '    color: #000000;' + '}',
-            '.chm-cell--heat--level4 {' + '    background: #31a354;' + '    color: #ffffff;' + '}',
-            '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '    color: #ffffff;' + '}',
-            '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '    color: #000000;' + '}',
-            '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '    color: #000000;' + '}',
-            '.chm-cell--heat--level8 {' + '    background: #6baed6;' + '    color: #000000;' + '}',
-            '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '    color: #ffffff;' + '}',
-            '.chm-cell--heat--level10 {' + '    background: #08519c;' + '    color: #ffffff;' + '}',
-            '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: #ffffff;' + '}'
-        ];
+        '.chm-cell--heat {' + '    text-align: right;' + '    font-size: 12px;' + '    border: 1px solid white;' + '}', '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '    color: #000000;' + '}', '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '    color: #000000;' + '}', '.chm-cell--heat--level3 {' + '    background: #74c476;' + '    color: #000000;' + '}', '.chm-cell--heat--level4 {' + '    background: #31a354;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '    color: #000000;' + '}', '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '    color: #000000;' + '}', '.chm-cell--heat--level8 {' + '    background: #6baed6;' + '    color: #000000;' + '}', '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level10 {' + '    background: #08519c;' + '    color: #ffffff;' + '}', '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: #ffffff;' + '}'];
 
         //Attach styles to DOM.
         this.style = document.createElement('style');
@@ -1355,101 +887,80 @@
             id_col: 'subjectnameoridentifier',
             visit_col: 'folderinstancename',
             form_col: 'ecrfpagename',
-            value_cols: [
-                {
-                    col: 'is_partial_entry',
-                    type: 'crfs',
-                    label: 'Entered',
-                    description: 'Data have been submitted in the EDC system.'
-                },
-                {
-                    col: 'verified',
-                    type: 'crfs',
-                    denominator: 'needs_verification',
-                    label: 'Source Data Verified',
-                    description:
-                        'All required fields have source data verification complete in EDC.'
-                },
-                {
-                    col: 'ready_for_freeze',
-                    type: 'crfs',
-                    label: 'Ready for Freeze',
-                    description:
-                        'All required cleaning is complete (e.g. SDV, queries resolved) and data are ready to be frozen in EDC.'
-                },
-                {
-                    col: 'is_frozen',
-                    type: 'crfs',
-                    label: 'Frozen',
-                    description: 'Data have been frozen in the EDC system.'
-                },
-                {
-                    col: 'is_signed',
-                    type: 'crfs',
-                    denominator: 'needs_signature',
-                    label: 'Signed',
-                    description: 'Data have been signed in the EDC system.'
-                },
-                {
-                    col: 'is_locked',
-                    type: 'crfs',
-                    label: 'Locked',
-                    description: 'Data have been locked in the EDC system.'
-                },
-                {
-                    col: 'open_query_ct',
-                    type: 'queries',
-                    label: 'Open',
-                    description: 'Site has not responded to issue.'
-                },
-                {
-                    col: 'answer_query_ct',
-                    type: 'queries',
-                    label: 'Answered',
-                    description: 'Site has responded to issue, DM needs to review.'
-                }
-            ],
-            filter_cols: [
-                {
-                    value_col: 'sitename',
-                    label: 'Site'
-                },
-                {
-                    value_col: 'subjectnameoridentifier',
-                    label: 'Subject ID'
-                },
-                {
-                    value_col: 'foldername',
-                    label: 'Folder'
-                },
-                {
-                    value_col: 'architectformname',
-                    label: 'Form'
-                },
-                {
-                    value_col: 'status',
-                    label: 'Subject Status',
-                    multiple: true,
-                    subject_export: true
-                },
-                {
-                    value_col: 'subjfreezeflg',
-                    label: 'Subject Freeze Status',
-                    subject_export: true
-                },
-                {
-                    value_col: 'subset1',
-                    label: 'Subset 1'
-                },
-                {
-                    value_col: 'subset2',
-                    label: 'Subset 2'
-                },
-                {
-                    value_col: 'subset3',
-                    label: 'Subset 3'
-                }
-            ],
+            value_cols: [{
+                col: 'is_partial_entry',
+                type: 'crfs',
+                label: 'Entered',
+                description: 'Data have been submitted in the EDC system.'
+            }, {
+                col: 'verified',
+                type: 'crfs',
+                denominator: 'needs_verification',
+                label: 'Source Data Verified',
+                description: 'All required fields have source data verification complete in EDC.'
+            }, {
+                col: 'ready_for_freeze',
+                type: 'crfs',
+                label: 'Ready for Freeze',
+                description: 'All required cleaning is complete (e.g. SDV, queries resolved) and data are ready to be frozen in EDC.'
+            }, {
+                col: 'is_frozen',
+                type: 'crfs',
+                label: 'Frozen',
+                description: 'Data have been frozen in the EDC system.'
+            }, {
+                col: 'is_signed',
+                type: 'crfs',
+                denominator: 'needs_signature',
+                label: 'Signed',
+                description: 'Data have been signed in the EDC system.'
+            }, {
+                col: 'is_locked',
+                type: 'crfs',
+                label: 'Locked',
+                description: 'Data have been locked in the EDC system.'
+            }, {
+                col: 'open_query_ct',
+                type: 'queries',
+                label: 'Open',
+                description: 'Site has not responded to issue.'
+            }, {
+                col: 'answer_query_ct',
+                type: 'queries',
+                label: 'Answered',
+                description: 'Site has responded to issue, DM needs to review.'
+            }],
+            filter_cols: [{
+                value_col: 'sitename',
+                label: 'Site'
+            }, {
+                value_col: 'subjectnameoridentifier',
+                label: 'Subject ID'
+            }, {
+                value_col: 'foldername',
+                label: 'Folder'
+            }, {
+                value_col: 'architectformname',
+                label: 'Form'
+            }, {
+                value_col: 'status',
+                label: 'Subject Status',
+                multiple: true,
+                subject_export: true
+            }, {
+                value_col: 'subjfreezeflg',
+                label: 'Subject Freeze Status',
+                subject_export: true
+            }, {
+                value_col: 'subset1',
+                label: 'Subset 1'
+            }, {
+                value_col: 'subset2',
+                label: 'Subset 2'
+            }, {
+                value_col: 'subset3',
+                label: 'Subset 3'
+            }],
             visit_order_col: 'folder_ordinal',
             form_order_col: 'form_ordinal',
             default_nesting: ['site_col', 'id_col'],
@@ -1476,58 +987,48 @@
 
     function syncSettings(settings) {
         // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
-        settings.value_cols.sort(function(a, b) {
+        settings.value_cols.sort(function (a, b) {
             return a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
         });
 
         // catch user providing too many nesting columns
         if (settings.default_nesting.length > 3) {
-            throw 'More than three default nesting columns were provided [' +
-                settings.default_nesting.join(', ') +
-                ']. Only three variables can be nested at a time. Please reduce the number of variables in the default_nesting setting.';
+            throw 'More than three default nesting columns were provided [' + settings.default_nesting.join(', ') + ']. Only three variables can be nested at a time. Please reduce the number of variables in the default_nesting setting.';
         }
 
         //Define initial nesting variables.
         settings.key_cols = [];
-        settings.default_nesting.forEach(function(d) {
+        settings.default_nesting.forEach(function (d) {
             settings.key_cols.push(settings[d]);
         });
 
-        settings.nestings = [
-            {
-                settings_col: 'site_col',
-                label: 'Site'
-            },
-            {
-                settings_col: 'id_col',
-                label: 'Subject ID'
-            },
-            {
-                settings_col: 'visit_col',
-                label: 'Folder'
-            },
-            {
-                settings_col: 'form_col',
-                label: 'Form'
-            }
-        ];
+        settings.nestings = [{
+            settings_col: 'site_col',
+            label: 'Site'
+        }, {
+            settings_col: 'id_col',
+            label: 'Subject ID'
+        }, {
+            settings_col: 'visit_col',
+            label: 'Folder'
+        }, {
+            settings_col: 'form_col',
+            label: 'Form'
+        }];
 
-        settings.nestings.forEach(function(d) {
+        settings.nestings.forEach(function (d) {
             d.value_col = settings[d.settings_col];
         });
 
         //Define table column variables.
-        settings.cols = d3.merge([
-            ['id'],
-            settings.value_cols.map(function(d) {
-                return d.col;
-            })
-        ]);
+        settings.cols = d3.merge([['id'], settings.value_cols.map(function (d) {
+            return d.col;
+        })]);
 
         // Define nesting filters
         var nest_settings = [];
         if (settings.nesting_filters === true) {
-            settings.nestings.forEach(function(setting) {
+            settings.nestings.forEach(function (setting) {
                 return nest_settings.push({
                     value_col: setting.value_col,
                     label: setting.label
@@ -1536,17 +1037,15 @@
         }
 
         //Define filter variables.
-        settings.filter_cols = Array.isArray(settings.filter_cols)
-            ? nest_settings.concat(settings.filter_cols)
-            : nest_settings;
+        settings.filter_cols = Array.isArray(settings.filter_cols) ? nest_settings.concat(settings.filter_cols) : nest_settings;
 
         //Define cols to include in subject level export
-        settings.subject_export_cols = settings.filter_cols.filter(function(filter) {
+        settings.subject_export_cols = settings.filter_cols.filter(function (filter) {
             return filter.subject_export == true;
         });
 
         // add labels specified in rendererSettings as headers
-        settings.headers = settings.value_cols.map(function(d) {
+        settings.headers = settings.value_cols.map(function (d) {
             return d.label;
         });
 
@@ -1562,23 +1061,20 @@
     }
 
     function controlInputs() {
-        return [
-            {
-                type: 'checkbox',
-                option: 'display_cell_annotations',
-                label: 'Display Cell Annotations'
-            },
-            {
-                type: 'checkbox',
-                option: 'expand_all',
-                label: 'Expand All'
-            }
-        ];
+        return [{
+            type: 'checkbox',
+            option: 'display_cell_annotations',
+            label: 'Display Cell Annotations'
+        }, {
+            type: 'checkbox',
+            option: 'expand_all',
+            label: 'Expand All'
+        }];
     }
 
     function syncControlInputs(settings) {
         var defaultControls = controlInputs();
-        settings.filter_cols.forEach(function(filter_col, i) {
+        settings.filter_cols.forEach(function (filter_col, i) {
             var filter = {
                 type: 'subsetter',
                 value_col: filter_col.value_col,
@@ -1589,7 +1085,7 @@
         });
 
         if (Array.isArray(settings.filters) && settings.filters.length > 0) {
-            var otherFilters = settings.filters.map(function(filter) {
+            var otherFilters = settings.filters.map(function (filter) {
                 var filterObject = {
                     type: 'subsetter',
                     value_col: filter.value_col || filter,
@@ -1613,30 +1109,17 @@
     function removeFilters() {
         var _this = this;
 
-        this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
+        this.controls.config.inputs = this.controls.config.inputs.filter(function (input) {
             if (input.type !== 'subsetter') {
                 return true;
             } else if (!_this.data.raw[0].hasOwnProperty(input.value_col)) {
-                console.warn(
-                    'The [ ' +
-                        input.label +
-                        ' ] filter has been removed because the variable does not exist.'
-                );
+                console.warn('The [ ' + input.label + ' ] filter has been removed because the variable does not exist.');
             } else {
-                var levels = d3
-                    .set(
-                        _this.data.raw.map(function(d) {
-                            return d[input.value_col];
-                        })
-                    )
-                    .values();
+                var levels = d3.set(_this.data.raw.map(function (d) {
+                    return d[input.value_col];
+                })).values();
 
-                if (levels.length === 1)
-                    console.warn(
-                        'The [ ' +
-                            input.label +
-                            ' ] filter has been removed because the variable has only one level.'
-                    );
+                if (levels.length === 1) console.warn('The [ ' + input.label + ' ] filter has been removed because the variable has only one level.');
 
                 return levels.length > 1;
             }
@@ -1647,39 +1130,23 @@
         var _this = this;
 
         var context = this;
-        var export_cols = this.initial_config.subject_export_cols.map(function(d) {
+        var export_cols = this.initial_config.subject_export_cols.map(function (d) {
             return d.value_col;
         });
 
         if (export_cols.length > 0) {
-            var subjectSetSize = d3
-                .set(
-                    this.data.initial.map(function(d) {
-                        return d[_this.config.id_col];
-                    })
-                )
-                .size();
+            var subjectSetSize = d3.set(this.data.initial.map(function (d) {
+                return d[_this.config.id_col];
+            })).size();
 
-            export_cols.forEach(function(col) {
-                if (
-                    d3
-                        .set(
-                            context.data.initial.map(function(d) {
-                                return d[context.initial_config.id_col] + d[col];
-                            })
-                        )
-                        .size() !== subjectSetSize
-                ) {
-                    console.warn(
-                        col +
-                            ' was removed from the subject level export due to multiple values within subject.'
-                    );
-                    context.initial_config.subject_export_cols.splice(
-                        context.initial_config.subject_export_cols.findIndex(function(d) {
-                            return d.value_col === col;
-                        }),
-                        1
-                    );
+            export_cols.forEach(function (col) {
+                if (d3.set(context.data.initial.map(function (d) {
+                    return d[context.initial_config.id_col] + d[col];
+                })).size() !== subjectSetSize) {
+                    console.warn(col + " was removed from the subject level export due to multiple values within subject.");
+                    context.initial_config.subject_export_cols.splice(context.initial_config.subject_export_cols.findIndex(function (d) {
+                        return d.value_col === col;
+                    }), 1);
                 }
             });
         }
@@ -1696,9 +1163,9 @@
         removeFilters.call(this);
 
         //Summarize raw data.
-        summarizeData.call(this);
+        this.data.summarized = summarizeData.call(this);
 
-        this.data.top = this.data.summarized.filter(function(d) {
+        this.data.top = this.data.summarized.filter(function (d) {
             return d.parents.length == 0;
         });
 
@@ -1713,178 +1180,99 @@
         var context = this;
 
         //Redefine change event listener of filters.
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.type === 'subsetter';
-            })
-            .each(function(d) {
-                var dropdown = d3.select(this).select('.changer');
+        this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.type === 'subsetter';
+        }).each(function (d) {
+            var dropdown = d3.select(this).select('.changer');
 
-                dropdown.on('change', function(di) {
-                    var _this = this;
+            dropdown.on('change', function (di) {
+                var _this = this;
 
-                    //indicate loading
-                    context.parent.containers.loading.classed('chm-hidden', false);
+                //indicate loading
+                context.parent.containers.loading.classed('chm-hidden', false);
 
-                    var loading = setInterval(function() {
-                        var loadingIndicated =
-                            context.parent.containers.loading.style('display') !== 'none';
+                var loading = setInterval(function () {
+                    var loadingIndicated = context.parent.containers.loading.style('display') !== 'none';
 
-                        if (loadingIndicated) {
-                            clearInterval(loading);
-                            context.parent.containers.loading.classed('chm-hidden', true);
+                    if (loadingIndicated) {
+                        clearInterval(loading);
+                        context.parent.containers.loading.classed('chm-hidden', true);
 
-                            //Update filter val
-                            context.filters.find(function(filter) {
-                                return filter.col === di.value_col;
-                            }).val = _this.multiple
-                                ? dropdown
-                                      .selectAll('option:checked')
-                                      .pop()
-                                      .map(function(d) {
-                                          return d.textContent;
-                                      })
-                                : dropdown.selectAll('option:checked').text();
+                        //Update filter val
+                        context.filters.find(function (filter) {
+                            return filter.col === di.value_col;
+                        }).val = _this.multiple ? dropdown.selectAll('option:checked').pop().map(function (d) {
+                            return d.textContent;
+                        }) : dropdown.selectAll('option:checked').text();
 
-                            //Update filter index
-                            context.filters.find(function(filter) {
-                                return filter.col === di.value_col;
-                            }).index = _this.multiple
-                                ? null
-                                : dropdown.selectAll('option:checked').property('index');
+                        //Update filter index
+                        context.filters.find(function (filter) {
+                            return filter.col === di.value_col;
+                        }).index = _this.multiple ? null : dropdown.selectAll('option:checked').property('index');
 
-                            //Filter data.
-                            context.data.initial_filtered = context.data.initial;
-                            context.filters
-                                .filter(function(filter) {
-                                    return (
-                                        !(filter.all === true && filter.index === 0) &&
-                                        !(
-                                            Array.isArray(filter.val) &&
-                                            filter.val.length === filter.choices.length
-                                        )
-                                    );
-                                })
-                                .forEach(function(filter) {
-                                    context.data.initial_filtered = context.data.initial_filtered.filter(
-                                        function(dii) {
-                                            return Array.isArray(filter.val)
-                                                ? filter.val.indexOf(dii[filter.col]) > -1
-                                                : dii[filter.col] === filter.val;
-                                        }
-                                    );
-                                });
+                        //Filter data.
+                        context.data.initial_filtered = context.data.initial;
+                        context.filters.filter(function (filter) {
+                            return !(filter.all === true && filter.index === 0) && !(Array.isArray(filter.val) && filter.val.length === filter.choices.length);
+                        }).forEach(function (filter) {
+                            context.data.initial_filtered = context.data.initial_filtered.filter(function (dii) {
+                                return Array.isArray(filter.val) ? filter.val.indexOf(dii[filter.col]) > -1 : dii[filter.col] === filter.val;
+                            });
+                        });
 
-                            //Summarize filtered data and redraw table.
-                            redraw.call(context);
-                        }
-                    }, 25);
-                });
+                        //Summarize filtered data and redraw table.
+                        redraw.call(context);
+                    }
+                }, 25);
             });
+        });
     }
 
     function tweakMultiSelects() {
         var context = this;
 
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.type === 'subsetter' && d.multiple;
-            })
-            .each(function(d) {
-                d3.select(this)
-                    .select('select')
-                    .attr(
-                        'size',
-                        context.filters.find(function(filter) {
-                            return filter.col === d.value_col;
-                        }).choices.length
-                    )
-                    .attr('title', 'Hold the CTRL key to select or deselect a single option.')
-                    .selectAll('option')
-                    .property('selected', true);
-            });
+        this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.type === 'subsetter' && d.multiple;
+        }).each(function (d) {
+            d3.select(this).select('select').attr('size', context.filters.find(function (filter) {
+                return filter.col === d.value_col;
+            }).choices.length).attr('title', 'Hold the CTRL key to select or deselect a single option.').selectAll('option').property('selected', true);
+        });
     }
 
     function customizeCells(chart, cells) {
-        cells
-            .attr('class', function(d) {
-                var cellClass = 'chm-cell';
+        cells.attr('class', function (d) {
+            var cellClass = 'chm-cell';
 
-                if (d.col === 'id')
-                    cellClass =
-                        cellClass +
-                        ' chm-cell--id' +
-                        ' chm-cell--id--level' +
-                        d.text.split('  |').length;
-                else {
-                    cellClass = cellClass + ' chm-cell--heat';
-                    var level = void 0;
-                    if (chart.typeDict[d.col] == 'queries')
-                        level =
-                            d.text === 0
-                                ? 5
-                                : d.text < 9
-                                ? 4
-                                : d.text < 17
-                                ? 3
-                                : d.text < 25
-                                ? 2
-                                : 1;
-                    else
-                        level =
-                            d.text === 'N/A'
-                                ? 11
-                                : d.text === 1
-                                ? 10
-                                : d.text > 0.75
-                                ? 9
-                                : d.text > 0.5
-                                ? 8
-                                : d.text > 0.25
-                                ? 7
-                                : 6;
-                    cellClass = cellClass + ' chm-cell--heat--level' + level;
-                }
+            if (d.col === 'id') cellClass = cellClass + ' chm-cell--id' + ' chm-cell--id--level' + d.text.split('  |').length;else {
+                cellClass = cellClass + ' chm-cell--heat';
+                var level = void 0;
+                if (chart.typeDict[d.col] == 'queries') level = d.text === 0 ? 5 : d.text < 9 ? 4 : d.text < 17 ? 3 : d.text < 25 ? 2 : 1;else level = d.text === 'N/A' ? 11 : d.text === 1 ? 10 : d.text > 0.75 ? 9 : d.text > 0.5 ? 8 : d.text > 0.25 ? 7 : 6;
+                cellClass = cellClass + ' chm-cell--heat--level' + level;
+            }
 
-                return cellClass;
-            })
-            .text(function(d) {
-                return d.col === 'id'
-                    ? d.text.split('  |')[d.text.split('  |').length - 1]
-                    : chart.typeDict[d.col] == 'crfs'
-                    ? d.text === 'N/A'
-                        ? d.text
-                        : d3.format('%')(d.text)
-                    : d.text;
-            });
+            return cellClass;
+        }).text(function (d) {
+            return d.col === 'id' ? d.text.split('  |')[d.text.split('  |').length - 1] : chart.typeDict[d.col] == 'crfs' ? d.text === 'N/A' ? d.text : d3.format('%')(d.text) : d.text;
+        });
     }
 
     function toggleCellAnnotations() {
         // hide annotations and add event handiing to show them on hover
         if (!this.config.display_cell_annotations) {
-            this.cells
-                .filter(function(d) {
-                    return d.col !== 'id' && !d.hasOwnProperty('id');
-                })
-                .style('color', 'transparent')
-                .on('mouseover', function() {
-                    var level = +this.className.replace(/(.*)(level)(\d+)(.*)/, '$3');
-                    this.style.color = [6, 7, 8, 1, 2, 3].indexOf(level) > -1 ? 'black' : 'white';
-                })
-                .on('mouseout', function() {
-                    this.style.color = 'transparent';
-                });
+            this.cells.filter(function (d) {
+                return d.col !== 'id' && !d.hasOwnProperty('id');
+            }).style('color', 'transparent').on('mouseover', function () {
+                var level = +this.className.replace(/(.*)(level)(\d+)(.*)/, '$3');
+                this.style.color = [6, 7, 8, 1, 2, 3].indexOf(level) > -1 ? 'black' : 'white';
+            }).on('mouseout', function () {
+                this.style.color = 'transparent';
+            });
         } else {
             // had back annotations with proper styling and remove hovering events
-            this.cells
-                .filter(function(d) {
-                    return d.col !== 'id' && !d.hasOwnProperty('id');
-                })
-                .style('color', null)
-                .on('mouseover', null)
-                .on('mouseout', null);
+            this.cells.filter(function (d) {
+                return d.col !== 'id' && !d.hasOwnProperty('id');
+            }).style('color', null).on('mouseover', null).on('mouseout', null);
         }
     }
 
@@ -1892,81 +1280,24 @@
         var context = this;
 
         //Redefine change event listener of Expand All checkbox.
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.option === 'expand_all';
-            })
-            .select('.changer')
-            .on('change', function(d) {
-                var changer_this = this;
+        this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.option === 'expand_all';
+        }).select('.changer').on('change', function (d) {
+            var changer_this = this;
 
-                var confirmation = true;
-                if (
-                    changer_this.checked &&
-                    context.data.summarized.length > context.initial_config.max_rows_warn
-                ) {
-                    confirmation = confirm(
-                        'This will draw over ' +
-                            String(context.initial_config.max_rows_warn) +
-                            ' rows. Proceed?'
-                    );
-                }
+            var confirmation = true;
+            if (changer_this.checked && context.data.summarized.length > context.initial_config.max_rows_warn) {
+                confirmation = confirm('This will draw over ' + String(context.initial_config.max_rows_warn) + ' rows. Proceed?');
+            }
 
-                if (!confirmation) {
-                    changer_this.checked = false;
-                } else {
-                    var loadingdiv = context.parent.containers.main.select('#chm-loading'); // fix this later due to confirm box
-
-                    loadingdiv.classed('chm-hidden', false);
-
-                    var loading = setInterval(function() {
-                        var loadingIndicated = loadingdiv.style('display') !== 'none';
-
-                        if (loadingIndicated) {
-                            clearInterval(loading);
-                            loadingdiv.classed('chm-hidden', true);
-
-                            context.config[d.option] = changer_this.checked;
-
-                            if (changer_this.checked) {
-                                context.data.raw = context.data.summarized;
-                                // need to filter rows when expanding in case some input boxes are in use
-                                if (context.columnControls.filtered) {
-                                    context.data.raw = context.data.raw.filter(function(f) {
-                                        return !f.filtered || f.visible_child;
-                                    });
-                                }
-                                context.draw(context.data.raw);
-                                context.expandable_rows.classed('chm-table-row--collapsed', false);
-                                // I'm making the default when the chart is drawn to collapse all rows and (have the box unchecked)
-                                // however I do want it to be checked when it's supposed to so flipping it back here
-                                changer_this.checked = context.config[d.option];
-                            } else {
-                                context.draw(context.data.top);
-                                context.expandable_rows.classed('chm-table-row--collapsed', true);
-                            }
-                        }
-                    }, 25);
-                }
-                context.config[d.option] = changer_this.checked;
-            });
-
-        //Redefine change event listener of Display Cell Anntotions checkbox.
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.option === 'display_cell_annotations';
-            })
-            .select('.changer')
-            .on('change', function(d) {
-                var changer_this = this;
-
-                var loadingdiv = context.parent.containers.main.select('#chm-loading');
+            if (!confirmation) {
+                changer_this.checked = false;
+            } else {
+                var loadingdiv = context.parent.containers.main.select('#chm-loading'); // fix this later due to confirm box
 
                 loadingdiv.classed('chm-hidden', false);
 
-                var loading = setInterval(function() {
+                var loading = setInterval(function () {
                     var loadingIndicated = loadingdiv.style('display') !== 'none';
 
                     if (loadingIndicated) {
@@ -1974,10 +1305,52 @@
                         loadingdiv.classed('chm-hidden', true);
 
                         context.config[d.option] = changer_this.checked;
-                        toggleCellAnnotations.call(context);
+
+                        if (changer_this.checked) {
+                            context.data.raw = context.data.summarized;
+                            // need to filter rows when expanding in case some input boxes are in use
+                            if (context.columnControls.filtered) {
+                                context.data.raw = context.data.raw.filter(function (f) {
+                                    return !f.filtered || f.visible_child;
+                                });
+                            }
+                            context.draw(context.data.raw);
+                            context.expandable_rows.classed('chm-table-row--collapsed', false);
+                            // I'm making the default when the chart is drawn to collapse all rows and (have the box unchecked)
+                            // however I do want it to be checked when it's supposed to so flipping it back here
+                            changer_this.checked = context.config[d.option];
+                        } else {
+                            context.draw(context.data.top);
+                            context.expandable_rows.classed('chm-table-row--collapsed', true);
+                        }
                     }
                 }, 25);
-            });
+            }
+            context.config[d.option] = changer_this.checked;
+        });
+
+        //Redefine change event listener of Display Cell Anntotions checkbox.
+        this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.option === 'display_cell_annotations';
+        }).select('.changer').on('change', function (d) {
+            var changer_this = this;
+
+            var loadingdiv = context.parent.containers.main.select('#chm-loading');
+
+            loadingdiv.classed('chm-hidden', false);
+
+            var loading = setInterval(function () {
+                var loadingIndicated = loadingdiv.style('display') !== 'none';
+
+                if (loadingIndicated) {
+                    clearInterval(loading);
+                    loadingdiv.classed('chm-hidden', true);
+
+                    context.config[d.option] = changer_this.checked;
+                    toggleCellAnnotations.call(context);
+                }
+            }, 25);
+        });
     }
 
     function addResetButton(th, d) {
@@ -1988,21 +1361,14 @@
         var resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
 
         var resetButton = {};
-        resetButton.container = d3
-            .select(th)
-            .append('div')
-            .classed('reset-button-container', true);
+        resetButton.container = d3.select(th).append('div').classed('reset-button-container', true);
 
-        resetButton.button = resetButton.container
-            .append('button')
-            .classed('reset-button', true)
-            .text('Reset ' + resetText)
-            .on('click', function() {
-                context.columnControls.filtered = false;
-                resetFilters.call(_this);
-                _this.draw(_this.data.top);
-                _this.rows.classed('grayParent', false);
-            });
+        resetButton.button = resetButton.container.append('button').classed('reset-button', true).text('Reset ' + resetText).on('click', function () {
+            context.columnControls.filtered = false;
+            resetFilters.call(_this);
+            _this.draw(_this.data.top);
+            _this.rows.classed('grayParent', false);
+        });
         this.columnControls.resetButton = resetButton;
     }
 
@@ -2010,50 +1376,37 @@
         var context = this;
 
         //add containing div to header cell
-        filter.div = filter.cell
-            .append('div')
-            .datum(filter)
-            .classed('range-slider-container', true);
+        filter.div = filter.cell.append('div').datum(filter).classed('range-slider-container', true);
 
         //lower slider
-        filter.lowerSlider = filter.div
-            .append('input')
-            .classed('range-slider filter-slider--lower', true)
-            .attr({
-                type: 'range',
-                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
-                min: 0
-            });
+        filter.lowerSlider = filter.div.append('input').classed('range-slider filter-slider--lower', true).attr({
+            type: 'range',
+            step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
+            min: 0
+        });
 
-        filter.lowerAnnotation = filter.div
-            .append('span')
-            .classed('range-annotation range-annotation--lower', true);
+        filter.lowerAnnotation = filter.div.append('span').classed('range-annotation range-annotation--lower', true);
 
         //upper slider
-        filter.upperSlider = filter.div
-            .append('input')
-            .classed('range-slider filter-slider--upper', true)
-            .attr({
-                type: 'range',
-                step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
-                min: 0
-            });
-        filter.upperAnnotation = filter.div
-            .append('span')
-            .classed('range-annotation range-annotation--upper', true);
+        filter.upperSlider = filter.div.append('input').classed('range-slider filter-slider--upper', true).attr({
+            type: 'range',
+            step: context.typeDict[filter.variable] == 'crfs' ? 0.01 : 1,
+            min: 0
+        });
+        filter.upperAnnotation = filter.div.append('span').classed('range-annotation range-annotation--upper', true);
     }
 
     function filterData() {
         var _this = this;
 
-        this.data.summarized.forEach(function(d) {
+        this.data.summarized.forEach(function (d) {
             d.filtered = false;
             d.visible_child = false;
         });
 
         //First, get all the rows that match the filters
-        this.columnControls.filters.forEach(function(filter) {
-            _this.data.summarized.forEach(function(d) {
+        this.columnControls.filters.forEach(function (filter) {
+            _this.data.summarized.forEach(function (d) {
                 // filter N/As (as 100%) too
                 if (d[filter.variable] == 'N/A' && +filter.upper < 1) {
                     d.filtered = true;
@@ -2070,26 +1423,24 @@
 
         //now, identify hidden parent rows that have visible rowChildren
         //for rows that are visible (filtered = false)
-        var visible_row_parents = this.data.summarized
-            .filter(function(f) {
-                return !f.filtered;
-            })
-            .map(function(f) {
-                return f.parents;
-            });
+        var visible_row_parents = this.data.summarized.filter(function (f) {
+            return !f.filtered;
+        }).map(function (f) {
+            return f.parents;
+        });
         var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
 
         //identifiy the parent rows
-        this.data.raw = this.data.summarized.map(function(m) {
+        this.data.raw = this.data.summarized.map(function (m) {
             m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
             return m;
         });
 
-        this.data.raw = this.data.raw.filter(function(d) {
+        this.data.raw = this.data.raw.filter(function (d) {
             return d.parents.length == 0;
         }); // only want to draw top level;
 
-        this.data.raw = this.data.raw.filter(function(f) {
+        this.data.raw = this.data.raw.filter(function (f) {
             return !f.filtered || f.visible_child;
         });
     }
@@ -2098,14 +1449,14 @@
         var context = this;
 
         //Attach an event listener to Sliders
-        filter.sliders = filter.div.selectAll('.range-slider').on('change', function(d) {
+        filter.sliders = filter.div.selectAll('.range-slider').on('change', function (d) {
             var _this = this;
 
             var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
             loadingdiv.classed('chm-hidden', false);
 
-            var loading = setInterval(function() {
+            var loading = setInterval(function () {
                 var loadingIndicated = loadingdiv.style('display') !== 'none';
 
                 if (loadingIndicated) {
@@ -2132,7 +1483,7 @@
             }, 25);
         });
 
-        filter.sliders = filter.div.selectAll('.range-slider').on('input', function(d) {
+        filter.sliders = filter.div.selectAll('.range-slider').on('input', function (d) {
             var sliders = this.parentNode.getElementsByTagName('input');
             var slider1 = parseFloat(sliders[0].value);
             var slider2 = parseFloat(sliders[1].value);
@@ -2149,22 +1500,16 @@
         });
 
         //allow users to change filter settings by editing text annotations - not handling the flip case for simplicity
-        filter.upperAnnotation.attr('contenteditable', true).on('blur', function(d) {
-            d.upper =
-                context.typeDict[filter.variable] == 'crfs'
-                    ? parseFloat(this.textContent) / 100
-                    : parseFloat(this.textContent);
+        filter.upperAnnotation.attr('contenteditable', true).on('blur', function (d) {
+            d.upper = context.typeDict[filter.variable] == 'crfs' ? parseFloat(this.textContent) / 100 : parseFloat(this.textContent);
             context.columnControls.filtered = true;
             filter.upperSlider.property('value', d.upper);
             filterData.call(context);
             context.draw(context.data.raw);
         });
 
-        filter.lowerAnnotation.attr('contenteditable', true).on('blur', function(d) {
-            d.lower =
-                context.typeDict[filter.variable] == 'crfs'
-                    ? parseFloat(this.textContent) / 100
-                    : parseFloat(this.textContent);
+        filter.lowerAnnotation.attr('contenteditable', true).on('blur', function (d) {
+            d.lower = context.typeDict[filter.variable] == 'crfs' ? parseFloat(this.textContent) / 100 : parseFloat(this.textContent);
             context.columnControls.filtered = true;
             filter.lowerSlider.property('value', d.lower);
             filterData.call(context);
@@ -2176,75 +1521,53 @@
         var context = this;
 
         //add containing div to header cell
-        filter.div = filter.cell
-            .append('div')
-            .datum(filter)
-            .classed('range-value-parent', true);
+        filter.div = filter.cell.append('div').datum(filter).classed('range-value-parent', true);
 
-        var rangeValueLowerDiv = filter.div
-            .append('div')
-            .classed('range-value-container range-value-container--lower', true);
+        var rangeValueLowerDiv = filter.div.append('div').classed('range-value-container range-value-container--lower', true);
 
         //lower Input Box
-        filter.lowerBox = rangeValueLowerDiv
-            .append('input')
-            .classed('range-value filter-value--lower', true)
-            .attr({
-                type: 'number',
-                min: 0,
-                step: 1,
-                value: 0
-            });
+        filter.lowerBox = rangeValueLowerDiv.append('input').classed('range-value filter-value--lower', true).attr({
+            type: 'number',
+            min: 0,
+            step: 1,
+            value: 0
+        });
 
-        rangeValueLowerDiv
-            .append('span')
-            .classed('chm-text', true)
-            .text(function(d) {
-                return context.typeDict[d.variable] == 'crfs' ? '%' : '';
-            });
+        rangeValueLowerDiv.append('span').classed('chm-text', true).text(function (d) {
+            return context.typeDict[d.variable] == 'crfs' ? '%' : '';
+        });
 
-        filter.div
-            .append('span')
-            .classed('chm-dash', true)
-            .text(function(d) {
-                return ' - ';
-            });
+        filter.div.append('span').classed('chm-dash', true).text(function (d) {
+            return ' - ';
+        });
 
-        var rangeValueUpperDiv = filter.div
-            .append('div')
-            .classed('range-value-container range-value-container--upper', true);
+        var rangeValueUpperDiv = filter.div.append('div').classed('range-value-container range-value-container--upper', true);
 
         //upper Input Box
-        filter.upperBox = rangeValueUpperDiv
-            .append('input')
-            .classed('range-value filter-value--upper', true)
-            .attr({
-                type: 'number',
-                min: 0,
-                step: 1,
-                value: 100
-            });
+        filter.upperBox = rangeValueUpperDiv.append('input').classed('range-value filter-value--upper', true).attr({
+            type: 'number',
+            min: 0,
+            step: 1,
+            value: 100
+        });
 
-        rangeValueUpperDiv
-            .append('span')
-            .classed('chm-text', true)
-            .text(function(d) {
-                return context.typeDict[d.variable] == 'crfs' ? '%' : '';
-            });
+        rangeValueUpperDiv.append('span').classed('chm-text', true).text(function (d) {
+            return context.typeDict[d.variable] == 'crfs' ? '%' : '';
+        });
     }
 
     function addEventListeners$1(filter) {
         var context = this;
 
         //Attach an event listener to Input Boxes.
-        filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function(d) {
+        filter.inputBoxes = filter.div.selectAll('.range-value').on('change', function (d) {
             var _this = this;
 
             var loadingdiv = context.parent.containers.main.select('#chm-loading');
 
             loadingdiv.classed('chm-hidden', false);
 
-            var loading = setInterval(function() {
+            var loading = setInterval(function () {
                 var loadingIndicated = loadingdiv.style('display') !== 'none';
 
                 if (loadingIndicated) {
@@ -2283,7 +1606,7 @@
 
     function addSliders(th, d) {
         //Define layout of header cells.
-        var filter = this.columnControls.filters.find(function(filter) {
+        var filter = this.columnControls.filters.find(function (filter) {
             return filter.variable === d;
         });
         filter.cell = d3.select(th);
@@ -2308,91 +1631,66 @@
         //Define custom column controls object.
         this.columnControls = {
             header: this.thead.append('tr').attr('id', 'column-controls'),
-            filters: this.config.cols
-                .filter(function(d) {
-                    return d !== 'id';
-                })
-                .map(function(variable) {
-                    var filter = {
-                        variable: variable,
-                        min: 0,
-                        lower: 0,
-                        max:
-                            context.typeDict[variable] == 'crfs'
-                                ? 1
-                                : d3.max(_this.data.raw, function(di) {
-                                      return di[variable];
-                                  })
-                    };
-                    filter.upper = filter.max;
+            filters: this.config.cols.filter(function (d) {
+                return d !== 'id';
+            }).map(function (variable) {
+                var filter = {
+                    variable: variable,
+                    min: 0,
+                    lower: 0,
+                    max: context.typeDict[variable] == 'crfs' ? 1 : d3.max(_this.data.raw, function (di) {
+                        return di[variable];
+                    })
+                };
+                filter.upper = filter.max;
 
-                    return filter;
-                })
+                return filter;
+            })
         };
 
         //Add cells to header.
-        this.columnControls.cells = this.columnControls.header
-            .selectAll('th')
-            .data(this.config.cols)
-            .enter()
-            .append('th')
-            .each(function(d) {
-                if (d === 'id') addResetButton.call(context, this);
-                else addSliders.call(context, this, d);
-            });
+        this.columnControls.cells = this.columnControls.header.selectAll('th').data(this.config.cols).enter().append('th').each(function (d) {
+            if (d === 'id') addResetButton.call(context, this);else addSliders.call(context, this, d);
+        });
     }
 
     function formatControls() {
         var context = this;
         // assign classes based on control type and if it's a nesting filter
 
-        this.controls.controlGroups = this.controls.wrap
-            .selectAll('.control-group')
-            .attr('class', function(d) {
-                return 'control-group chm-' + d.type;
-            });
+        this.controls.controlGroups = this.controls.wrap.selectAll('.control-group').attr('class', function (d) {
+            return 'control-group chm-' + d.type;
+        });
 
         //Group filters
         this.controls.filters = {
-            container: this.controls.wrap
-                .insert('div')
-                .classed('chm-control-grouping chm-filters', true)
+            container: this.controls.wrap.insert('div').classed('chm-control-grouping chm-filters', true)
         };
 
-        this.controls.filters.container
-            .append('div')
-            .classed('chm-control-grouping--label', true)
-            .text('Filters');
+        this.controls.filters.container.append('div').classed('chm-control-grouping--label', true).text('Filters');
 
         this.controls.filters.controlGroups = this.controls.wrap.selectAll('.chm-subsetter');
-        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll(
-            '.wc-control-label'
-        );
+        this.controls.filters.labels = this.controls.filters.controlGroups.selectAll('.wc-control-label');
         this.controls.filters.selects = this.controls.filters.controlGroups.selectAll('.changer');
-        this.controls.filters.controlGroups.each(function(d) {
+        this.controls.filters.controlGroups.each(function (d) {
             context.controls.filters.container.node().appendChild(this);
         });
 
         //Group other controls
         this.controls.otherControls = {
-            container: this.controls.wrap
-                .insert('div')
-                .classed('chm-control-grouping chm-other-controls', true)
+            container: this.controls.wrap.insert('div').classed('chm-control-grouping chm-other-controls', true)
         };
-        this.controls.otherControls.label = this.controls.otherControls.container
-            .append('div')
-            .classed('chm-control-grouping--label', true)
-            .text('Controls');
+        this.controls.otherControls.label = this.controls.otherControls.container.append('div').classed('chm-control-grouping--label', true).text('Controls');
 
-        this.controls.otherControls.controlGroups = this.controls.wrap.selectAll(
-            '.control-group:not(.chm-subsetter)'
-        );
-        this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll(
-            '.wc-control-label'
-        );
-        this.controls.otherControls.controlGroups.each(function(d) {
+        this.controls.otherControls.controlGroups = this.controls.wrap.selectAll('.control-group:not(.chm-subsetter)');
+        this.controls.otherControls.labels = this.controls.otherControls.controlGroups.selectAll('.wc-control-label');
+        this.controls.otherControls.controlGroups.each(function (d) {
             context.controls.otherControls.container.node().appendChild(this);
         });
+    }
+
+    function addReportExport() {
+        this.exportable.wrap.append('a', '#csv').classed('wc-button export', true).attr('id', 'report').text('Report');
     }
 
     function onLayout() {
@@ -2402,37 +1700,34 @@
         //moveExportButtons.call(this);
         addColumnControls.call(this);
         formatControls.call(this);
+        addReportExport.call(this);
     }
 
     function customizeRows(chart, rows) {
-        rows.classed('chm-table-row', true)
-            .classed('chm-table-row--expandable', function(d) {
-                return d.id.split('  |').length < chart.config.key_cols.length;
-            })
-            .classed('chm-table-row--collapsed', function(d) {
-                return d.id.split('  |').length < chart.config.key_cols.length;
-            });
+        rows.classed('chm-table-row', true).classed('chm-table-row--expandable', function (d) {
+            return d.id.split('  |').length < chart.config.key_cols.length;
+        }).classed('chm-table-row--collapsed', function (d) {
+            return d.id.split('  |').length < chart.config.key_cols.length;
+        });
     }
 
     function addStudySummary() {
         var tempChart = this;
 
-        tempChart.data.initial_filtered.forEach(function(d) {
-            return (d['id'] = 'Overall');
+        tempChart.data.initial_filtered.forEach(function (d) {
+            return d['id'] = 'Overall';
         });
 
         // calculate statistics across whole study
-        var stats = calculateStatistics.call(tempChart, false);
+        var stats = calculateStatistics.call(tempChart);
 
-        var summaryData = [
-            {
-                col: 'id',
-                text: 'Overall'
-            }
-        ];
+        var summaryData = [{
+            col: 'id',
+            text: 'Overall'
+        }];
 
         // transform to proper format
-        this.config.value_cols.forEach(function(value_col, index) {
+        this.config.value_cols.forEach(function (value_col, index) {
             summaryData[index + 1] = {
                 col: value_col.col,
                 text: stats[0][value_col.col]
@@ -2442,29 +1737,18 @@
         // add study summary row to top of table and bind data
         this.tbody.insert('tr', ':first-child').classed('summary', true);
 
-        this.tbody
-            .select('tr')
-            .selectAll('td')
-            .data(summaryData)
-            .enter()
-            .append('td')
-            .text(function(d) {
-                return d.text;
-            });
+        this.tbody.select('tr').selectAll('td').data(summaryData).enter().append('td').text(function (d) {
+            return d.text;
+        });
     }
 
     function addInfoBubbles() {
         var chart = this;
 
         // add info bubbles and either info text, if defined, or the name of variable
-        chart.wrap
-            .select('tr')
-            .selectAll('th:not(.id)')
-            .data(chart.initial_config.value_cols)
-            .attr('title', function(d) {
-                return d.description;
-            })
-            .style('cursor', 'help');
+        chart.wrap.select('tr').selectAll('th:not(.id)').data(chart.initial_config.value_cols).attr('title', function (d) {
+            return d.description;
+        }).style('cursor', 'help');
     }
 
     function iterateNest() {
@@ -2480,48 +1764,37 @@
         // loop through levels of nest and develop a dictionary with children for parent keys
         // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
         function iterateNest(d, id_level) {
-            return d3
-                .nest()
-                .key(function(d) {
-                    return d[config.key_cols[id_level]];
-                })
-                .rollup(function(rows) {
-                    if (id_level + 1 <= max_id_level) {
-                        // if not top level then loop through and make sure it has children too
-                        var obj = iterateNest(rows, id_level + 1);
-                    } else {
-                        obj = {};
-                    }
-                    obj.ids = rows
-                        .filter(function(f) {
-                            return f.nest_level == id_level + 1;
-                        })
-                        .map(function(m) {
-                            return m.id;
-                        });
-                    return obj;
-                })
-                .map(d);
+            return d3.nest().key(function (d) {
+                return d[config.key_cols[id_level]];
+            }).rollup(function (rows) {
+                if (id_level + 1 <= max_id_level) {
+                    // if not top level then loop through and make sure it has children too
+                    var obj = iterateNest(rows, id_level + 1);
+                } else {
+                    obj = {};
+                }
+                obj.ids = rows.filter(function (f) {
+                    return f.nest_level == id_level + 1;
+                }).map(function (m) {
+                    return m.id;
+                });
+                return obj;
+            }).map(d);
         }
 
         return iterateNest(chart.data.summarized, 0);
     }
 
     function addIdHover() {
-        this.cells
-            .filter(function(d) {
-                return d.col === 'id';
-            })
-            .attr('title', function(d) {
-                return d.text
-                    .split('|')
-                    .slice(-1)
-                    .pop();
-            });
+        this.cells.filter(function (d) {
+            return d.col === 'id';
+        }).attr('title', function (d) {
+            return d.text.split('|').slice(-1).pop();
+        });
     }
 
     function flagParentRows() {
-        this.rows.classed('grayParent', function(d) {
+        this.rows.classed('grayParent', function (d) {
             return d.filtered && d.visible_child;
         });
     }
@@ -2533,11 +1806,11 @@
 
         // ensure that you don't collapse an already collapsed row or expand an already expanded one
         row.classed('chm-table-row--collapsed', collapsed) //toggle the class
-            .classed('chm-table-row--expanded', !collapsed); //toggle the class
+        .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
         // subset the nested child dictionary to create an object with only the ids for the children of the current row
         var currentNest = chart.childNest;
-        d.id.split('  |').forEach(function(level) {
+        d.id.split('  |').forEach(function (level) {
             currentNest = currentNest[level];
         });
 
@@ -2545,10 +1818,9 @@
         // when collapsing, if the nest's children have children, loop through and build array with those ids included
         if (collapsed && Object.keys(currentNest).length > 1) {
             childIds = [];
-            Object.keys(currentNest).forEach(function(level) {
+            Object.keys(currentNest).forEach(function (level) {
                 Object.values(currentNest[level]).length > 1 // handle different strctures
-                    ? (childIds = childIds.concat(Object.values(currentNest[level])))
-                    : (childIds = childIds.concat(Object.values(currentNest[level])[0]));
+                ? childIds = childIds.concat(Object.values(currentNest[level])) : childIds = childIds.concat(Object.values(currentNest[level])[0]);
             });
         } else {
             childIds = currentNest.ids;
@@ -2556,14 +1828,14 @@
 
         if (collapsed) {
             // get an array of the html rows that are children of the current row
-            var rowChildren = chart.rows.filter(function(f) {
+            var rowChildren = chart.rows.filter(function (f) {
                 return childIds.indexOf(f.id) > -1;
             });
             // remove those rows
             rowChildren.remove();
         } else {
             // get the data for the child rows as an array
-            var childrenData = chart.data.summarized.filter(function(a) {
+            var childrenData = chart.data.summarized.filter(function (a) {
                 return childIds.includes(a.id) && (a.filtered != true || a.visible_child);
             });
 
@@ -2571,38 +1843,30 @@
             row.classed('selected', true);
 
             // repeating *s to place children after their parent in the correct order
-            childrenData.forEach(function(childData, i) {
-                return chart.tbody
-                    .insert('tr', '.selected' + ' + *'.repeat(i + 1))
-                    .classed('chm-table-row', true)
-                    .classed('children', true)
-                    .datum(childData)
-                    .classed('chm-table-row--collapsed', true);
+            childrenData.forEach(function (childData, i) {
+                return chart.tbody.insert('tr', '.selected' + ' + *'.repeat(i + 1)).classed('chm-table-row', true).classed('children', true).datum(childData).classed('chm-table-row--collapsed', true);
             });
 
             // grab all the new child rows
             var childrenRows = d3.selectAll('.children');
 
             // transform data to required format
-            var childrenCells = childrenRows.selectAll('td').data(function(d) {
-                return chart.config.cols.map(function(key) {
+            var childrenCells = childrenRows.selectAll('td').data(function (d) {
+                return chart.config.cols.map(function (key) {
                     return { col: key, text: d[key] };
                 });
             });
 
             // add cells with text to new rows
-            childrenCells
-                .enter()
-                .append('td')
-                .text(function(d) {
-                    return d.text;
-                });
+            childrenCells.enter().append('td').text(function (d) {
+                return d.text;
+            });
 
             // update chart rows property to include newly added rows
             chart.rows = chart.tbody.selectAll('tr');
 
             // add the newly drawn rows to the array of clickable rows
-            chart.expandable_rows = chart.rows.filter(function(d) {
+            chart.expandable_rows = chart.rows.filter(function (d) {
                 return d.nest_level < chart.config.key_cols.length - 1;
             });
 
@@ -2614,7 +1878,7 @@
             flagParentRows.call(chart);
 
             // add on click functionality to new children too
-            chart.expandable_rows.on('click', function(d) {
+            chart.expandable_rows.on('click', function (d) {
                 onClick.call(this, d, chart);
             });
 
@@ -2642,11 +1906,11 @@
         chart.childNest = iterateNest.call(this);
 
         // get all of the clickable rows
-        chart.expandable_rows = this.rows.filter(function(d) {
+        chart.expandable_rows = this.rows.filter(function (d) {
             return d.nest_level < config.key_cols.length - 1;
         });
 
-        chart.expandable_rows.on('click', function(d) {
+        chart.expandable_rows.on('click', function (d) {
             onClick.call(this, d, chart);
         });
     }
@@ -2656,11 +1920,11 @@
 
         var table = this;
         this.export = {
-            nests: this.config.key_cols.map(function(id_col, i) {
+            nests: this.config.key_cols.map(function (id_col, i) {
                 return 'Nest ' + (i + 1) + ': ' + id_col;
             }),
-            filters: this.filters.map(function(filter) {
-                return _this.controls.config.inputs.find(function(input) {
+            filters: this.filters.map(function (filter) {
+                return _this.controls.config.inputs.find(function (input) {
                     return input.value_col === filter.col;
                 }).label;
             })
@@ -2684,7 +1948,7 @@
             }
 
             if (this.config.subject_export_cols) {
-                this.config.subject_export_cols.forEach(function(d) {
+                this.config.subject_export_cols.forEach(function (d) {
                     table.export.headers.push(d.label);
                     table.export.cols.push(d.value_col);
                 });
@@ -2692,22 +1956,17 @@
 
             // build look up for subject
             if (this.config.site_col || this.config.subject_export_cols) {
-                var subjects = d3
-                    .set(
-                        table.data.initial.map(function(d) {
-                            return d[_this.config.id_col];
-                        })
-                    )
-                    .values();
-                var subjectMap = subjects.reduce(function(acc, cur) {
-                    var subjectDatum = _this.data.initial.find(function(d) {
+                var subjects = d3.set(table.data.initial.map(function (d) {
+                    return d[_this.config.id_col];
+                })).values();
+                var subjectMap = subjects.reduce(function (acc, cur) {
+                    var subjectDatum = _this.data.initial.find(function (d) {
                         return d[_this.config.id_col] === cur;
                     });
                     acc[cur] = {};
-                    if (_this.config.site_col)
-                        acc[cur]['site'] = subjectDatum[_this.config.site_col];
+                    if (_this.config.site_col) acc[cur]['site'] = subjectDatum[_this.config.site_col];
                     if (_this.config.subject_export_cols) {
-                        _this.config.subject_export_cols.forEach(function(d) {
+                        _this.config.subject_export_cols.forEach(function (d) {
                             acc[cur][d.value_col] = subjectDatum[d.value_col];
                         });
                     }
@@ -2720,30 +1979,29 @@
         this.export.data = this.data.summarized.slice();
         // need to filter rows when expanding in case some input boxes are in use
         if (this.columnControls.filtered) {
-            table.export.data = table.export.data.filter(function(f) {
+            table.export.data = table.export.data.filter(function (f) {
                 return !f.filtered || f.visible_child;
             });
         }
 
         //Define data.
-        this.export.data.forEach(function(d, i, thisArray) {
+        this.export.data.forEach(function (d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
-            _this.export.nests.forEach(function(id_col, j) {
+            _this.export.nests.forEach(function (id_col, j) {
                 var id_val = d.id.split('  |')[j];
                 d[id_col] = id_val || 'Total';
             });
 
             // // Now "join" subject level information to export data
             if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
-                var subjectID =
-                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
+                var subjectID = d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
                 Object.assign(d, subjectMap[subjectID]);
             }
         });
 
         //Remove total rows.
-        this.export.data = this.export.data.filter(function(d) {
-            return !_this.export.nests.some(function(nest) {
+        this.export.data = this.export.data.filter(function (d) {
+            return !_this.export.nests.some(function (nest) {
                 return d[nest] === 'Total';
             });
         });
@@ -2753,7 +2011,7 @@
         var _this = this;
 
         var context = this;
-        var value_cols = this.config.value_cols.map(function(d) {
+        var value_cols = this.config.value_cols.map(function (d) {
             return d.col;
         });
         var CSVarray = [];
@@ -2764,52 +2022,34 @@
         this.export.headers.push('Filter', 'Value');
         this.export.cols.push('Filter', 'Value');
 
-        this.export.data.forEach(function(d, i) {
+        this.export.data.forEach(function (d, i) {
             d['Filter'] = '';
             d['Value'] = '';
         });
 
-        this.filters.forEach(function(filter, i) {
+        this.filters.forEach(function (filter, i) {
             if (i < _this.export.data.length) {
                 table.export.data[i]['Filter'] = filter.col;
-                table.export.data[i]['Value'] =
-                    Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                        ? filter.val.join(', ')
-                        : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                        ? 'All'
-                        : filter.val;
-            } else
-                table.export.data.push(
-                    Object.assign(
-                        _this.export.cols.reduce(function(acc, cur) {
-                            acc[cur] = '';
-                            return acc;
-                        }, {}),
-                        {
-                            Filter: filter.col,
-                            Value: filter.val
-                        }
-                    )
-                );
+                table.export.data[i]['Value'] = Array.isArray(filter.val) && filter.val.length < filter.choices.length ? filter.val.join(', ') : Array.isArray(filter.val) && filter.val.length === filter.choices.length ? 'All' : filter.val;
+            } else table.export.data.push(Object.assign(_this.export.cols.reduce(function (acc, cur) {
+                acc[cur] = '';
+                return acc;
+            }, {}), {
+                Filter: filter.col,
+                Value: filter.val
+            }));
         });
 
         //header row
-        CSVarray.push(
-            this.export.headers.map(function(header) {
-                return '"' + header.replace(/"/g, '""') + '"';
-            })
-        );
+        CSVarray.push(this.export.headers.map(function (header) {
+            return '"' + header.replace(/"/g, '""') + '"';
+        }));
 
         //data rows
-        this.export.data.forEach(function(d) {
+        this.export.data.forEach(function (d) {
             //add rows to CSV array
-            var row = _this.export.cols.map(function(col, i) {
-                var value =
-                    value_cols.indexOf(col) > -1 &&
-                    context.typeDict[col] == 'crfs' &&
-                    ['N/A', ''].indexOf(d[col]) < 0
-                        ? d[col] * 100
-                        : d[col];
+            var row = _this.export.cols.map(function (col, i) {
+                var value = value_cols.indexOf(col) > -1 && context.typeDict[col] == 'crfs' && ['N/A', ''].indexOf(d[col]) < 0 ? d[col] * 100 : d[col];
 
                 if (typeof value === 'string') value = value.replace(/"/g, '""');
 
@@ -2905,7 +2145,7 @@
         if (range.e.c < col) range.e.c = col;
     }
 
-    function addCell(wb, ws, value, type, styles, range, row, col) {
+    function addCell(ws, value, type, styles, range, row, col) {
         updateRange(range, row, col);
         styles.fill.fgColor.rgb = row > 0 ? styles.fill.fgColor.rgb : 'FFffffff';
         var cell = { v: value, t: type, s: styles };
@@ -2917,7 +2157,7 @@
         var _this = this;
 
         var chart = this;
-        var value_cols = this.config.value_cols.map(function(d) {
+        var value_cols = this.config.value_cols.map(function (d) {
             return d.col;
         });
         var wb = new workBook();
@@ -2931,41 +2171,23 @@
             type: 'binary'
         };
 
-        var filterRange =
-            'A1:' +
-            String.fromCharCode(64 + this.export.cols.length) +
-            (this.export.data.length + 1);
+        var filterRange = 'A1:' + String.fromCharCode(64 + this.export.cols.length) + (this.export.data.length + 1);
 
         // Header row
-        this.export.headers.forEach(function(header, col) {
-            addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
+        this.export.headers.forEach(function (header, col) {
+            addCell(ws, header, 'c', clone(headerStyle), range, 0, col);
         });
 
         // Data rows
         var stylesheet = crfHeatMap().style.textContent;
-        this.export.data.forEach(function(d, row) {
-            _this.export.cols.forEach(function(variable, col) {
+        this.export.data.forEach(function (d, row) {
+            _this.export.cols.forEach(function (variable, col) {
                 var value = d[variable];
                 var cellStyle = clone(bodyStyle);
 
                 if (value_cols.indexOf(variable) > -1) {
                     var level;
-                    if (chart.typeDict[variable] == 'queries')
-                        level =
-                            value === 0 ? 5 : value < 9 ? 4 : value < 17 ? 3 : value < 25 ? 2 : 1;
-                    else
-                        level =
-                            value === 'N/A'
-                                ? 11
-                                : value === 1
-                                ? 10
-                                : value > 0.75
-                                ? 9
-                                : value > 0.5
-                                ? 8
-                                : value > 0.25
-                                ? 7
-                                : 6;
+                    if (chart.typeDict[variable] == 'queries') level = value === 0 ? 5 : value < 9 ? 4 : value < 17 ? 3 : value < 25 ? 2 : 1;else level = value === 'N/A' ? 11 : value === 1 ? 10 : value > 0.75 ? 9 : value > 0.5 ? 8 : value > 0.25 ? 7 : 6;
 
                     var cellClass = '.chm-cell--heat--level' + level;
 
@@ -2976,19 +2198,9 @@
                     var font = 'color: #';
 
                     // Start at class index, find fill or font and get color substring
-                    var fontColor = stylesheet
-                        .substring(
-                            stylesheet.indexOf(font, cellClassIndex) + font.length,
-                            stylesheet.indexOf(font, cellClassIndex) + font.length + 7
-                        )
-                        .replace('#', 'FF');
+                    var fontColor = stylesheet.substring(stylesheet.indexOf(font, cellClassIndex) + font.length, stylesheet.indexOf(font, cellClassIndex) + font.length + 7).replace('#', 'FF');
 
-                    var fillColor = stylesheet
-                        .substring(
-                            stylesheet.indexOf(fill, cellClassIndex) + fill.length,
-                            stylesheet.indexOf(fill, cellClassIndex) + fill.length + 7
-                        )
-                        .replace('#', 'FF');
+                    var fillColor = stylesheet.substring(stylesheet.indexOf(fill, cellClassIndex) + fill.length, stylesheet.indexOf(fill, cellClassIndex) + fill.length + 7).replace('#', 'FF');
 
                     // Add % format to crf columns
                     if (chart.typeDict[variable] === 'crfs') cellStyle.numFmt = '0%';
@@ -3000,36 +2212,30 @@
                 // Use numeric type if it's a number
                 var type = typeof value === 'number' ? 'n' : 's';
 
-                addCell(wb, ws, value, type, cellStyle, range, row + 1, col);
+                addCell(ws, value, type, cellStyle, range, row + 1, col);
             });
         });
 
         // add headers to filter sheet
-        ['Filter', 'Value'].forEach(function(header, col) {
-            addCell(wb, filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
+        ['Filter', 'Value'].forEach(function (header, col) {
+            addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
         });
 
         // Add filter names and values to filter sheet
-        this.filters.forEach(function(filter, index) {
+        this.filters.forEach(function (filter, index) {
             // Add Filter name to Filter column
-            addCell(wb, filter_sheet, filter.col, 'c', clone(bodyStyle), range, index + 1, 0);
+            addCell(filter_sheet, filter.col, 'c', clone(bodyStyle), range, index + 1, 0);
 
             // Add Filter value to Value column
             // Handle multiselect
-            var filterValue =
-                Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                    ? filter.val.join(', ')
-                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                    ? 'All'
-                    : filter.val;
-            addCell(wb, filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
+            var filterValue = Array.isArray(filter.val) && filter.val.length < filter.choices.length ? filter.val.join(', ') : Array.isArray(filter.val) && filter.val.length === filter.choices.length ? 'All' : filter.val;
+            addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
         });
 
         ws['!ref'] = XLSX.utils.encode_range(range);
-        ws['!cols'] = this.export.cols.map(function(col, i) {
+        ws['!cols'] = this.export.cols.map(function (col, i) {
             return {
-                wpx:
-                    value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
+                wpx: value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
             };
         });
         ws['!autofilter'] = { ref: filterRange };
@@ -3060,149 +2266,140 @@
 
     function FileSaver(view) {
         // IE <10 is explicitly unsupported
-        if (
-            typeof view === 'undefined' ||
-            (typeof navigator !== 'undefined' && /MSIE [1-9]\./.test(navigator.userAgent))
-        ) {
+        if (typeof view === 'undefined' || typeof navigator !== 'undefined' && /MSIE [1-9]\./.test(navigator.userAgent)) {
             return;
         }
         var doc = view.document,
-            // only get URL when necessary in case Blob.js hasn't overridden it yet
-            get_URL = function get_URL() {
-                return view.URL || view.webkitURL || view;
-            },
+
+        // only get URL when necessary in case Blob.js hasn't overridden it yet
+        get_URL = function get_URL() {
+            return view.URL || view.webkitURL || view;
+        },
             save_link = doc.createElementNS('http://www.w3.org/1999/xhtml', 'a'),
             can_use_save_link = 'download' in save_link,
             click = function click(node) {
-                var event = new MouseEvent('click');
-                node.dispatchEvent(event);
-            },
+            var event = new MouseEvent('click');
+            node.dispatchEvent(event);
+        },
             is_safari = /constructor/i.test(view.HTMLElement) || view.safari,
             is_chrome_ios = /CriOS\/[\d]+/.test(navigator.userAgent),
             setImmediate = view.setImmediate || view.setTimeout,
             throw_outside = function throw_outside(ex) {
-                setImmediate(function() {
-                    throw ex;
-                }, 0);
-            },
+            setImmediate(function () {
+                throw ex;
+            }, 0);
+        },
             force_saveable_type = 'application/octet-stream',
-            // the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
-            arbitrary_revoke_timeout = 1000 * 40,
-            // in ms
-            revoke = function revoke(file) {
-                var revoker = function revoker() {
-                    if (typeof file === 'string') {
-                        // file is an object URL
-                        get_URL().revokeObjectURL(file);
-                    } else {
-                        // file is a File
-                        file.remove();
-                    }
-                };
-                setTimeout(revoker, arbitrary_revoke_timeout);
-            },
-            dispatch = function dispatch(filesaver, event_types, event) {
-                event_types = [].concat(event_types);
-                var i = event_types.length;
-                while (i--) {
-                    var listener = filesaver['on' + event_types[i]];
-                    if (typeof listener === 'function') {
-                        try {
-                            listener.call(filesaver, event || filesaver);
-                        } catch (ex) {
-                            throw_outside(ex);
-                        }
-                    }
-                }
-            },
-            auto_bom = function auto_bom(blob) {
-                // prepend BOM for UTF-8 XML and text/* types (including HTML)
-                // note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
-                if (
-                    /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(
-                        blob.type
-                    )
-                ) {
-                    return new Blob([String.fromCharCode(0xfeff), blob], { type: blob.type });
-                }
-                return blob;
-            },
-            FileSaver = function FileSaver(blob, name, no_auto_bom) {
-                if (!no_auto_bom) {
-                    blob = auto_bom(blob);
-                }
-                // First try a.download, then web filesystem, then object URLs
-                var filesaver = this,
-                    type = blob.type,
-                    force = type === force_saveable_type,
-                    object_url,
-                    dispatch_all = function dispatch_all() {
-                        dispatch(filesaver, 'writestart progress write writeend'.split(' '));
-                    },
-                    // on any filesys errors revert to saving with object URLs
-                    fs_error = function fs_error() {
-                        if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
-                            // Safari doesn't allow downloading of blob urls
-                            var reader = new FileReader();
-                            reader.onloadend = function() {
-                                var url = is_chrome_ios
-                                    ? reader.result
-                                    : reader.result.replace(
-                                          /^data:[^;]*;/,
-                                          'data:attachment/file;'
-                                      );
-                                var popup = view.open(url, '_blank');
-                                if (!popup) view.location.href = url;
-                                url = undefined; // release reference before dispatching
-                                filesaver.readyState = filesaver.DONE;
-                                dispatch_all();
-                            };
-                            reader.readAsDataURL(blob);
-                            filesaver.readyState = filesaver.INIT;
-                            return;
-                        }
-                        // don't create more object URLs than needed
-                        if (!object_url) {
-                            object_url = get_URL().createObjectURL(blob);
-                        }
-                        if (force) {
-                            view.location.href = object_url;
-                        } else {
-                            var opened = view.open(object_url, '_blank');
-                            if (!opened) {
-                                // Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
-                                view.location.href = object_url;
-                            }
-                        }
-                        filesaver.readyState = filesaver.DONE;
-                        dispatch_all();
-                        revoke(object_url);
-                    };
-                filesaver.readyState = filesaver.INIT;
 
-                if (can_use_save_link) {
-                    object_url = get_URL().createObjectURL(blob);
-                    setImmediate(function() {
-                        save_link.href = object_url;
-                        save_link.download = name;
-                        click(save_link);
-                        dispatch_all();
-                        revoke(object_url);
+        // the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+        arbitrary_revoke_timeout = 1000 * 40,
+            // in ms
+        revoke = function revoke(file) {
+            var revoker = function revoker() {
+                if (typeof file === 'string') {
+                    // file is an object URL
+                    get_URL().revokeObjectURL(file);
+                } else {
+                    // file is a File
+                    file.remove();
+                }
+            };
+            setTimeout(revoker, arbitrary_revoke_timeout);
+        },
+            dispatch = function dispatch(filesaver, event_types, event) {
+            event_types = [].concat(event_types);
+            var i = event_types.length;
+            while (i--) {
+                var listener = filesaver['on' + event_types[i]];
+                if (typeof listener === 'function') {
+                    try {
+                        listener.call(filesaver, event || filesaver);
+                    } catch (ex) {
+                        throw_outside(ex);
+                    }
+                }
+            }
+        },
+            auto_bom = function auto_bom(blob) {
+            // prepend BOM for UTF-8 XML and text/* types (including HTML)
+            // note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+            if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+                return new Blob([String.fromCharCode(0xfeff), blob], { type: blob.type });
+            }
+            return blob;
+        },
+            FileSaver = function FileSaver(blob, name, no_auto_bom) {
+            if (!no_auto_bom) {
+                blob = auto_bom(blob);
+            }
+            // First try a.download, then web filesystem, then object URLs
+            var filesaver = this,
+                type = blob.type,
+                force = type === force_saveable_type,
+                object_url,
+                dispatch_all = function dispatch_all() {
+                dispatch(filesaver, 'writestart progress write writeend'.split(' '));
+            },
+
+            // on any filesys errors revert to saving with object URLs
+            fs_error = function fs_error() {
+                if ((is_chrome_ios || force && is_safari) && view.FileReader) {
+                    // Safari doesn't allow downloading of blob urls
+                    var reader = new FileReader();
+                    reader.onloadend = function () {
+                        var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+                        var popup = view.open(url, '_blank');
+                        if (!popup) view.location.href = url;
+                        url = undefined; // release reference before dispatching
                         filesaver.readyState = filesaver.DONE;
-                    }, 0);
+                        dispatch_all();
+                    };
+                    reader.readAsDataURL(blob);
+                    filesaver.readyState = filesaver.INIT;
                     return;
                 }
+                // don't create more object URLs than needed
+                if (!object_url) {
+                    object_url = get_URL().createObjectURL(blob);
+                }
+                if (force) {
+                    view.location.href = object_url;
+                } else {
+                    var opened = view.open(object_url, '_blank');
+                    if (!opened) {
+                        // Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+                        view.location.href = object_url;
+                    }
+                }
+                filesaver.readyState = filesaver.DONE;
+                dispatch_all();
+                revoke(object_url);
+            };
+            filesaver.readyState = filesaver.INIT;
 
-                fs_error();
-            },
+            if (can_use_save_link) {
+                object_url = get_URL().createObjectURL(blob);
+                setImmediate(function () {
+                    save_link.href = object_url;
+                    save_link.download = name;
+                    click(save_link);
+                    dispatch_all();
+                    revoke(object_url);
+                    filesaver.readyState = filesaver.DONE;
+                }, 0);
+                return;
+            }
+
+            fs_error();
+        },
             FS_proto = FileSaver.prototype,
             saveAs = function saveAs(blob, name, no_auto_bom) {
-                return new FileSaver(blob, name || blob.name || 'download', no_auto_bom);
-            };
+            return new FileSaver(blob, name || blob.name || 'download', no_auto_bom);
+        };
 
         // IE 10+ (native saveAs)
         if (typeof navigator !== 'undefined' && navigator.msSaveOrOpenBlob) {
-            return function(blob, name, no_auto_bom) {
+            return function (blob, name, no_auto_bom) {
                 name = name || blob.name || 'download';
 
                 if (!no_auto_bom) {
@@ -3215,7 +2412,7 @@
         // todo: detect chrome extensions & packaged apps
         // save_link.target = "_blank";
 
-        FS_proto.abort = function() {};
+        FS_proto.abort = function () {};
         FS_proto.readyState = FS_proto.INIT = 0;
         FS_proto.WRITING = 1;
         FS_proto.DONE = 2;
@@ -3227,23 +2424,21 @@
 
     // Convert XLSX file for download.
     function s2ab(s) {
-        var i = void 0;
-        if (typeof ArrayBuffer !== 'undefined') {
-            var buf = new ArrayBuffer(s.length);
-            var view = new Uint8Array(buf);
+            var i = void 0;
+            if (typeof ArrayBuffer !== 'undefined') {
+                    var buf = new ArrayBuffer(s.length);
+                    var view = new Uint8Array(buf);
 
-            for (i = 0; i !== s.length; ++i) {
-                view[i] = s.charCodeAt(i) & 0xff;
-            }
-            return buf;
-        } else {
-            var buf = new Array(s.length);
+                    for (i = 0; i !== s.length; ++i) {
+                            view[i] = s.charCodeAt(i) & 0xff;
+                    }return buf;
+            } else {
+                    var buf = new Array(s.length);
 
-            for (i = 0; i !== s.length; ++i) {
-                buf[i] = s.charCodeAt(i) & 0xff;
+                    for (i = 0; i !== s.length; ++i) {
+                            buf[i] = s.charCodeAt(i) & 0xff;
+                    }return buf;
             }
-            return buf;
-        }
     }
 
     function exportXLSX() {
@@ -3259,37 +2454,249 @@
     }
 
     function exportToXLSX() {
-        //  if (this.config.exportable)
+
         defineXLSX.call(this);
         exportXLSX.call(this);
+    }
+
+    function reportWorkBook(sheetNames) {
+        this.SheetNames = sheetNames;
+        this.Sheets = [];
+    }
+
+    function deriveReportData(id) {
+        var _this = this;
+
+        var table = this;
+
+        var summarized = summarizeData.call(this, id);
+        this.data.top_temp = summarized.filter(function (d) {
+            return d.parents.length == 0;
+        });
+        this.data.raw_temp = this.data.top_temp;
+
+        this.export = {
+            nests: id.map(function (id_col, i) {
+                return id_col;
+            }),
+            filters: this.filters.map(function (filter) {
+                return _this.controls.config.inputs.find(function (input) {
+                    return input.value_col === filter.col;
+                }).label;
+            })
+        };
+
+        //Define headers.
+        this.export.headers = d3.merge([this.export.nests, this.config.headers.slice(1)]);
+
+        //Define columns.
+        this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
+
+        var subject_id_col_index = id.indexOf(this.config.id_col);
+        var subject_id_col = subject_id_col_index > -1;
+
+        //Capture subject-level information.
+        if (subject_id_col) {
+            //Add headers and columns
+            if (this.config.site_col) {
+                this.export.headers.push('Site');
+                this.export.cols.push('site');
+            }
+
+            if (this.config.subject_export_cols) {
+                this.config.subject_export_cols.forEach(function (d) {
+                    table.export.headers.push(d.label);
+                    table.export.cols.push(d.value_col);
+                });
+            }
+
+            // build look up for subject
+            if (this.config.site_col || this.config.subject_export_cols) {
+                var subjects = d3.set(table.data.initial.map(function (d) {
+                    return d[_this.config.id_col];
+                })).values();
+                var subjectMap = subjects.reduce(function (acc, cur) {
+                    var subjectDatum = _this.data.initial.find(function (d) {
+                        return d[_this.config.id_col] === cur;
+                    });
+                    acc[cur] = {};
+                    if (_this.config.site_col) acc[cur]['site'] = subjectDatum[_this.config.site_col];
+                    if (_this.config.subject_export_cols) {
+                        _this.config.subject_export_cols.forEach(function (d) {
+                            acc[cur][d.value_col] = subjectDatum[d.value_col];
+                        });
+                    }
+                    return acc;
+                }, {});
+            }
+        }
+
+        // Going to want expanded data - since current data doesn't include child rows unless all are expanded
+        this.export.data = summarized.slice();
+        // need to filter rows when expanding in case some input boxes are in use
+        if (this.columnControls.filtered) {
+            table.export.data = table.export.data.filter(function (f) {
+                return !f.filtered || f.visible_child;
+            });
+        }
+
+        //Define data.
+        this.export.data.forEach(function (d, i, thisArray) {
+            //Split ID variable into as many columns as nests currently in place.
+            _this.export.nests.forEach(function (id_col, j) {
+                var id_val = d.id.split('  |')[j];
+                d[id_col] = id_val || 'Total';
+            });
+
+            // // Now "join" subject level information to export data
+            if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
+                var subjectID = d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
+                Object.assign(d, subjectMap[subjectID]);
+            }
+        });
+
+        //Remove total rows.
+        this.export.data = this.export.data.filter(function (d) {
+            return !_this.export.nests.some(function (nest) {
+                return d[nest] === 'Total';
+            });
+        });
+    }
+
+    //Generate WS for Report
+    function createWS(id) {
+        var _this = this;
+
+        var chart = this;
+        var value_cols = this.config.value_cols.map(function (d) {
+            return d.col;
+        });
+        var ws = {}; //sheet for heatmao
+        var range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
+
+        var filterRange = 'A1:' + String.fromCharCode(64 + this.export.cols.length) + (this.export.data.length + 1);
+
+        // Header row
+        this.export.headers.forEach(function (header, col) {
+            addCell(ws, header, 'c', clone(headerStyle), range, 0, col);
+        });
+
+        // Data rows
+        var stylesheet = crfHeatMap().style.textContent;
+        this.export.data.forEach(function (d, row) {
+            _this.export.cols.forEach(function (variable, col) {
+                var value = d[variable];
+                var cellStyle = clone(bodyStyle);
+
+                if (value_cols.indexOf(variable) > -1) {
+                    var level;
+                    if (chart.typeDict[variable] == 'queries') level = value === 0 ? 5 : value < 9 ? 4 : value < 17 ? 3 : value < 25 ? 2 : 1;else level = value === 'N/A' ? 11 : value === 1 ? 10 : value > 0.75 ? 9 : value > 0.5 ? 8 : value > 0.25 ? 7 : 6;
+
+                    var cellClass = '.chm-cell--heat--level' + level;
+
+                    var cellClassIndex = stylesheet.indexOf(cellClass);
+
+                    var fill = 'background: #';
+
+                    var font = 'color: #';
+
+                    // Start at class index, find fill or font and get color substring
+                    var fontColor = stylesheet.substring(stylesheet.indexOf(font, cellClassIndex) + font.length, stylesheet.indexOf(font, cellClassIndex) + font.length + 7).replace('#', 'FF');
+
+                    var fillColor = stylesheet.substring(stylesheet.indexOf(fill, cellClassIndex) + fill.length, stylesheet.indexOf(fill, cellClassIndex) + fill.length + 7).replace('#', 'FF');
+
+                    // Add % format to crf columns
+                    if (chart.typeDict[variable] === 'crfs') cellStyle.numFmt = '0%';
+
+                    cellStyle.font.color.rgb = fontColor;
+                    cellStyle.fill.fgColor.rgb = fillColor;
+                }
+
+                // Use numeric type if it's a number
+                var type = typeof value === 'number' ? 'n' : 's';
+
+                addCell(ws, value, type, cellStyle, range, row + 1, col);
+            });
+        });
+
+        ws['!ref'] = XLSX.utils.encode_range(range);
+        ws['!cols'] = this.export.cols.map(function (col, i) {
+            return {
+                wpx: value_cols.indexOf(col) > -1 ? 75 : i == 1 ? 125 : 100
+            };
+        });
+        ws['!autofilter'] = { ref: filterRange };
+        return ws;
+    }
+
+    function defineReportXLSX() {
+
+      var nesting_vars = this.initial_config.nestings.map(function (d) {
+        return d.value_col;
+      });
+      var context = this;
+      var wb = new reportWorkBook(nesting_vars);
+      var wbOptions = {
+        bookType: 'xlsx',
+        bookSST: false,
+        type: 'binary'
+      };
+
+      nesting_vars.forEach(function (d) {
+        deriveReportData.call(context, [d]);
+
+        var ws = createWS.call(context);
+
+        wb.Sheets[d] = ws;
+      });
+
+      this.Report = XLSX.write(wb, wbOptions);
+    }
+
+    function exportReportXLSX(input) {
+        var fileName = 'crf-heatmap-report-' + d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()) + '.xlsx';
+        try {
+            var blob = new Blob([s2ab(this.Report)], {
+                type: 'application/octet-stream'
+            });
+            FileSaver(window)(blob, fileName);
+        } catch (error) {
+            if (typeof console !== 'undefined') console.log(error);
+        }
+    }
+
+    function exportReportToXLSX() {
+
+      defineReportXLSX.call(this);
+      exportReportXLSX.call(this);
     }
 
     function dataExport() {
         var _this = this;
 
         //Export to .csv.
-        if (
-            this.config.exports.find(function(export_) {
-                return export_ === 'csv';
-            })
-        ) {
-            this.wrap.select('.export#csv').on('click', function() {
+        if (this.config.exports.find(function (export_) {
+            return export_ === 'csv';
+        })) {
+            this.wrap.select('.export#csv').on('click', function () {
                 deriveData.call(_this);
                 csv.call(_this);
             });
         }
 
         //Export to .xlsx.
-        if (
-            this.config.exports.find(function(export_) {
-                return export_ === 'xlsx';
-            })
-        ) {
-            this.wrap.select('.export#xlsx').on('click', function() {
+        if (this.config.exports.find(function (export_) {
+            return export_ === 'xlsx';
+        })) {
+            this.wrap.select('.export#xlsx').on('click', function () {
                 deriveData.call(_this);
                 exportToXLSX.call(_this);
             });
         }
+
+        this.wrap.select('.export#report').on('click', function () {
+            exportReportToXLSX.call(_this);
+        });
     }
 
     function onDraw() {
@@ -3301,7 +2708,7 @@
 
         // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
         var id;
-        chart.data.summarized.forEach(function(d) {
+        chart.data.summarized.forEach(function (d) {
             id = d['id'].split('  |');
             if (id[2]) {
                 d[config.key_cols[2]] = id[2];
@@ -3331,13 +2738,9 @@
         }
 
         //Make sure 'Expand All' check box is not checked
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return d.option === 'expand_all';
-            })
-            .select('.changer')
-            .property('checked', false);
+        this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.option === 'expand_all';
+        }).select('.changer').property('checked', false);
 
         //end performance test
         var t1 = performance.now();
@@ -3360,33 +2763,18 @@
     function checkRequiredVariables() {
         var _this = this;
 
-        var requiredVariables = d3
-            .set(
-                d3.merge([
-                    this.settings.synced.nestings.map(function(nesting) {
-                        return nesting.value_col + ' (' + nesting.label + ')';
-                    }),
-                    this.settings.synced.value_cols.map(function(d) {
-                        return d.col;
-                    }),
-                    this.settings.synced.filter_cols.map(function(filter) {
-                        return filter.value_col;
-                    })
-                ])
-            )
-            .values();
+        var requiredVariables = d3.set(d3.merge([this.settings.synced.nestings.map(function (nesting) {
+            return nesting.value_col + ' (' + nesting.label + ')';
+        }), this.settings.synced.value_cols.map(function (d) {
+            return d.col;
+        }), this.settings.synced.filter_cols.map(function (filter) {
+            return filter.value_col;
+        })])).values();
 
-        var missingVariables = requiredVariables.filter(function(variable) {
+        var missingVariables = requiredVariables.filter(function (variable) {
             return _this.data.variables.indexOf(variable.split(' (')[0]) < 0;
         });
-        if (missingVariables.length)
-            console.log(
-                'The data are missing ' +
-                    (missingVariables.length === 1 ? 'this variable' : 'these variables') +
-                    ': ' +
-                    missingVariables.join(', ') +
-                    '.'
-            );
+        if (missingVariables.length) console.log('The data are missing ' + (missingVariables.length === 1 ? 'this variable' : 'these variables') + ': ' + missingVariables.join(', ') + '.');
     }
 
     function init(data) {
@@ -3412,11 +2800,7 @@
         };
 
         //settings
-        crfHeatMap.settings.defaults = Object.assign(
-            {},
-            configuration.rendererSettings(),
-            configuration.webchartsSettings()
-        ); // merge renderer-specific settings with Webcharts settings
+        crfHeatMap.settings.defaults = Object.assign({}, configuration.rendererSettings(), configuration.webchartsSettings()); // merge renderer-specific settings with Webcharts settings
         crfHeatMap.settings.merged = merge(crfHeatMap.settings.defaults, crfHeatMap.settings.user); // merge user settings with default settings
         crfHeatMap.settings.synced = configuration.syncSettings(crfHeatMap.settings.merged); // sync properties within merged settings, e.g. data mappings
         crfHeatMap.settings.controls = {
@@ -3430,17 +2814,10 @@
         defineStyles.call(crfHeatMap);
 
         //controls
-        crfHeatMap.controls = webcharts.createControls(
-            crfHeatMap.containers.controls.node(),
-            crfHeatMap.settings.controls
-        );
+        crfHeatMap.controls = webcharts.createControls(crfHeatMap.containers.controls.node(), crfHeatMap.settings.controls);
 
         //table
-        crfHeatMap.table = webcharts.createTable(
-            crfHeatMap.containers.table.node(),
-            crfHeatMap.settings.synced,
-            crfHeatMap.controls
-        );
+        crfHeatMap.table = webcharts.createTable(crfHeatMap.containers.table.node(), crfHeatMap.settings.synced, crfHeatMap.controls);
         crfHeatMap.table.parent = crfHeatMap;
         crfHeatMap.table.initial_config = crfHeatMap.settings.synced;
         crfHeatMap.table.on('init', onInit);
@@ -3448,7 +2825,7 @@
         crfHeatMap.table.on('draw', onDraw);
         crfHeatMap.table.on('destroy', onDestroy);
 
-        crfHeatMap.destroy = function() {
+        crfHeatMap.destroy = function () {
             crfHeatMap.table.destroy();
         };
 
@@ -3456,4 +2833,5 @@
     }
 
     return crfHeatMap$1;
-});
+
+})));

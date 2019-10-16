@@ -1,16 +1,16 @@
-export default function sortRows() {
+export default function sortRows(data_summarized, key_cols) {
     const context = this;
 
     //Collapse array of arrays to array of objects.
-    this.data.summarized = d3.merge(this.data.summaries).sort(function(a, b) {
-        const formIndex = context.config.key_cols.indexOf(context.initial_config.form_col);
-        const visitIndex = context.config.key_cols.indexOf(context.initial_config.visit_col);
+    const data_sorted = d3.merge(data_summarized).sort(function(a, b) {
+        const formIndex = key_cols.indexOf(context.initial_config.form_col);
+        const visitIndex = key_cols.indexOf(context.initial_config.visit_col);
 
         if (formIndex > -1 || visitIndex > -1) {
             var aIds = a.id.split('  |');
             var bIds = b.id.split('  |');
             var i;
-            for (i = 0; i < context.config.key_cols.length; i++) {
+            for (i = 0; i < key_cols.length; i++) {
                 if (aIds[i] === bIds[i]) {
                     continue;
                 } else {
@@ -38,4 +38,5 @@ export default function sortRows() {
             return a.id < b.id ? -1 : 1;
         }
     });
+    return data_sorted
 }

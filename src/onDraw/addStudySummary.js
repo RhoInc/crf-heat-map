@@ -6,7 +6,7 @@ export default function addStudySummary() {
     tempChart.data.initial_filtered.forEach(d => (d['id'] = 'Overall'));
 
     // calculate statistics across whole study
-    const stats = calculateStatistics.call(tempChart, false);
+    const stats = calculateStatistics.call(tempChart);
 
     var summaryData = [
         {
