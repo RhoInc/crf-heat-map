@@ -1,7 +1,15 @@
 export default function deriveData() {
     var table = this;
     this.export = {
-        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
+        nests: this.config.key_cols.map(
+            (key_col, i) =>
+                `Nest ${i + 1}: ${
+                    this.initial_config.nestings.find(nesting => nesting.value_col === key_col)
+                        .label
+                }`
+        ),
+
+        //        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
         filters: this.filters.map(
             filter =>
                 this.controls.config.inputs.find(input => input.value_col === filter.col).label
@@ -57,6 +65,11 @@ export default function deriveData() {
     }
 
     //Define data.
+    //save subject label one time for use in join below
+    const subject_label = this.initial_config.nestings.find(
+        nesting => nesting.value_col === this.config.id_col
+    ).label;
+
     this.export.data.forEach((d, i, thisArray) => {
         //Split ID variable into as many columns as nests currently in place.
         this.export.nests.forEach((id_col, j) => {
@@ -66,7 +79,7 @@ export default function deriveData() {
 
         // // Now "join" subject level information to export data
         if ((this.config.site_col || this.config.subject_export_cols) && subject_id_col) {
-            const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.id_col}`];
+            const subjectID = d[`Nest ${subject_id_col_index + 1}: ${subject_label}`];
             Object.assign(d, subjectMap[subjectID]);
         }
     });

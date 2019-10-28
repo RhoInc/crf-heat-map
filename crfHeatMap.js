@@ -2652,9 +2652,18 @@
 
         var table = this;
         this.export = {
-            nests: this.config.key_cols.map(function(id_col, i) {
-                return 'Nest ' + (i + 1) + ': ' + id_col;
+            nests: this.config.key_cols.map(function(key_col, i) {
+                return (
+                    'Nest ' +
+                    (i + 1) +
+                    ': ' +
+                    _this.initial_config.nestings.find(function(nesting) {
+                        return nesting.value_col === key_col;
+                    }).label
+                );
             }),
+
+            //        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
             filters: this.filters.map(function(filter) {
                 return _this.controls.config.inputs.find(function(input) {
                     return input.value_col === filter.col;
@@ -2722,6 +2731,11 @@
         }
 
         //Define data.
+        //save subject label one time for use in join below
+        var subject_label = this.initial_config.nestings.find(function(nesting) {
+            return nesting.value_col === _this.config.id_col;
+        }).label;
+
         this.export.data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this.export.nests.forEach(function(id_col, j) {
@@ -2731,8 +2745,7 @@
 
             // // Now "join" subject level information to export data
             if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
-                var subjectID =
-                    d['Nest ' + (subject_id_col_index + 1) + ': ' + _this.config.id_col];
+                var subjectID = d['Nest ' + (subject_id_col_index + 1) + ': ' + subject_label];
                 Object.assign(d, subjectMap[subjectID]);
             }
         });
@@ -3285,7 +3298,14 @@
 
         this.export = {
             nests: id.map(function(id_col, i) {
-                return id_col;
+                return (
+                    'Nest ' +
+                    (i + 1) +
+                    ': ' +
+                    _this.initial_config.nestings.find(function(nesting) {
+                        return nesting.value_col === id_col;
+                    }).label
+                );
             }),
             filters: this.filters.map(function(filter) {
                 return _this.controls.config.inputs.find(function(input) {
@@ -3475,20 +3495,23 @@
         var nesting_vars = this.initial_config.nestings.map(function(d) {
             return d.value_col;
         });
+        var nesting_labels = this.initial_config.nestings.map(function(d) {
+            return d.label;
+        });
         var context = this;
-        var wb = new reportWorkBook(nesting_vars);
+        var wb = new reportWorkBook(nesting_labels);
         var wbOptions = {
             bookType: 'xlsx',
             bookSST: false,
             type: 'binary'
         };
 
-        nesting_vars.forEach(function(d) {
+        nesting_vars.forEach(function(d, i) {
             deriveReportData.call(context, [d]);
 
             var ws = createWS.call(context);
 
-            wb.Sheets[d] = ws;
+            wb.Sheets[nesting_labels[i]] = ws;
         });
 
         this.Report = XLSX.write(wb, wbOptions);

@@ -8,7 +8,12 @@ export default function deriveReportData(id) {
     this.data.raw_temp = this.data.top_temp;
 
     this.export = {
-        nests: id.map((id_col, i) => id_col),
+        nests: id.map(
+            (id_col, i) =>
+                `Nest ${i + 1}: ${
+                    this.initial_config.nestings.find(nesting => nesting.value_col === id_col).label
+                }`
+        ),
         filters: this.filters.map(
             filter =>
                 this.controls.config.inputs.find(input => input.value_col === filter.col).label
