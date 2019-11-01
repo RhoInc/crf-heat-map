@@ -181,6 +181,40 @@
         return _typeof(obj);
     }
 
+    function clone(obj) {
+        var copy; //boolean, number, string, null, undefined
+
+        if ('object' != _typeof(obj) || null == obj) return obj; //date
+
+        if (obj instanceof Date) {
+            copy = new Date();
+            copy.setTime(obj.getTime());
+            return copy;
+        } //array
+
+        if (obj instanceof Array) {
+            copy = [];
+
+            for (var i = 0, len = obj.length; i < len; i++) {
+                copy[i] = clone(obj[i]);
+            }
+
+            return copy;
+        } //object
+
+        if (obj instanceof Object) {
+            copy = {};
+
+            for (var attr in obj) {
+                if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+            }
+
+            return copy;
+        }
+
+        throw new Error('Unable to copy [obj]! Its type is not supported.');
+    }
+
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
@@ -1228,32 +1262,17 @@
                 '    font-size: 12px;' +
                 '    border: 1px solid white;' +
                 '}',
-            '.chm-cell--heat--level6,' +
-                '.chm-cell--heat--level7,' +
-                '.chm-cell--heat--level8,' +
-                '.chm-cell--heat--level1,' +
-                '.chm-cell--heat--level2,' +
-                '.chm-cell--heat--level3 {' +
-                '    color: black;' +
-                '}',
-            '.chm-cell--heat--level9,' +
-                '.chm-cell--heat--level10,' +
-                '.chm-cell--heat--level11,' +
-                '.chm-cell--heat--level4,' +
-                '.chm-cell--heat--level5 {' +
-                '    color: white;' +
-                '}',
-            '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '}',
-            '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '}',
-            '.chm-cell--heat--level3 {' + '    background: #74c476' + '}',
-            '.chm-cell--heat--level4 {' + '    background: #31a354;' + '}',
-            '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '}',
-            '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '}',
-            '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
-            '.chm-cell--heat--level8 {' + '    background: #6baed6' + '}',
-            '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '}',
-            '.chm-cell--heat--level10 {' + '    background: #08519c;' + '}',
-            '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
+            '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '    color: #000000;' + '}',
+            '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '    color: #000000;' + '}',
+            '.chm-cell--heat--level3 {' + '    background: #74c476;' + '    color: #000000;' + '}',
+            '.chm-cell--heat--level4 {' + '    background: #31a354;' + '    color: #ffffff;' + '}',
+            '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '    color: #ffffff;' + '}',
+            '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '    color: #000000;' + '}',
+            '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '    color: #000000;' + '}',
+            '.chm-cell--heat--level8 {' + '    background: #6baed6;' + '    color: #000000;' + '}',
+            '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '    color: #ffffff;' + '}',
+            '.chm-cell--heat--level10 {' + '    background: #08519c;' + '    color: #ffffff;' + '}',
+            '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: #ffffff;' + '}'
         ]; //Attach styles to DOM.
 
         this.style = this.document.createElement('style');
@@ -2515,7 +2534,7 @@
             }
         } // Going to want expanded data - since current data doesn't include child rows unless all are expanded
 
-        this['export'].data = this.data.summarized; // need to filter rows when expanding in case some input boxes are in use
+        this['export'].data = this.data.summarized.slice(); // need to filter rows when expanding in case some input boxes are in use
 
         if (this.columnControls.filtered) {
             table['export'].data = table['export'].data.filter(function(f) {
@@ -2633,124 +2652,447 @@
         }
     }
 
-    function xlsx() {
+    var headerStyle = {
+        font: {
+            bold: true
+        },
+        fill: {
+            fgColor: {
+                rgb: 'FFcccccc'
+            }
+        },
+        alignment: {
+            wrapText: true
+        },
+        border: {
+            bottom: {
+                style: 'medium',
+                color: {
+                    rgb: 'FF000000' // set in defineXLSX
+                }
+            }
+        }
+    };
+
+    var bodyStyle = {
+        font: {
+            sz: 10,
+            color: {
+                rgb: null // set in defineXLSX
+            }
+        },
+        fill: {
+            fgColor: {
+                rgb: 'FFffffff'
+            }
+        },
+        alignment: {
+            wrapText: true
+        },
+        border: {
+            bottom: {
+                style: 'thin',
+                color: {
+                    rgb: 'FFffffff' // set in defineXLSX
+                }
+            },
+            right: {
+                style: 'thin',
+                color: {
+                    rgb: 'FFffffff' // set in defineXLSX
+                }
+            }
+        }
+    };
+
+    function workBook() {
+        this.SheetNames = ['CRF-Heatmap', 'Filters'];
+        this.Sheets = [];
+    }
+
+    function updateRange(range, row, col) {
+        if (range.s.r > row) range.s.r = row;
+        if (range.s.c > col) range.s.c = col;
+        if (range.e.r < row) range.e.r = row;
+        if (range.e.c < col) range.e.c = col;
+    }
+
+    function addCell(wb, ws, value, type, styles, range, row, col) {
+        updateRange(range, row, col);
+        styles.fill.fgColor.rgb = row > 0 ? styles.fill.fgColor.rgb : 'FFffffff';
+        var cell = {
+            v: value,
+            t: type,
+            s: styles
+        };
+        var cell_ref = XLSX.utils.encode_cell({
+            c: col,
+            r: row
+        });
+        ws[cell_ref] = cell;
+    }
+
+    function defineXLSX() {
         var _this = this;
 
-        var context = this;
+        var chart = this;
         var value_cols = this.config.value_cols.map(function(d) {
             return d.col;
         });
-        var sheetName = 'CRF Summary';
-        var options = {
+        var wb = new workBook();
+        var filter_col_width = {
+            wpx: 125
+        };
+        var ws = {}; //sheet for heatmao
+
+        var filter_sheet = {}; //sheet for filter values
+        var range = {
+            s: {
+                c: 10000000,
+                r: 10000000
+            },
+            e: {
+                c: 0,
+                r: 0
+            }
+        };
+        var wbOptions = {
             bookType: 'xlsx',
-            bookSST: true,
+            bookSST: false,
             type: 'binary'
         };
-        var arrayOfArrays = this['export'].data.map(function(d) {
-            return _this['export'].cols.map(function(col) {
-                return d[col];
+        var filterRange =
+            'A1:' +
+            String.fromCharCode(64 + this['export'].cols.length) +
+            (this['export'].data.length + 1); // Header row
+
+        this['export'].headers.forEach(function(header, col) {
+            addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
+        }); // Data rows
+
+        var stylesheet = crfHeatMap().style.textContent;
+        this['export'].data.forEach(function(d, row) {
+            _this['export'].cols.forEach(function(variable, col) {
+                var value = d[variable];
+                var cellStyle = clone(bodyStyle);
+
+                if (value_cols.indexOf(variable) > -1) {
+                    var level;
+                    if (chart.typeDict[variable] == 'queries')
+                        level =
+                            value === 0 ? 5 : value < 9 ? 4 : value < 17 ? 3 : value < 25 ? 2 : 1;
+                    else
+                        level =
+                            value === 'N/A'
+                                ? 11
+                                : value === 1
+                                ? 10
+                                : value > 0.75
+                                ? 9
+                                : value > 0.5
+                                ? 8
+                                : value > 0.25
+                                ? 7
+                                : 6;
+                    var cellClass = '.chm-cell--heat--level' + level;
+                    var cellClassIndex = stylesheet.indexOf(cellClass);
+                    var fill = 'background: #';
+                    var font = 'color: #'; // Start at class index, find fill or font and get color substring
+
+                    var fontColor = stylesheet
+                        .substring(
+                            stylesheet.indexOf(font, cellClassIndex) + font.length,
+                            stylesheet.indexOf(font, cellClassIndex) + font.length + 7
+                        )
+                        .replace('#', 'FF');
+                    var fillColor = stylesheet
+                        .substring(
+                            stylesheet.indexOf(fill, cellClassIndex) + fill.length,
+                            stylesheet.indexOf(fill, cellClassIndex) + fill.length + 7
+                        )
+                        .replace('#', 'FF'); // Add % format to crf columns
+
+                    if (chart.typeDict[variable] === 'crfs') cellStyle.numFmt = '0%';
+                    cellStyle.font.color.rgb = fontColor;
+                    cellStyle.fill.fgColor.rgb = fillColor;
+                } // Use numeric type if it's a number
+
+                var type = typeof value === 'number' ? 'n' : 's';
+                addCell(wb, ws, value, type, cellStyle, range, row + 1, col);
             });
-        }); // convert data from array of objects to array of arrays.
+        }); // add headers to filter sheet
 
-        var workbook = {
-            SheetNames: [sheetName, 'Current Filters'],
-            Sheets: {}
-        }; //Convert headers and data from array of arrays to sheet.
+        ['Filter', 'Value'].forEach(function(header, col) {
+            addCell(wb, filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
+        }); // Add filter names and values to filter sheet
 
-        workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet(
-            [this['export'].headers].concat(arrayOfArrays)
-        );
-        var sheet = workbook.Sheets[sheetName]; //Format percentages.
+        this.filters.forEach(function(filter, index) {
+            // Add Filter name to Filter column
+            addCell(wb, filter_sheet, filter.col, 'c', clone(bodyStyle), range, index + 1, 0); // Add Filter value to Value column
+            // Handle multiselect
 
-        var cols = this['export'].cols.map(function(col, i) {
-            return {
-                name: col,
-                column: String.fromCharCode(i + 65)
-            };
+            var filterValue =
+                Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                    ? filter.val.join(', ')
+                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                    ? 'All'
+                    : filter.val;
+            addCell(wb, filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
         });
-        var pctCols = cols.filter(function(col) {
-            return value_cols.indexOf(col.name) > -1 && context.typeDict[col.name] == 'crfs';
-        });
-        var pctCells = Object.keys(sheet).filter(function(key) {
-            return (
-                pctCols
-                    .map(function(col) {
-                        return col.column;
-                    })
-                    .indexOf(key.replace(/\d+/, '')) > -1
-            );
-        });
-        pctCells.forEach(function(pctCell) {
-            sheet[pctCell].z = '0%';
-        }); //Add filters to spreadsheet.
-
-        workbook.Sheets[sheetName]['!autofilter'] = {
-            ref: 'A1:'
-                .concat(String.fromCharCode(64 + this['export'].cols.length))
-                .concat(this['export'].data.length + 1)
-        }; //Define column widths in spreadsheet.
-
-        workbook.Sheets[sheetName]['!cols'] = this['export'].cols.map(function(col, i) {
+        ws['!ref'] = XLSX.utils.encode_range(range);
+        ws['!cols'] = this['export'].cols.map(function(col, i) {
             return {
                 wpx:
                     value_cols.indexOf(col) > -1 ? 75 : i < _this.config.key_cols.length ? 125 : 100
             };
-        }); //Write current filters to second sheet.
+        });
+        ws['!autofilter'] = {
+            ref: filterRange
+        };
+        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
+        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
+        wb.Sheets['CRF-Heatmap'] = ws;
+        wb.Sheets['Filters'] = filter_sheet;
+        this.XLSX = XLSX.write(wb, wbOptions);
+    }
 
-        workbook.Sheets['Current Filters'] = XLSX.utils.aoa_to_sheet(
-            [['Filter', 'Value']].concat(
-                this.filters.map(function(filter) {
-                    return [
-                        filter.col,
-                        Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                            ? filter.val.join(', ')
-                            : Array.isArray(filter.val) &&
-                              filter.val.length === filter.choices.length
-                            ? 'All'
-                            : filter.val
-                    ];
-                })
-            )
-        );
+    /* FileSaver.js
+     * A saveAs() FileSaver implementation.
+     * 1.3.8
+     * 2018-03-22 14:03:47
+     *
+     * By Eli Grey, https://eligrey.com
+     * License: MIT
+     *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+     */
 
-        var xlsx = XLSX.write(workbook, options),
-            s2ab = function s2ab(s) {
-                var buffer = new ArrayBuffer(s.length),
-                    view = new Uint8Array(buffer);
+    /*global self */
 
-                for (var i = 0; i !== s.length; ++i) {
-                    view[i] = s.charCodeAt(i) & 0xff;
+    /*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+    /*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/src/FileSaver.js */
+    function FileSaver(view) {
+        // IE <10 is explicitly unsupported
+        if (
+            typeof view === 'undefined' ||
+            (typeof navigator !== 'undefined' && /MSIE [1-9]\./.test(navigator.userAgent))
+        ) {
+            return;
+        }
+
+        var doc = view.document,
+            // only get URL when necessary in case Blob.js hasn't overridden it yet
+            get_URL = function get_URL() {
+                return view.URL || view.webkitURL || view;
+            },
+            save_link = doc.createElementNS('http://www.w3.org/1999/xhtml', 'a'),
+            can_use_save_link = 'download' in save_link,
+            click = function click(node) {
+                var event = new MouseEvent('click');
+                node.dispatchEvent(event);
+            },
+            is_safari = /constructor/i.test(view.HTMLElement) || view.safari,
+            is_chrome_ios = /CriOS\/[\d]+/.test(navigator.userAgent),
+            setImmediate = view.setImmediate || view.setTimeout,
+            throw_outside = function throw_outside(ex) {
+                setImmediate(function() {
+                    throw ex;
+                }, 0);
+            },
+            force_saveable_type = 'application/octet-stream',
+            // the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+            arbitrary_revoke_timeout = 1000 * 40,
+            // in ms
+            revoke = function revoke(file) {
+                var revoker = function revoker() {
+                    if (typeof file === 'string') {
+                        // file is an object URL
+                        get_URL().revokeObjectURL(file);
+                    } else {
+                        // file is a File
+                        file.remove();
+                    }
+                };
+
+                setTimeout(revoker, arbitrary_revoke_timeout);
+            },
+            dispatch = function dispatch(filesaver, event_types, event) {
+                event_types = [].concat(event_types);
+                var i = event_types.length;
+
+                while (i--) {
+                    var listener = filesaver['on' + event_types[i]];
+
+                    if (typeof listener === 'function') {
+                        try {
+                            listener.call(filesaver, event || filesaver);
+                        } catch (ex) {
+                            throw_outside(ex);
+                        }
+                    }
+                }
+            },
+            auto_bom = function auto_bom(blob) {
+                // prepend BOM for UTF-8 XML and text/* types (including HTML)
+                // note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+                if (
+                    /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(
+                        blob.type
+                    )
+                ) {
+                    return new Blob([String.fromCharCode(0xfeff), blob], {
+                        type: blob.type
+                    });
                 }
 
-                return buffer;
-            }; // convert spreadsheet to binary or something, i don't know
-        //transform CSV array into CSV string
+                return blob;
+            },
+            FileSaver = function FileSaver(blob, name, no_auto_bom) {
+                if (!no_auto_bom) {
+                    blob = auto_bom(blob);
+                } // First try a.download, then web filesystem, then object URLs
 
-        var blob = new Blob([s2ab(xlsx)], {
-            type: 'application/octet-stream;'
-        });
-        var fileName = 'CRF-Summary-'.concat(
+                var filesaver = this,
+                    type = blob.type,
+                    force = type === force_saveable_type,
+                    object_url,
+                    dispatch_all = function dispatch_all() {
+                        dispatch(filesaver, 'writestart progress write writeend'.split(' '));
+                    },
+                    // on any filesys errors revert to saving with object URLs
+                    fs_error = function fs_error() {
+                        if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
+                            // Safari doesn't allow downloading of blob urls
+                            var reader = new FileReader();
+
+                            reader.onloadend = function() {
+                                var url = is_chrome_ios
+                                    ? reader.result
+                                    : reader.result.replace(
+                                          /^data:[^;]*;/,
+                                          'data:attachment/file;'
+                                      );
+                                var popup = view.open(url, '_blank');
+                                if (!popup) view.location.href = url;
+                                url = undefined; // release reference before dispatching
+
+                                filesaver.readyState = filesaver.DONE;
+                                dispatch_all();
+                            };
+
+                            reader.readAsDataURL(blob);
+                            filesaver.readyState = filesaver.INIT;
+                            return;
+                        } // don't create more object URLs than needed
+
+                        if (!object_url) {
+                            object_url = get_URL().createObjectURL(blob);
+                        }
+
+                        if (force) {
+                            view.location.href = object_url;
+                        } else {
+                            var opened = view.open(object_url, '_blank');
+
+                            if (!opened) {
+                                // Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+                                view.location.href = object_url;
+                            }
+                        }
+
+                        filesaver.readyState = filesaver.DONE;
+                        dispatch_all();
+                        revoke(object_url);
+                    };
+
+                filesaver.readyState = filesaver.INIT;
+
+                if (can_use_save_link) {
+                    object_url = get_URL().createObjectURL(blob);
+                    setImmediate(function() {
+                        save_link.href = object_url;
+                        save_link.download = name;
+                        click(save_link);
+                        dispatch_all();
+                        revoke(object_url);
+                        filesaver.readyState = filesaver.DONE;
+                    }, 0);
+                    return;
+                }
+
+                fs_error();
+            },
+            FS_proto = FileSaver.prototype,
+            saveAs = function saveAs(blob, name, no_auto_bom) {
+                return new FileSaver(blob, name || blob.name || 'download', no_auto_bom);
+            }; // IE 10+ (native saveAs)
+
+        if (typeof navigator !== 'undefined' && navigator.msSaveOrOpenBlob) {
+            return function(blob, name, no_auto_bom) {
+                name = name || blob.name || 'download';
+
+                if (!no_auto_bom) {
+                    blob = auto_bom(blob);
+                }
+
+                return navigator.msSaveOrOpenBlob(blob, name);
+            };
+        } // todo: detect chrome extensions & packaged apps
+        // save_link.target = "_blank";
+
+        FS_proto.abort = function() {};
+
+        FS_proto.readyState = FS_proto.INIT = 0;
+        FS_proto.WRITING = 1;
+        FS_proto.DONE = 2;
+        FS_proto.error = FS_proto.onwritestart = FS_proto.onprogress = FS_proto.onwrite = FS_proto.onabort = FS_proto.onerror = FS_proto.onwriteend = null;
+        return saveAs;
+    } // )((typeof self !== 'undefined' && self) || (typeof window !== 'undefined' && window));
+
+    // Convert XLSX file for download.
+    function s2ab(s) {
+        var i;
+
+        if (typeof ArrayBuffer !== 'undefined') {
+            var buf = new ArrayBuffer(s.length);
+            var view = new Uint8Array(buf);
+
+            for (i = 0; i !== s.length; ++i) {
+                view[i] = s.charCodeAt(i) & 0xff;
+            }
+
+            return buf;
+        } else {
+            var buf = new Array(s.length);
+
+            for (i = 0; i !== s.length; ++i) {
+                buf[i] = s.charCodeAt(i) & 0xff;
+            }
+
+            return buf;
+        }
+    }
+
+    function exportXLSX() {
+        var fileName = 'crf-heatmap-'.concat(
             d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
             '.xlsx'
         );
-        var link = this.wrap.select('.export#xlsx');
 
-        if (navigator.msSaveBlob) {
-            // IE 10+
-            link.style({
-                cursor: 'pointer',
-                'text-decoration': 'underline',
-                color: 'blue'
+        try {
+            var blob = new Blob([s2ab(this.XLSX)], {
+                type: 'application/octet-stream'
             });
-            navigator.msSaveBlob(blob, fileName);
-        } else {
-            // Browsers that support HTML5 download attribute
-            if (link.node().download !== undefined) {
-                var url = URL.createObjectURL(blob);
-                link.node().setAttribute('href', url);
-                link.node().setAttribute('download', fileName);
-            }
+            FileSaver(window)(blob, fileName);
+        } catch (error) {
+            if (typeof console !== 'undefined') console.log(error);
         }
+    }
+
+    function exportToXLSX() {
+        //  if (this.config.exportable)
+        defineXLSX.call(this);
+        exportXLSX.call(this);
     }
 
     function dataExport() {
@@ -2775,7 +3117,7 @@
         ) {
             this.wrap.select('.export#xlsx').on('click', function() {
                 deriveData.call(_this);
-                xlsx.call(_this);
+                exportToXLSX.call(_this);
             });
         }
     }
@@ -2881,7 +3223,7 @@
     }
 
     //utility functions
-    function crfHeatMap(element, settings, testingUtilities) {
+    function crfHeatMap$1(element, settings, testingUtilities) {
         //main object
         var crfHeatMap = {
             element: element,
@@ -2938,5 +3280,5 @@
         return crfHeatMap;
     }
 
-    return crfHeatMap;
+    return crfHeatMap$1;
 });
