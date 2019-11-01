@@ -4,7 +4,7 @@
         : typeof define === 'function' && define.amd
         ? define(['d3', 'webcharts'], factory)
         : ((global = global || self), (global.crfHeatMap = factory(global.d3, global.webCharts)));
-})(this, function(d3$1, webcharts) {
+})(this, function(d3, webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -325,7 +325,7 @@
         var fractions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         var context = this; //Nest data by the ID variable defined above and calculate statistics for each summary variable.
 
-        var id_nest = d3$1
+        var id_nest = d3
             .nest()
             .key(function(d) {
                 return d.id;
@@ -343,7 +343,7 @@
 
                     if (typeof value_col.denominator === 'undefined') {
                         //if no denominator
-                        numerator_count = d3$1.sum(d, function(di) {
+                        numerator_count = d3.sum(d, function(di) {
                             return di[value_col.col];
                         });
                         if (value_col.type == 'crfs') denominator_count = summary.nForms;
@@ -354,7 +354,7 @@
                         var subset = d.filter(function(row) {
                             return row[value_col.denominator] === '1';
                         });
-                        numerator_count = d3$1.sum(subset, function(di) {
+                        numerator_count = d3.sum(subset, function(di) {
                             return di[value_col.col];
                         });
                         denominator_count = d.filter(function(di) {
@@ -407,7 +407,7 @@
     function sortRows(data_summarized, key_cols) {
         var context = this; //Collapse array of arrays to array of objects.
 
-        var data_sorted = d3$1.merge(data_summarized).sort(function(a, b) {
+        var data_sorted = d3.merge(data_summarized).sort(function(a, b) {
             var formIndex = key_cols.indexOf(context.initial_config.form_col);
             var visitIndex = key_cols.indexOf(context.initial_config.visit_col);
 
@@ -497,7 +497,7 @@
 
             data_summarized.push(calculateStatistics.call(_this, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
 
-            context.typeDict = d3$1
+            context.typeDict = d3
                 .nest()
                 .key(function(d) {
                     return d.col;
@@ -597,7 +597,7 @@
         this.columnControls.filters.forEach(function(filter) {
             //Update query maximum.
             if (filter.variable.indexOf('query') > -1) {
-                filter.max = d3$1.max(_this.data.summarized, function(di) {
+                filter.max = d3.max(_this.data.summarized, function(di) {
                     return di[filter.variable + '_value'];
                 }); //ensure numeric maxu
             } //Reset upper and lower bounds.
@@ -631,7 +631,7 @@
             .selectAll('#chm-nest-control--3, #chm-nest-control--2')
             .selectAll('option')
             .style('display', function(d) {
-                var ids = key_cols.slice(0, d3$1.select(this.parentNode).datum());
+                var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
                 return ids.includes(d.value_col) ? 'none' : null;
             }); //hide None option from second nest when third is selected
 
@@ -705,7 +705,7 @@
                 return d.label;
             })
             .property('selected', function(d) {
-                var levelNum = d3$1.select(this.parentNode).datum();
+                var levelNum = d3.select(this.parentNode).datum();
                 return d.value_col == config.key_cols[levelNum];
             }); //ensure natural nest control options and behavior
 
@@ -839,7 +839,7 @@
         (!!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g));
     function defineLayout() {
         this.containers = {
-            main: d3$1
+            main: d3
                 .select(this.element)
                 .append('div')
                 .datum(this)
@@ -1447,7 +1447,7 @@
             d.value_col = settings[d.settings_col];
         }); //Define table column variables.
 
-        settings.cols = d3$1.merge([
+        settings.cols = d3.merge([
             ['id'],
             settings.value_cols.map(function(d) {
                 return d.col;
@@ -1532,7 +1532,7 @@
                     )
                 );
             } else {
-                var levels = d3$1
+                var levels = d3
                     .set(
                         _this.data.raw.map(function(d) {
                             return d[input.value_col];
@@ -1560,7 +1560,7 @@
         });
 
         if (export_cols.length > 0) {
-            var subjectSetSize = d3$1
+            var subjectSetSize = d3
                 .set(
                     this.data.initial.map(function(d) {
                         return d[_this.config.id_col];
@@ -1569,7 +1569,7 @@
                 .size();
             export_cols.forEach(function(col) {
                 if (
-                    d3$1
+                    d3
                         .set(
                             context.data.initial.map(function(d) {
                                 return d[context.initial_config.id_col] + d[col];
@@ -1621,7 +1621,7 @@
                 return d.type === 'subsetter';
             })
             .each(function(d) {
-                var dropdown = d3$1.select(this).select('.changer');
+                var dropdown = d3.select(this).select('.changer');
                 dropdown.on('change', function(di) {
                     var _this = this;
 
@@ -1688,7 +1688,7 @@
                 return d.type === 'subsetter' && d.multiple;
             })
             .each(function(d) {
-                d3$1.select(this)
+                d3.select(this)
                     .select('select')
                     .attr(
                         'size',
@@ -1794,7 +1794,7 @@
         var context = this;
         var resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
         var resetButton = {};
-        resetButton.container = d3$1
+        resetButton.container = d3
             .select(th)
             .append('div')
             .classed('reset-button-container', true);
@@ -1878,7 +1878,7 @@
             .map(function(f) {
                 return f.parents;
             });
-        var unique_visible_row_parents = d3$1.set(d3$1.merge(visible_row_parents)).values(); //identifiy the parent rows
+        var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values(); //identifiy the parent rows
 
         this.data.raw = this.data.summarized.map(function(m) {
             m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
@@ -2071,7 +2071,7 @@
         var filter = this.columnControls.filters.find(function(filter) {
             return filter.variable === d;
         });
-        filter.cell = d3$1.select(th); //Lay out, initialize, and define event listeners for column filter.
+        filter.cell = d3.select(th); //Lay out, initialize, and define event listeners for column filter.
 
         if (this.initial_config.sliders) {
             layout.call(this, filter);
@@ -2103,7 +2103,7 @@
                         max:
                             context.typeDict[variable] == 'crfs'
                                 ? 1
-                                : d3$1.max(_this.data.raw, function(di) {
+                                : d3.max(_this.data.raw, function(di) {
                                       return di[variable + '_value'];
                                   })
                     };
@@ -2286,8 +2286,8 @@
                     ? d.text === 'N/A'
                         ? d.text
                         : d.text.split(' ')[1]
-                        ? d3$1.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
-                        : d3$1.format('%')(d.text)
+                        ? d3.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
+                        : d3.format('%')(d.text)
                     : d.text;
             });
     }
@@ -2315,8 +2315,8 @@
         // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
 
         function iterateNest(d, id_level) {
-            return d3
-                .nest()
+            return;
+            d3.nest()
                 .key(function(d) {
                     return d[config.key_cols[id_level]];
                 })
@@ -2363,7 +2363,7 @@
     }
 
     function onClick(d, chart) {
-        var row = d3$1.select(this);
+        var row = d3.select(this);
         var collapsed = !row.classed('chm-table-row--collapsed'); // ensure that you don't collapse an already collapsed row or expand an already expanded one
 
         row.classed('chm-table-row--collapsed', collapsed) //toggle the class
@@ -2411,7 +2411,7 @@
                     .classed('chm-table-row--collapsed', true);
             }); // grab all the new child rows
 
-            var childrenRows = d3$1.selectAll('.children'); // transform data to required format
+            var childrenRows = d3.selectAll('.children'); // transform data to required format
 
             var childrenCells = childrenRows.selectAll('td').data(function(d) {
                 return chart.config.cols.map(function(key) {
@@ -2487,9 +2487,9 @@
             })
         }; //Define headers.
 
-        this['export'].headers = d3$1.merge([this['export'].nests, this.config.headers.slice(1)]); //Define columns.
+        this['export'].headers = d3.merge([this['export'].nests, this.config.headers.slice(1)]); //Define columns.
 
-        this['export'].cols = d3$1.merge([this['export'].nests, this.config.cols.slice(1)]);
+        this['export'].cols = d3.merge([this['export'].nests, this.config.cols.slice(1)]);
         var subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
         var subject_id_col = subject_id_col_index > -1; //Capture subject-level information.
 
@@ -2508,7 +2508,7 @@
             } // build look up for subject
 
             if (this.config.site_col || this.config.subject_export_cols) {
-                var subjects = d3$1
+                var subjects = d3
                     .set(
                         table.data.initial.map(function(d) {
                             return d[_this.config.id_col];
@@ -2634,7 +2634,7 @@
             type: 'text/csv;charset=utf-8;'
         });
         var fileName = 'CRF-Heat-Map-'.concat(
-            d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
             '.csv'
         );
         var link = this.wrap.select('.export#csv');
@@ -3092,7 +3092,7 @@
 
     function exportXLSX() {
         var fileName = 'crf-heatmap-'.concat(
-            d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
             '.xlsx'
         );
 
@@ -3331,7 +3331,7 @@
 
     function exportReportXLSX(input) {
         var fileName = 'crf-heatmap-report-'.concat(
-            d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
             '.xlsx'
         );
 
@@ -3433,7 +3433,7 @@
         //remove stylesheet
         this.parent.style.remove(); //clear container, removing one child node at a time (fastest method per https://jsperf.com/innerhtml-vs-removechild/37)
 
-        var node = d3$1.select(this.parent.element).node();
+        var node = d3.select(this.parent.element).node();
 
         while (node.firstChild) {
             node.removeChild(node.firstChild);
@@ -3443,9 +3443,9 @@
     function checkRequiredVariables() {
         var _this = this;
 
-        var requiredVariables = d3$1
+        var requiredVariables = d3
             .set(
-                d3$1.merge([
+                d3.merge([
                     this.settings.synced.nestings.map(function(nesting) {
                         return ''.concat(nesting.value_col, ' (').concat(nesting.label, ')');
                     }),

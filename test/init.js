@@ -2,7 +2,6 @@ import jsdom from 'jsdom';
 import { performance } from 'perf_hooks';
 import crfHeatMap from '../src/wrapper.js';
 import expect from 'expect';
-import d3 from 'd3';
 const data = require('./forms.json');
 
 describe('The init method is called.', () => {
