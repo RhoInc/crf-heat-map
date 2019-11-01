@@ -1,9 +1,11 @@
 import calculateStatistics from './summarizeData/calculateStatistics';
 import sortRows from './summarizeData/sortRows';
+import { nest } from 'd3';
 
 export default function summarizeData(key_cols = this.config.key_cols) {
     const context = this;
-    var t0 = performance.now();
+    const fractions = this.config.display_fractions;
+    var t0 = this.parent.performance.now();
     //begin performance test
 
     const data_summarized = [];
@@ -37,11 +39,10 @@ export default function summarizeData(key_cols = this.config.key_cols) {
             }
         });
 
-        data_summarized.push(calculateStatistics.call(this));
+        data_summarized.push(calculateStatistics.call(this, fractions));
 
         // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
-        context.typeDict = d3
-            .nest()
+        context.typeDict = nest()
             .key(d => d.col)
             .rollup(rows => rows[0].type)
             .map(context.initial_config.value_cols);
@@ -51,7 +52,7 @@ export default function summarizeData(key_cols = this.config.key_cols) {
     const data_sorted = sortRows.call(this, data_summarized, key_cols);
 
     //end performance test
-    var t1 = performance.now();
+    var t1 = this.parent.performance.now();
     console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
 
     return data_sorted;

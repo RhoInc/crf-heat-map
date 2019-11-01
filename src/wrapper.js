@@ -17,7 +17,7 @@ import onDestroy from './onDestroy';
 
 import init from './init';
 
-export default function crfHeatMap(element, settings) {
+export default function crfHeatMap(element, settings, testingUtilities) {
     //main object
     const crfHeatMap = {
         element,
@@ -25,6 +25,9 @@ export default function crfHeatMap(element, settings) {
         settings: {
             user: settings
         },
+        document: testingUtilities ? testingUtilities.dom.window.document : document,
+        performance: testingUtilities ? testingUtilities.performance : performance,
+        test: !!testingUtilities,
         init
     };
 

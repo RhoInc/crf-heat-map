@@ -1,11 +1,12 @@
 import resetSliders from '../addSliders/update';
 import resetBoxes from '../addInputBoxes/update';
+import { max } from 'd3';
 
 export default function resetFilters() {
     this.columnControls.filters.forEach(filter => {
         //Update query maximum.
         if (filter.variable.indexOf('query') > -1) {
-            filter.max = d3.max(this.data.summarized, di => di[filter.variable]);
+            filter.max = max(this.data.summarized, di => di[filter.variable + '_value']); //ensure numeric maxu
         }
         //Reset upper and lower bounds.
         filter.lower = filter.min;

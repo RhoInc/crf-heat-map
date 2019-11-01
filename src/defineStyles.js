@@ -480,8 +480,8 @@ export default function defineStyles() {
             ];
 
     //Attach styles to DOM.
-    this.style = document.createElement('style');
+    this.style = this.document.createElement('style');
     this.style.type = 'text/css';
     this.style.innerHTML = styles.join('\n');
-    document.getElementsByTagName('head')[0].appendChild(this.style);
+    this.document.getElementsByTagName('head')[0].appendChild(this.style);
 }

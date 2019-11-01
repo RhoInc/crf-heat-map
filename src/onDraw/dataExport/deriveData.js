@@ -1,3 +1,5 @@
+import { merge, set } from 'd3';
+
 export default function deriveData() {
     var table = this;
     this.export = {
@@ -17,10 +19,10 @@ export default function deriveData() {
     };
 
     //Define headers.
-    this.export.headers = d3.merge([this.export.nests, this.config.headers.slice(1)]);
+    this.export.headers = merge([this.export.nests, this.config.headers.slice(1)]);
 
     //Define columns.
-    this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
+    this.export.cols = merge([this.export.nests, this.config.cols.slice(1)]);
 
     const subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
     const subject_id_col = subject_id_col_index > -1;
@@ -42,7 +44,7 @@ export default function deriveData() {
 
         // build look up for subject
         if (this.config.site_col || this.config.subject_export_cols) {
-            var subjects = d3.set(table.data.initial.map(d => d[this.config.id_col])).values();
+            var subjects = set(table.data.initial.map(d => d[this.config.id_col])).values();
             var subjectMap = subjects.reduce((acc, cur) => {
                 var subjectDatum = this.data.initial.find(d => d[this.config.id_col] === cur);
                 acc[cur] = {};

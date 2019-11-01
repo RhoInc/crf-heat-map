@@ -252,12 +252,12 @@ Variables to summarize chart by on initial rendering
 
 
 
-## settings.display_cell_annotations
+## settings.display_fraction
 `boolean`
 
-Displays cell annotations always or only on hover
+Displays fractions for crf values alongside calculated percentages
 
-**default:** `true`
+**default:** `false`
 
 
 

@@ -1,3 +1,5 @@
+import { set, merge } from 'd3';
+
 export default function filterData() {
     this.data.summarized.forEach(function(d) {
         d.filtered = false;
@@ -11,8 +13,8 @@ export default function filterData() {
             if (d[filter.variable] == 'N/A' && +filter.upper < 1) {
                 d.filtered = true;
             } else {
-                var filtered_low = +d[filter.variable] < +filter.lower;
-                var filtered_high = +d[filter.variable] > +filter.upper;
+                var filtered_low = +d[filter.variable + '_value'] < +filter.lower;
+                var filtered_high = +d[filter.variable + '_value'] > +filter.upper;
                 //filtered_missing = d[filter.variable] === 'N/A'
                 if (filtered_low || filtered_high) {
                     d.filtered = true;
@@ -24,7 +26,7 @@ export default function filterData() {
     //now, identify hidden parent rows that have visible rowChildren
     //for rows that are visible (filtered = false)
     var visible_row_parents = this.data.summarized.filter(f => !f.filtered).map(f => f.parents);
-    var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values();
+    var unique_visible_row_parents = set(merge(visible_row_parents)).values();
 
     //identifiy the parent rows
     this.data.raw = this.data.summarized.map(function(m) {

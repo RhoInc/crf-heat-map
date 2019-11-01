@@ -1,3 +1,5 @@
+import { merge } from 'd3';
+
 export default function syncSettings(settings) {
     // sort value_cols so that crfs come before query cols regardless of order in rendererSettings
     settings.value_cols.sort(function(a, b) {
@@ -41,7 +43,7 @@ export default function syncSettings(settings) {
     });
 
     //Define table column variables.
-    settings.cols = d3.merge([['id'], settings.value_cols.map(d => d.col)]);
+    settings.cols = merge([['id'], settings.value_cols.map(d => d.col)]);
 
     //Define cols to include in subject level export
     settings.subject_export_cols = settings.filter_cols.filter(

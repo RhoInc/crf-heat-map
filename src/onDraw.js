@@ -3,7 +3,6 @@ import addStudySummary from './onDraw/addStudySummary';
 import customizeCells from './onDraw/customizeCells';
 import addInfoBubbles from './onDraw/addInfoBubbles';
 import addRowDisplayToggle from './onDraw/addRowDisplayToggle';
-import toggleCellAnnotations from './onDraw/toggleCellAnnotations';
 import addIdHover from './onDraw/addIdHover';
 import dataExport from './onDraw/dataExport';
 import flagParentRows from './onDraw/flagParentRows';
@@ -12,7 +11,7 @@ export default function onDraw() {
     const config = this.config;
     const chart = this;
 
-    var t0 = performance.now();
+    var t0 = this.parent.performance.now();
     //begin performance test
 
     // create strcture to aid in nesting and referncing in addRowDipslayToggle.js
@@ -40,7 +39,6 @@ export default function onDraw() {
         customizeCells(this, this.cells);
         addInfoBubbles.call(this);
         addRowDisplayToggle.call(this);
-        toggleCellAnnotations.call(this);
         addIdHover.call(this);
         dataExport.call(this);
         flagParentRows.call(this);
@@ -54,7 +52,7 @@ export default function onDraw() {
         .property('checked', false);
 
     //end performance test
-    var t1 = performance.now();
+    var t1 = this.parent.performance.now();
     console.log('Call to onDraw took ' + (t1 - t0) + ' milliseconds.');
 
     this.parent.containers.loading.classed('chm-hidden', true);

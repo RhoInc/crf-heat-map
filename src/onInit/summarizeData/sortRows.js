@@ -1,8 +1,10 @@
+import { merge } from 'd3';
+
 export default function sortRows(data_summarized, key_cols) {
     const context = this;
 
     //Collapse array of arrays to array of objects.
-    const data_sorted = d3.merge(data_summarized).sort(function(a, b) {
+    const data_sorted = merge(data_summarized).sort(function(a, b) {
         const formIndex = key_cols.indexOf(context.initial_config.form_col);
         const visitIndex = key_cols.indexOf(context.initial_config.visit_col);
 
