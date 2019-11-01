@@ -7,20 +7,22 @@ export default function addColumnControls() {
     //Define custom column controls object.
     this.columnControls = {
         header: this.thead.append('tr').attr('id', 'column-controls'),
-        filters: this.config.cols.filter(d => d !== 'id').map(variable => {
-            const filter = {
-                variable: variable,
-                min: 0,
-                lower: 0,
-                max:
-                    context.typeDict[variable] == 'crfs'
-                        ? 1
-                        : d3.max(this.data.raw, di => di[variable])
-            };
-            filter.upper = filter.max;
+        filters: this.config.cols
+            .filter(d => d !== 'id')
+            .map(variable => {
+                const filter = {
+                    variable: variable,
+                    min: 0,
+                    lower: 0,
+                    max:
+                        context.typeDict[variable] == 'crfs'
+                            ? 1
+                            : d3.max(this.data.raw, di => di[variable])
+                };
+                filter.upper = filter.max;
 
-            return filter;
-        })
+                return filter;
+            })
     };
 
     //Add cells to header.

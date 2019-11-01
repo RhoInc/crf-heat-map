@@ -13,8 +13,8 @@
   ],
   "dependencies": {
     "d3": "^3",
-    "webcharts": "^1.11.1",
-    "xlsx": "^0.13.0"
+    "webcharts": "^1.11.6",
+    "xlsx-style": "^0.8.13"
   },
   "scripts": {
     "build": "npm audit fix && npm run bundle && npm run format && npm run build-wiki",
@@ -30,9 +30,9 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
-    "prettier": "^1.7.4",
+    "prettier": "^1.18.2",
     "rollup": "^0.66.6",
-    "rollup-plugin-babel": "^3.0.2"
+    "rollup-plugin-babel": "^3.0.7"
   },
   "repository": {
     "type": "git",

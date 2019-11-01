@@ -50,7 +50,7 @@ export default function deriveData() {
     }
 
     // Going to want expanded data - since current data doesn't include child rows unless all are expanded
-    this.export.data = this.data.summarized;
+    this.export.data = this.data.summarized.slice();
     // need to filter rows when expanding in case some input boxes are in use
     if (this.columnControls.filtered) {
         table.export.data = table.export.data.filter(f => !f.filtered || f.visible_child);

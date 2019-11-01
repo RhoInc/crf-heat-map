@@ -10,8 +10,7 @@ export default function onClick(d, chart) {
     var collapsed = !row.classed('chm-table-row--collapsed');
 
     // ensure that you don't collapse an already collapsed row or expand an already expanded one
-    row
-        .classed('chm-table-row--collapsed', collapsed) //toggle the class
+    row.classed('chm-table-row--collapsed', collapsed) //toggle the class
         .classed('chm-table-row--expanded', !collapsed); //toggle the class
 
     // subset the nested child dictionary to create an object with only the ids for the children of the current row

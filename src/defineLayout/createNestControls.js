@@ -29,11 +29,10 @@ export default function createNestControls() {
 
     idSelects
         .selectAll('option')
-        .data(
-            d =>
-                d === 0 // first dropdown shouldn't have "None" option
-                    ? idList.filter(n => n.value_col !== undefined)
-                    : idList
+        .data(d =>
+            d === 0 // first dropdown shouldn't have "None" option
+                ? idList.filter(n => n.value_col !== undefined)
+                : idList
         )
         .enter()
         .append('option')
