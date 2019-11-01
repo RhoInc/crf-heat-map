@@ -401,7 +401,7 @@
             d.form_order = d.values.form_order;
             delete d.values;
         });
-        return d3$1.nest;
+        return id_nest;
     }
 
     function sortRows(data_summarized, key_cols) {
@@ -495,6 +495,7 @@
                 }
             });
 
+            console.log(data_summarized);
             data_summarized.push(calculateStatistics.call(_this, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
 
             context.typeDict = d3$1
@@ -512,6 +513,7 @@
 
         var t1 = this.parent.performance.now();
         console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
+        console.log(data_sorted);
         return data_sorted;
     }
 
@@ -2186,6 +2188,7 @@
         addColumnControls.call(this);
         formatControls.call(this);
         addReportExport.call(this);
+        console.log(this);
     }
 
     function customizeRows(chart, rows) {
@@ -2778,10 +2781,14 @@
         var stylesheet = crfHeatMap().style.textContent;
         this['export'].data.forEach(function(d, row) {
             _this['export'].cols.forEach(function(variable, col) {
-                var value = d[variable];
+                var value_col = value_cols.indexOf(variable) > -1 ? true : false;
+                var value =
+                    value_col && !isNaN(d[variable + '_value'])
+                        ? d[variable + '_value']
+                        : d[variable];
                 var cellStyle = clone(bodyStyle);
 
-                if (value_cols.indexOf(variable) > -1) {
+                if (value_col) {
                     var level;
                     if (chart.typeDict[variable] == 'queries')
                         level =
@@ -2815,7 +2822,9 @@
                             stylesheet.indexOf(fill, cellClassIndex) + fill.length,
                             stylesheet.indexOf(fill, cellClassIndex) + fill.length + 7
                         )
-                        .replace('#', 'FF'); // Add % format to crf columns
+                        .replace('#', 'FF');
+                    console.log(value);
+                    console.log(chart.typeDict[variable] === 'crfs'); // Add % format to crf columns
 
                     if (chart.typeDict[variable] === 'crfs') cellStyle.numFmt = '0%';
                     cellStyle.font.color.rgb = fontColor;

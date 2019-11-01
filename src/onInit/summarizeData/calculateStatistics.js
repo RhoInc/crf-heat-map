@@ -73,5 +73,5 @@ export default function calculateStatistics(fractions = false) {
         delete d.values;
     });
 
-    return nest;
+    return id_nest;
 }

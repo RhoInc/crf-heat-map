@@ -39,6 +39,8 @@ export default function summarizeData(key_cols = this.config.key_cols) {
             }
         });
 
+        console.log(data_summarized);
+
         data_summarized.push(calculateStatistics.call(this, fractions));
 
         // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
@@ -54,6 +56,8 @@ export default function summarizeData(key_cols = this.config.key_cols) {
     //end performance test
     var t1 = this.parent.performance.now();
     console.log('Call to summarizeData took ' + (t1 - t0) + ' milliseconds.');
+
+    console.log(data_sorted);
 
     return data_sorted;
 }
