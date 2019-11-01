@@ -1,15 +1,13 @@
+import { merge, set } from 'd3';
+
 export default function checkRequiredVariables() {
-    const requiredVariables = d3
-        .set(
-            d3.merge([
-                this.settings.synced.nestings.map(
-                    nesting => `${nesting.value_col} (${nesting.label})`
-                ),
-                this.settings.synced.value_cols.map(d => d.col),
-                this.settings.synced.filter_cols.map(filter => filter.value_col)
-            ])
-        )
-        .values();
+    const requiredVariables = set(
+        merge([
+            this.settings.synced.nestings.map(nesting => `${nesting.value_col} (${nesting.label})`),
+            this.settings.synced.value_cols.map(d => d.col),
+            this.settings.synced.filter_cols.map(filter => filter.value_col)
+        ])
+    ).values();
 
     const missingVariables = requiredVariables.filter(
         variable => this.data.variables.indexOf(variable.split(' (')[0]) < 0

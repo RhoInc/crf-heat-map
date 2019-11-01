@@ -1,4 +1,5 @@
 import resetFilters from './addResetButton/resetFilters';
+import { select } from 'd3';
 
 export default function addResetButton(th, d) {
     const context = this;
@@ -6,8 +7,7 @@ export default function addResetButton(th, d) {
     const resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
 
     const resetButton = {};
-    resetButton.container = d3
-        .select(th)
+    resetButton.container = select(th)
         .append('div')
         .classed('reset-button-container', true);
 

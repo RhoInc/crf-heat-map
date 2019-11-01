@@ -1,6 +1,7 @@
 import redraw from '../onLayout/customizeFilters/redraw';
 import customizeNestOptions from './createNestControls/customizeNestOptions';
 import customizeNestSelects from './createNestControls/customizeNestSelects';
+import { select } from 'd3';
 
 export default function createNestControls() {
     const context = this;
@@ -40,7 +41,7 @@ export default function createNestControls() {
             return d.label;
         })
         .property('selected', function(d) {
-            var levelNum = d3.select(this.parentNode).datum();
+            var levelNum = select(this.parentNode).datum();
             return d.value_col == config.key_cols[levelNum];
         });
 

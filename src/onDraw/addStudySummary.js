@@ -2,11 +2,18 @@ import calculateStatistics from '../onInit/summarizeData/calculateStatistics';
 
 export default function addStudySummary() {
     var tempChart = this;
+    const fractions = this.controls.wrap
+        .selectAll('.control-group')
+        .filter(function(d) {
+            return d.option === 'display_fractions';
+        })
+        .select('.changer')
+        .property('checked');
 
     tempChart.data.initial_filtered.forEach(d => (d['id'] = 'Overall'));
 
     // calculate statistics across whole study
-    const stats = calculateStatistics.call(tempChart, false);
+    const stats = calculateStatistics.call(tempChart, false, fractions);
 
     var summaryData = [
         {

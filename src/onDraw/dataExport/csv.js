@@ -1,3 +1,5 @@
+import { time } from 'd3';
+
 export default function csv() {
     const context = this;
     const value_cols = this.config.value_cols.map(d => d.col);
@@ -62,7 +64,7 @@ export default function csv() {
 
     //transform CSV array into CSV string
     const CSV = new Blob([CSVarray.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const fileName = `CRF-Heat-Map-${d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.csv`;
+    const fileName = `CRF-Heat-Map-${time.format('%Y-%m-%dT%H-%M-%S')(new Date())}.csv`;
     const link = this.wrap.select('.export#csv');
 
     if (navigator.msSaveBlob) {

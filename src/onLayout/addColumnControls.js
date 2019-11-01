@@ -1,5 +1,6 @@
 import addResetButton from './addColumnControls/addResetButton';
 import addSliders from './addColumnControls/addColumnFilters';
+import { max } from 'd3';
 
 export default function addColumnControls() {
     const context = this;
@@ -17,7 +18,7 @@ export default function addColumnControls() {
                     max:
                         context.typeDict[variable] == 'crfs'
                             ? 1
-                            : d3.max(this.data.raw, di => di[variable])
+                            : max(this.data.raw, di => di[variable + '_value'])
                 };
                 filter.upper = filter.max;
 
