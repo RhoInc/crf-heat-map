@@ -401,7 +401,7 @@
             d.form_order = d.values.form_order;
             delete d.values;
         });
-        return d3$1.nest;
+        return id_nest;
     }
 
     function sortRows(data_summarized, key_cols) {
@@ -2778,10 +2778,14 @@
         var stylesheet = crfHeatMap().style.textContent;
         this['export'].data.forEach(function(d, row) {
             _this['export'].cols.forEach(function(variable, col) {
-                var value = d[variable];
+                var value_col = value_cols.indexOf(variable) > -1 ? true : false;
+                var value =
+                    value_col && !isNaN(d[variable + '_value'])
+                        ? d[variable + '_value']
+                        : d[variable];
                 var cellStyle = clone(bodyStyle);
 
-                if (value_cols.indexOf(variable) > -1) {
+                if (value_col) {
                     var level;
                     if (chart.typeDict[variable] == 'queries')
                         level =

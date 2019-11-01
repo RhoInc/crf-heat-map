@@ -31,10 +31,12 @@ export default function defineXLSX() {
     const stylesheet = crfHeatMap().style.textContent;
     this.export.data.forEach((d, row) => {
         this.export.cols.forEach((variable, col) => {
-            const value = d[variable];
+            const value_col = value_cols.indexOf(variable) > -1 ? true : false;
+            const value =
+                value_col && !isNaN(d[variable + '_value']) ? d[variable + '_value'] : d[variable];
             const cellStyle = clone(bodyStyle);
 
-            if (value_cols.indexOf(variable) > -1) {
+            if (value_col) {
                 var level;
                 if (chart.typeDict[variable] == 'queries')
                     level = value === 0 ? 5 : value < 9 ? 4 : value < 17 ? 3 : value < 25 ? 2 : 1;
