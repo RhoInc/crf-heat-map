@@ -13,7 +13,7 @@ export default function onInit() {
     removeFilters.call(this);
 
     //Summarize raw data.
-    summarizeData.call(this);
+    this.data.summarized = summarizeData.call(this);
 
     this.data.top = this.data.summarized.filter(d => d.parents.length == 0);
 

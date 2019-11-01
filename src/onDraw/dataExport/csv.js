@@ -18,7 +18,7 @@ export default function csv() {
 
     this.filters.forEach((filter, i) => {
         if (i < this.export.data.length) {
-            table.export.data[i]['Filter'] = filter.col;
+            table.export.data[i]['Filter'] = this.export.filters[i];
             table.export.data[i]['Value'] =
                 Array.isArray(filter.val) && filter.val.length < filter.choices.length
                     ? filter.val.join(', ')

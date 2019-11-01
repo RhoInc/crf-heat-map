@@ -2,7 +2,7 @@ import { sum, nest } from 'd3';
 import getStatistic from './calculateStatistics/getStatistic';
 import getFraction from './calculateStatistics/getFraction';
 
-export default function calculateStatistics(onInit = true, fractions = false) {
+export default function calculateStatistics(fractions = false) {
     const context = this;
 
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
@@ -73,16 +73,5 @@ export default function calculateStatistics(onInit = true, fractions = false) {
         delete d.values;
     });
 
-    //Add summarized data to array of summaries.
-    if (onInit) {
-        this.data.summaries.push(id_nest);
-
-        // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
-        context.typeDict = nest()
-            .key(d => d.col)
-            .rollup(rows => rows[0].type)
-            .map(context.initial_config.value_cols);
-    } else {
-        return id_nest;
-    }
+    return nest;
 }
