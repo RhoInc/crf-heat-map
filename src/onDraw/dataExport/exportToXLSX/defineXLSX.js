@@ -77,8 +77,6 @@ export default function defineXLSX() {
                     )
                     .replace('#', 'FF');
 
-                console.log(value);
-                console.log(chart.typeDict[variable] === 'crfs');
                 // Add % format to crf columns
                 if (chart.typeDict[variable] === 'crfs') cellStyle.numFmt = '0%';
 

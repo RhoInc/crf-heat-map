@@ -14,5 +14,4 @@ export default function onLayout() {
     addColumnControls.call(this);
     formatControls.call(this);
     addReportExport.call(this);
-    console.log(this);
 }
