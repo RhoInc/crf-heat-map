@@ -19,6 +19,8 @@ export default function createWS(id) {
         addCell(ws, header, 'c', clone(headerStyle), range, 0, col);
     });
 
+    console.log(this.export.data);
+
     // Data rows
     const stylesheet = crfHeatMap().style.textContent;
     this.export.data.forEach((d, row) => {
@@ -87,6 +89,6 @@ export default function createWS(id) {
             wpx: value_cols.indexOf(col) > -1 ? 75 : i == 1 ? 125 : 100
         };
     });
-    ws['!autofilter'] = { ref: filterRange };
+    //    ws['!autofilter'] = { ref: filterRange };
     return ws;
 }

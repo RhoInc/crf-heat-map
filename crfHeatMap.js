@@ -319,10 +319,10 @@
         return String(fraction); //ensure correct type
     }
 
-    function calculateStatistics() {
+    function calculateStatistics(data) {
         var _this = this;
 
-        var fractions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var fractions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         var context = this; //Nest data by the ID variable defined above and calculate statistics for each summary variable.
 
         var id_nest = d3
@@ -382,7 +382,7 @@
                 summary.form_order = d[0][context.initial_config.form_order_col];
                 return summary;
             })
-            .entries(this.data.initial_filtered); //Convert the nested data array to a flat data array.
+            .entries(data); //Convert the nested data array to a flat data array.
 
         id_nest.forEach(function(d) {
             d.id = d.key;
@@ -454,6 +454,10 @@
             arguments.length > 0 && arguments[0] !== undefined
                 ? arguments[0]
                 : this.config.key_cols;
+        var data =
+            arguments.length > 1 && arguments[1] !== undefined
+                ? arguments[1]
+                : this.data.initial_filtered;
         var context = this;
         var fractions = this.config.display_fractions;
         var t0 = this.parent.performance.now(); //begin performance test
@@ -462,7 +466,7 @@
 
         key_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-            _this.data.initial_filtered.forEach(function(d) {
+            data.forEach(function(d) {
                 d.nest_level = i;
                 d.id = key_cols
                     .slice(0, i + 1)
@@ -494,8 +498,7 @@
                     );
                 }
             });
-
-            data_summarized.push(calculateStatistics.call(_this, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
+            data_summarized.push(calculateStatistics.call(_this, data, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
 
             context.typeDict = d3
                 .nest()
@@ -2211,7 +2214,7 @@
             return (d['id'] = 'Overall');
         }); // calculate statistics across whole study
 
-        var stats = calculateStatistics.call(tempChart, fractions);
+        var stats = calculateStatistics.call(tempChart, this.data.initial_filtered, fractions);
         var summaryData = [
             {
                 col: 'id',
@@ -2315,8 +2318,8 @@
         // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
 
         function iterateNest(d, id_level) {
-            return;
-            d3.nest()
+            return d3
+                .nest()
                 .key(function(d) {
                     return d[config.key_cols[id_level]];
                 })
@@ -2541,7 +2544,7 @@
             table['export'].data = table['export'].data.filter(function(f) {
                 return !f.filtered || f.visible_child;
             });
-        } //Define data.
+        } //Add subject-level information
         //save subject label one time for use in join below
 
         var subject_label = this.initial_config.nestings.find(function(nesting) {
@@ -3120,11 +3123,10 @@
         var _this = this;
 
         var table = this;
-        var summarized = summarizeData.call(this, id);
-        this.data.top_temp = summarized.filter(function(d) {
-            return d.parents.length == 0;
-        });
-        this.data.raw_temp = this.data.top_temp;
+        var summarized = summarizeData.call(this, id, this.data.initial); //want to ignore filters
+
+        console.log(this);
+        console.log(summarized);
         this['export'] = {
             nests: id.map(function(id_col, i) {
                 return 'Nest '.concat(i + 1, ': ').concat(
@@ -3132,11 +3134,6 @@
                         return nesting.value_col === id_col;
                     }).label
                 );
-            }),
-            filters: this.filters.map(function(filter) {
-                return _this.controls.config.inputs.find(function(input) {
-                    return input.value_col === filter.col;
-                }).label;
             })
         }; //Define headers.
 
@@ -3188,14 +3185,12 @@
             }
         } // Going to want expanded data - since current data doesn't include child rows unless all are expanded
 
-        this['export'].data = summarized.slice(); // need to filter rows when expanding in case some input boxes are in use
+        this['export'].data = summarized.slice(); //Add subject-level information
+        //save subject label one time for use in join below
 
-        if (this.columnControls.filtered) {
-            table['export'].data = table['export'].data.filter(function(f) {
-                return !f.filtered || f.visible_child;
-            });
-        } //Define data.
-
+        var subject_label = this.initial_config.nestings.find(function(nesting) {
+            return nesting.value_col === _this.config.id_col;
+        }).label;
         this['export'].data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this['export'].nests.forEach(function(id_col, j) {
@@ -3205,10 +3200,11 @@
 
             if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
                 var subjectID =
-                    d['Nest '.concat(subject_id_col_index + 1, ': ').concat(_this.config.id_col)];
+                    d['Nest '.concat(subject_id_col_index + 1, ': ').concat(subject_label)];
                 Object.assign(d, subjectMap[subjectID]);
             }
-        }); //Remove total rows.
+        }); //console.log(this.export.data)
+        //Remove total rows.
 
         this['export'].data = this['export'].data.filter(function(d) {
             return !_this['export'].nests.some(function(nest) {
@@ -3242,7 +3238,8 @@
 
         this['export'].headers.forEach(function(header, col) {
             addCell(ws, header, 'c', clone(headerStyle), range, 0, col);
-        }); // Data rows
+        });
+        console.log(this['export'].data); // Data rows
 
         var stylesheet = crfHeatMap().style.textContent;
         this['export'].data.forEach(function(d, row) {
@@ -3300,10 +3297,8 @@
             return {
                 wpx: value_cols.indexOf(col) > -1 ? 75 : i == 1 ? 125 : 100
             };
-        });
-        ws['!autofilter'] = {
-            ref: filterRange
-        };
+        }); //    ws['!autofilter'] = { ref: filterRange };
+
         return ws;
     }
 
@@ -3321,8 +3316,16 @@
             bookSST: false,
             type: 'binary'
         };
-        nesting_vars.forEach(function(d, i) {
-            deriveReportData.call(context, [d]);
+        nesting_vars.forEach(function(nesting_var, i) {
+            var ids = [nesting_var]; // add nests
+
+            var j;
+
+            for (j = 0; j < i; j++) {
+                ids.unshift(nesting_vars[i - j - 1]);
+            }
+
+            deriveReportData.call(context, ids);
             var ws = createWS.call(context);
             wb.Sheets[nesting_labels[i]] = ws;
         });

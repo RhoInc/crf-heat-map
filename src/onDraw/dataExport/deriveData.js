@@ -66,7 +66,7 @@ export default function deriveData() {
         table.export.data = table.export.data.filter(f => !f.filtered || f.visible_child);
     }
 
-    //Define data.
+    //Add subject-level information
     //save subject label one time for use in join below
     const subject_label = this.initial_config.nestings.find(
         nesting => nesting.value_col === this.config.id_col

@@ -14,8 +14,16 @@ export default function defineReportXLSX() {
         type: 'binary'
     };
 
-    nesting_vars.forEach(function(d, i) {
-        deriveReportData.call(context, [d]);
+    nesting_vars.forEach(function(nesting_var, i) {
+        var ids = [nesting_var];
+
+        // add nests
+        var j;
+        for (j = 0; j < i; j++) {
+            ids.unshift(nesting_vars[i - j - 1]);
+        }
+
+        deriveReportData.call(context, ids);
 
         var ws = createWS.call(context);
 

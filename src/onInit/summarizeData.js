@@ -2,7 +2,10 @@ import calculateStatistics from './summarizeData/calculateStatistics';
 import sortRows from './summarizeData/sortRows';
 import { nest } from 'd3';
 
-export default function summarizeData(key_cols = this.config.key_cols) {
+export default function summarizeData(
+    key_cols = this.config.key_cols,
+    data = this.data.initial_filtered
+) {
     const context = this;
     const fractions = this.config.display_fractions;
     var t0 = this.parent.performance.now();
@@ -13,7 +16,7 @@ export default function summarizeData(key_cols = this.config.key_cols) {
     //Summarize data by each ID variable.
     key_cols.forEach((id_col, i) => {
         //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-        this.data.initial_filtered.forEach(d => {
+        data.forEach(d => {
             d.nest_level = i;
             d.id = key_cols
                 .slice(0, i + 1)
@@ -39,7 +42,7 @@ export default function summarizeData(key_cols = this.config.key_cols) {
             }
         });
 
-        data_summarized.push(calculateStatistics.call(this, fractions));
+        data_summarized.push(calculateStatistics.call(this, data, fractions));
 
         // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
         context.typeDict = nest()
