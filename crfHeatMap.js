@@ -462,11 +462,13 @@
         var fractions = this.config.display_fractions;
         var t0 = this.parent.performance.now(); //begin performance test
 
+        var data_copy = clone(data); // don't want to change original data object
+
         var data_summarized = []; //Summarize data by each ID variable.
 
         key_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-            data.forEach(function(d) {
+            data_copy.forEach(function(d) {
                 d.nest_level = i;
                 d.id = key_cols
                     .slice(0, i + 1)
@@ -498,7 +500,7 @@
                     );
                 }
             });
-            data_summarized.push(calculateStatistics.call(_this, data, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
+            data_summarized.push(calculateStatistics.call(_this, data_copy, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
 
             context.typeDict = d3
                 .nest()
@@ -2482,7 +2484,6 @@
                     }).label
                 );
             }),
-            //        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
             filters: this.filters.map(function(filter) {
                 return _this.controls.config.inputs.find(function(input) {
                     return input.value_col === filter.col;
@@ -3115,6 +3116,7 @@
     }
 
     function reportWorkBook(sheetNames) {
+        sheetNames.push('Filters');
         this.SheetNames = sheetNames;
         this.Sheets = [];
     }
@@ -3123,10 +3125,7 @@
         var _this = this;
 
         var table = this;
-        var summarized = summarizeData.call(this, id, this.data.initial); //want to ignore filters
-
-        console.log(this);
-        console.log(summarized);
+        var summarized = summarizeData.call(this, id, this.data.initial_filtered);
         this['export'] = {
             nests: id.map(function(id_col, i) {
                 return 'Nest '.concat(i + 1, ': ').concat(
@@ -3134,6 +3133,11 @@
                         return nesting.value_col === id_col;
                     }).label
                 );
+            }),
+            filters: this.filters.map(function(filter) {
+                return _this.controls.config.inputs.find(function(input) {
+                    return input.value_col === filter.col;
+                }).label;
             })
         }; //Define headers.
 
@@ -3185,7 +3189,13 @@
             }
         } // Going to want expanded data - since current data doesn't include child rows unless all are expanded
 
-        this['export'].data = summarized.slice(); //Add subject-level information
+        this['export'].data = summarized.slice(); // // need to filter rows when expanding in case some input boxes are in use
+
+        if (this.columnControls.filtered) {
+            table['export'].data = table['export'].data.filter(function(f) {
+                return !f.filtered || f.visible_child;
+            });
+        } //Add subject-level information
         //save subject label one time for use in join below
 
         var subject_label = this.initial_config.nestings.find(function(nesting) {
@@ -3203,8 +3213,7 @@
                     d['Nest '.concat(subject_id_col_index + 1, ': ').concat(subject_label)];
                 Object.assign(d, subjectMap[subjectID]);
             }
-        }); //console.log(this.export.data)
-        //Remove total rows.
+        }); //Remove total rows.
 
         this['export'].data = this['export'].data.filter(function(d) {
             return !_this['export'].nests.some(function(nest) {
@@ -3238,16 +3247,19 @@
 
         this['export'].headers.forEach(function(header, col) {
             addCell(ws, header, 'c', clone(headerStyle), range, 0, col);
-        });
-        console.log(this['export'].data); // Data rows
+        }); // Data rows
 
         var stylesheet = crfHeatMap().style.textContent;
         this['export'].data.forEach(function(d, row) {
             _this['export'].cols.forEach(function(variable, col) {
-                var value = d[variable];
+                var value_col = value_cols.indexOf(variable) > -1 ? true : false;
+                var value =
+                    value_col && !isNaN(d[variable + '_value'])
+                        ? d[variable + '_value']
+                        : d[variable];
                 var cellStyle = clone(bodyStyle);
 
-                if (value_cols.indexOf(variable) > -1) {
+                if (value_col) {
                     var level;
                     if (chart.typeDict[variable] == 'queries')
                         level =
@@ -3302,6 +3314,55 @@
         return ws;
     }
 
+    function createFiltersWS() {
+        var _this = this;
+
+        var filter_sheet = {}; //sheet for filter values
+
+        var range = {
+            s: {
+                c: 10000000,
+                r: 10000000
+            },
+            e: {
+                c: 0,
+                r: 0
+            }
+        };
+        var filter_col_width = {
+            wpx: 125
+        }; // add headers to filter sheet
+
+        ['Filter', 'Value'].forEach(function(header, col) {
+            addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
+        }); // Add filter names and values to filter sheet
+
+        this.filters.forEach(function(filter, index) {
+            // Add Filter name to Filter column
+            addCell(
+                filter_sheet,
+                _this['export'].filters[index],
+                'c',
+                clone(bodyStyle),
+                range,
+                index + 1,
+                0
+            ); // Add Filter value to Value column
+            // Handle multiselect
+
+            var filterValue =
+                Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                    ? filter.val.join(', ')
+                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                    ? 'All'
+                    : filter.val;
+            addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
+        });
+        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
+        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
+        return filter_sheet;
+    }
+
     function defineReportXLSX() {
         var nesting_vars = this.initial_config.nestings.map(function(d) {
             return d.value_col;
@@ -3329,6 +3390,7 @@
             var ws = createWS.call(context);
             wb.Sheets[nesting_labels[i]] = ws;
         });
+        wb.Sheets['Filters'] = createFiltersWS.call(this);
         this.Report = XLSX.write(wb, wbOptions);
     }
 

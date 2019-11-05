@@ -1,5 +1,6 @@
 import calculateStatistics from './summarizeData/calculateStatistics';
 import sortRows from './summarizeData/sortRows';
+import clone from '../util/clone';
 import { nest } from 'd3';
 
 export default function summarizeData(
@@ -11,12 +12,13 @@ export default function summarizeData(
     var t0 = this.parent.performance.now();
     //begin performance test
 
+    const data_copy = clone(data); // don't want to change original data object
     const data_summarized = [];
 
     //Summarize data by each ID variable.
     key_cols.forEach((id_col, i) => {
         //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-        data.forEach(d => {
+        data_copy.forEach(d => {
             d.nest_level = i;
             d.id = key_cols
                 .slice(0, i + 1)
@@ -42,7 +44,7 @@ export default function summarizeData(
             }
         });
 
-        data_summarized.push(calculateStatistics.call(this, data, fractions));
+        data_summarized.push(calculateStatistics.call(this, data_copy, fractions));
 
         // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
         context.typeDict = nest()

@@ -10,8 +10,6 @@ export default function deriveData() {
                         .label
                 }`
         ),
-
-        //        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
         filters: this.filters.map(
             filter =>
                 this.controls.config.inputs.find(input => input.value_col === filter.col).label

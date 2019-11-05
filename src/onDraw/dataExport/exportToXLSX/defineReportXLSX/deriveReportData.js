@@ -4,9 +4,7 @@ import { merge, set } from 'd3';
 export default function deriveReportData(id) {
     var table = this;
 
-    const summarized = summarizeData.call(this, id, this.data.initial); //want to ignore filters
-    console.log(this);
-    console.log(summarized);
+    const summarized = summarizeData.call(this, id, this.data.initial_filtered);
 
     this.export = {
         nests: id.map(
@@ -14,6 +12,10 @@ export default function deriveReportData(id) {
                 `Nest ${i + 1}: ${
                     this.initial_config.nestings.find(nesting => nesting.value_col === id_col).label
                 }`
+        ),
+        filters: this.filters.map(
+            filter =>
+                this.controls.config.inputs.find(input => input.value_col === filter.col).label
         )
     };
 
@@ -61,6 +63,11 @@ export default function deriveReportData(id) {
     // Going to want expanded data - since current data doesn't include child rows unless all are expanded
     this.export.data = summarized.slice();
 
+    // // need to filter rows when expanding in case some input boxes are in use
+    if (this.columnControls.filtered) {
+        table.export.data = table.export.data.filter(f => !f.filtered || f.visible_child);
+    }
+
     //Add subject-level information
     //save subject label one time for use in join below
     const subject_label = this.initial_config.nestings.find(
@@ -80,8 +87,6 @@ export default function deriveReportData(id) {
             Object.assign(d, subjectMap[subjectID]);
         }
     });
-
-    //console.log(this.export.data)
 
     //Remove total rows.
     this.export.data = this.export.data.filter(
