@@ -2741,6 +2741,55 @@
         ws[cell_ref] = cell;
     }
 
+    function createFiltersWS() {
+        var _this = this;
+
+        var filter_sheet = {}; //sheet for filter values
+
+        var range = {
+            s: {
+                c: 10000000,
+                r: 10000000
+            },
+            e: {
+                c: 0,
+                r: 0
+            }
+        };
+        var filter_col_width = {
+            wpx: 125
+        }; // add headers to filter sheet
+
+        ['Filter', 'Value'].forEach(function(header, col) {
+            addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
+        }); // Add filter names and values to filter sheet
+
+        this.filters.forEach(function(filter, index) {
+            // Add Filter name to Filter column
+            addCell(
+                filter_sheet,
+                _this['export'].filters[index],
+                'c',
+                clone(bodyStyle),
+                range,
+                index + 1,
+                0
+            ); // Add Filter value to Value column
+            // Handle multiselect
+
+            var filterValue =
+                Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                    ? filter.val.join(', ')
+                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                    ? 'All'
+                    : filter.val;
+            addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
+        });
+        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
+        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
+        return filter_sheet;
+    }
+
     function defineXLSX() {
         var _this = this;
 
@@ -2749,12 +2798,7 @@
             return d.col;
         });
         var wb = new workBook();
-        var filter_col_width = {
-            wpx: 125
-        };
         var ws = {}; //sheet for heatmao
-
-        var filter_sheet = {}; //sheet for filter values
         var range = {
             s: {
                 c: 10000000,
@@ -2833,32 +2877,6 @@
                 var type = typeof value === 'number' ? 'n' : 's';
                 addCell(ws, value, type, cellStyle, range, row + 1, col);
             });
-        }); // add headers to filter sheet
-
-        ['Filter', 'Value'].forEach(function(header, col) {
-            addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
-        }); // Add filter names and values to filter sheet
-
-        this.filters.forEach(function(filter, index) {
-            // Add Filter name to Filter column
-            addCell(
-                filter_sheet,
-                _this['export'].filters[index],
-                'c',
-                clone(bodyStyle),
-                range,
-                index + 1,
-                0
-            ); // Add Filter value to Value column
-            // Handle multiselect
-
-            var filterValue =
-                Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                    ? filter.val.join(', ')
-                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                    ? 'All'
-                    : filter.val;
-            addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
         });
         ws['!ref'] = XLSX.utils.encode_range(range);
         ws['!cols'] = this['export'].cols.map(function(col, i) {
@@ -2870,10 +2888,8 @@
         ws['!autofilter'] = {
             ref: filterRange
         };
-        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
-        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
         wb.Sheets['CRF-Heatmap'] = ws;
-        wb.Sheets['Filters'] = filter_sheet;
+        wb.Sheets['Filters'] = createFiltersWS.call(this);
         this.XLSX = XLSX.write(wb, wbOptions);
     }
 
@@ -3312,55 +3328,6 @@
         }); //    ws['!autofilter'] = { ref: filterRange };
 
         return ws;
-    }
-
-    function createFiltersWS() {
-        var _this = this;
-
-        var filter_sheet = {}; //sheet for filter values
-
-        var range = {
-            s: {
-                c: 10000000,
-                r: 10000000
-            },
-            e: {
-                c: 0,
-                r: 0
-            }
-        };
-        var filter_col_width = {
-            wpx: 125
-        }; // add headers to filter sheet
-
-        ['Filter', 'Value'].forEach(function(header, col) {
-            addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
-        }); // Add filter names and values to filter sheet
-
-        this.filters.forEach(function(filter, index) {
-            // Add Filter name to Filter column
-            addCell(
-                filter_sheet,
-                _this['export'].filters[index],
-                'c',
-                clone(bodyStyle),
-                range,
-                index + 1,
-                0
-            ); // Add Filter value to Value column
-            // Handle multiselect
-
-            var filterValue =
-                Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                    ? filter.val.join(', ')
-                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                    ? 'All'
-                    : filter.val;
-            addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
-        });
-        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
-        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
-        return filter_sheet;
     }
 
     function defineReportXLSX() {

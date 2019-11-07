@@ -2,7 +2,7 @@ import reportWorkBook from './defineReportXLSX/reportWorkBook';
 import clone from '../../../util/clone';
 import deriveReportData from './defineReportXLSX/deriveReportData';
 import createWS from './defineReportXLSX/createWS';
-import createFiltersWS from './defineReportXLSX/createFiltersWS';
+import createFiltersWS from './defineXLSX/createFiltersWS';
 
 export default function defineReportXLSX() {
     var nesting_vars = this.initial_config.nestings.map(d => d.value_col);
