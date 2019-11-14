@@ -1,7 +1,6 @@
 import jsdom from 'jsdom';
 import getFraction from '../src/onInit/summarizeData/calculateStatistics/getFraction.js';
 import expect from 'expect';
-import d3 from 'd3';
 
 describe('Calculate Fraction', () => {
     describe('Calculate CRF Fraction' , () => {

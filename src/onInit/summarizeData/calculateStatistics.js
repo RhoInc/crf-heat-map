@@ -2,7 +2,7 @@ import { sum, nest } from 'd3';
 import getStatistic from './calculateStatistics/getStatistic';
 import getFraction from './calculateStatistics/getFraction';
 
-export default function calculateStatistics(fractions = false) {
+export default function calculateStatistics(data, fractions = false) {
     const context = this;
 
     //Nest data by the ID variable defined above and calculate statistics for each summary variable.
@@ -53,7 +53,7 @@ export default function calculateStatistics(fractions = false) {
             summary.form_order = d[0][context.initial_config.form_order_col];
             return summary;
         })
-        .entries(this.data.initial_filtered);
+        .entries(data);
 
     //Convert the nested data array to a flat data array.
     id_nest.forEach(d => {

@@ -1,11 +1,10 @@
 import summarizeData from './../../../../onInit/summarizeData';
+import { merge, set } from 'd3';
 
 export default function deriveReportData(id) {
     var table = this;
 
-    const summarized = summarizeData.call(this, id);
-    this.data.top_temp = summarized.filter(d => d.parents.length == 0);
-    this.data.raw_temp = this.data.top_temp;
+    const summarized = summarizeData.call(this, id, this.data.initial_filtered);
 
     this.export = {
         nests: id.map(
@@ -21,10 +20,10 @@ export default function deriveReportData(id) {
     };
 
     //Define headers.
-    this.export.headers = d3.merge([this.export.nests, this.config.headers.slice(1)]);
+    this.export.headers = merge([this.export.nests, this.config.headers.slice(1)]);
 
     //Define columns.
-    this.export.cols = d3.merge([this.export.nests, this.config.cols.slice(1)]);
+    this.export.cols = merge([this.export.nests, this.config.cols.slice(1)]);
 
     const subject_id_col_index = id.indexOf(this.config.id_col);
     const subject_id_col = subject_id_col_index > -1;
@@ -46,7 +45,7 @@ export default function deriveReportData(id) {
 
         // build look up for subject
         if (this.config.site_col || this.config.subject_export_cols) {
-            var subjects = d3.set(table.data.initial.map(d => d[this.config.id_col])).values();
+            var subjects = set(table.data.initial.map(d => d[this.config.id_col])).values();
             var subjectMap = subjects.reduce((acc, cur) => {
                 var subjectDatum = this.data.initial.find(d => d[this.config.id_col] === cur);
                 acc[cur] = {};
@@ -63,12 +62,18 @@ export default function deriveReportData(id) {
 
     // Going to want expanded data - since current data doesn't include child rows unless all are expanded
     this.export.data = summarized.slice();
-    // need to filter rows when expanding in case some input boxes are in use
+
+    // // need to filter rows when expanding in case some input boxes are in use
     if (this.columnControls.filtered) {
         table.export.data = table.export.data.filter(f => !f.filtered || f.visible_child);
     }
 
-    //Define data.
+    //Add subject-level information
+    //save subject label one time for use in join below
+    const subject_label = this.initial_config.nestings.find(
+        nesting => nesting.value_col === this.config.id_col
+    ).label;
+
     this.export.data.forEach((d, i, thisArray) => {
         //Split ID variable into as many columns as nests currently in place.
         this.export.nests.forEach((id_col, j) => {
@@ -78,7 +83,7 @@ export default function deriveReportData(id) {
 
         // // Now "join" subject level information to export data
         if ((this.config.site_col || this.config.subject_export_cols) && subject_id_col) {
-            const subjectID = d[`Nest ${subject_id_col_index + 1}: ${this.config.id_col}`];
+            const subjectID = d[`Nest ${subject_id_col_index + 1}: ${subject_label}`];
             Object.assign(d, subjectMap[subjectID]);
         }
     });

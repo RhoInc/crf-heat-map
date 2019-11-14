@@ -4,7 +4,7 @@
         : typeof define === 'function' && define.amd
         ? define(['d3', 'webcharts'], factory)
         : ((global = global || self), (global.crfHeatMap = factory(global.d3, global.webCharts)));
-})(this, function(d3$1, webcharts) {
+})(this, function(d3, webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -319,13 +319,13 @@
         return String(fraction); //ensure correct type
     }
 
-    function calculateStatistics() {
+    function calculateStatistics(data) {
         var _this = this;
 
-        var fractions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var fractions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         var context = this; //Nest data by the ID variable defined above and calculate statistics for each summary variable.
 
-        var id_nest = d3$1
+        var id_nest = d3
             .nest()
             .key(function(d) {
                 return d.id;
@@ -343,7 +343,7 @@
 
                     if (typeof value_col.denominator === 'undefined') {
                         //if no denominator
-                        numerator_count = d3$1.sum(d, function(di) {
+                        numerator_count = d3.sum(d, function(di) {
                             return di[value_col.col];
                         });
                         if (value_col.type == 'crfs') denominator_count = summary.nForms;
@@ -354,7 +354,7 @@
                         var subset = d.filter(function(row) {
                             return row[value_col.denominator] === '1';
                         });
-                        numerator_count = d3$1.sum(subset, function(di) {
+                        numerator_count = d3.sum(subset, function(di) {
                             return di[value_col.col];
                         });
                         denominator_count = d.filter(function(di) {
@@ -382,7 +382,7 @@
                 summary.form_order = d[0][context.initial_config.form_order_col];
                 return summary;
             })
-            .entries(this.data.initial_filtered); //Convert the nested data array to a flat data array.
+            .entries(data); //Convert the nested data array to a flat data array.
 
         id_nest.forEach(function(d) {
             d.id = d.key;
@@ -407,7 +407,7 @@
     function sortRows(data_summarized, key_cols) {
         var context = this; //Collapse array of arrays to array of objects.
 
-        var data_sorted = d3$1.merge(data_summarized).sort(function(a, b) {
+        var data_sorted = d3.merge(data_summarized).sort(function(a, b) {
             var formIndex = key_cols.indexOf(context.initial_config.form_col);
             var visitIndex = key_cols.indexOf(context.initial_config.visit_col);
 
@@ -454,15 +454,21 @@
             arguments.length > 0 && arguments[0] !== undefined
                 ? arguments[0]
                 : this.config.key_cols;
+        var data =
+            arguments.length > 1 && arguments[1] !== undefined
+                ? arguments[1]
+                : this.data.initial_filtered;
         var context = this;
         var fractions = this.config.display_fractions;
         var t0 = this.parent.performance.now(); //begin performance test
+
+        var data_copy = clone(data); // don't want to change original data object
 
         var data_summarized = []; //Summarize data by each ID variable.
 
         key_cols.forEach(function(id_col, i) {
             //Define ID variable.  Each ID variable needs to capture the value of the previous ID variable(s).
-            _this.data.initial_filtered.forEach(function(d) {
+            data_copy.forEach(function(d) {
                 d.nest_level = i;
                 d.id = key_cols
                     .slice(0, i + 1)
@@ -494,10 +500,9 @@
                     );
                 }
             });
+            data_summarized.push(calculateStatistics.call(_this, data_copy, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
 
-            data_summarized.push(calculateStatistics.call(_this, fractions)); // build dictionary to look up type for each cell column and save to chart - going to use this freaking everywhere
-
-            context.typeDict = d3$1
+            context.typeDict = d3
                 .nest()
                 .key(function(d) {
                     return d.col;
@@ -597,7 +602,7 @@
         this.columnControls.filters.forEach(function(filter) {
             //Update query maximum.
             if (filter.variable.indexOf('query') > -1) {
-                filter.max = d3$1.max(_this.data.summarized, function(di) {
+                filter.max = d3.max(_this.data.summarized, function(di) {
                     return di[filter.variable + '_value'];
                 }); //ensure numeric maxu
             } //Reset upper and lower bounds.
@@ -631,7 +636,7 @@
             .selectAll('#chm-nest-control--3, #chm-nest-control--2')
             .selectAll('option')
             .style('display', function(d) {
-                var ids = key_cols.slice(0, d3$1.select(this.parentNode).datum());
+                var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
                 return ids.includes(d.value_col) ? 'none' : null;
             }); //hide None option from second nest when third is selected
 
@@ -705,7 +710,7 @@
                 return d.label;
             })
             .property('selected', function(d) {
-                var levelNum = d3$1.select(this.parentNode).datum();
+                var levelNum = d3.select(this.parentNode).datum();
                 return d.value_col == config.key_cols[levelNum];
             }); //ensure natural nest control options and behavior
 
@@ -839,7 +844,7 @@
         (!!navigator.userAgent.match(/Trident/g) || !!navigator.userAgent.match(/MSIE/g));
     function defineLayout() {
         this.containers = {
-            main: d3$1
+            main: d3
                 .select(this.element)
                 .append('div')
                 .datum(this)
@@ -1447,7 +1452,7 @@
             d.value_col = settings[d.settings_col];
         }); //Define table column variables.
 
-        settings.cols = d3$1.merge([
+        settings.cols = d3.merge([
             ['id'],
             settings.value_cols.map(function(d) {
                 return d.col;
@@ -1532,7 +1537,7 @@
                     )
                 );
             } else {
-                var levels = d3$1
+                var levels = d3
                     .set(
                         _this.data.raw.map(function(d) {
                             return d[input.value_col];
@@ -1560,7 +1565,7 @@
         });
 
         if (export_cols.length > 0) {
-            var subjectSetSize = d3$1
+            var subjectSetSize = d3
                 .set(
                     this.data.initial.map(function(d) {
                         return d[_this.config.id_col];
@@ -1569,7 +1574,7 @@
                 .size();
             export_cols.forEach(function(col) {
                 if (
-                    d3$1
+                    d3
                         .set(
                             context.data.initial.map(function(d) {
                                 return d[context.initial_config.id_col] + d[col];
@@ -1621,7 +1626,7 @@
                 return d.type === 'subsetter';
             })
             .each(function(d) {
-                var dropdown = d3$1.select(this).select('.changer');
+                var dropdown = d3.select(this).select('.changer');
                 dropdown.on('change', function(di) {
                     var _this = this;
 
@@ -1688,7 +1693,7 @@
                 return d.type === 'subsetter' && d.multiple;
             })
             .each(function(d) {
-                d3$1.select(this)
+                d3.select(this)
                     .select('select')
                     .attr(
                         'size',
@@ -1794,7 +1799,7 @@
         var context = this;
         var resetText = this.initial_config.sliders ? 'Sliders' : 'Ranges';
         var resetButton = {};
-        resetButton.container = d3$1
+        resetButton.container = d3
             .select(th)
             .append('div')
             .classed('reset-button-container', true);
@@ -1878,7 +1883,7 @@
             .map(function(f) {
                 return f.parents;
             });
-        var unique_visible_row_parents = d3$1.set(d3$1.merge(visible_row_parents)).values(); //identifiy the parent rows
+        var unique_visible_row_parents = d3.set(d3.merge(visible_row_parents)).values(); //identifiy the parent rows
 
         this.data.raw = this.data.summarized.map(function(m) {
             m.visible_child = unique_visible_row_parents.indexOf(m.id) > -1;
@@ -2071,7 +2076,7 @@
         var filter = this.columnControls.filters.find(function(filter) {
             return filter.variable === d;
         });
-        filter.cell = d3$1.select(th); //Lay out, initialize, and define event listeners for column filter.
+        filter.cell = d3.select(th); //Lay out, initialize, and define event listeners for column filter.
 
         if (this.initial_config.sliders) {
             layout.call(this, filter);
@@ -2103,7 +2108,7 @@
                         max:
                             context.typeDict[variable] == 'crfs'
                                 ? 1
-                                : d3$1.max(_this.data.raw, function(di) {
+                                : d3.max(_this.data.raw, function(di) {
                                       return di[variable + '_value'];
                                   })
                     };
@@ -2211,7 +2216,7 @@
             return (d['id'] = 'Overall');
         }); // calculate statistics across whole study
 
-        var stats = calculateStatistics.call(tempChart, fractions);
+        var stats = calculateStatistics.call(tempChart, this.data.initial_filtered, fractions);
         var summaryData = [
             {
                 col: 'id',
@@ -2286,8 +2291,8 @@
                     ? d.text === 'N/A'
                         ? d.text
                         : d.text.split(' ')[1]
-                        ? d3$1.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
-                        : d3$1.format('%')(d.text)
+                        ? d3.format('%')(d.text.split(' ')[0]) + ' (' + d.text.split(' ')[1] + ')'
+                        : d3.format('%')(d.text)
                     : d.text;
             });
     }
@@ -2363,7 +2368,7 @@
     }
 
     function onClick(d, chart) {
-        var row = d3$1.select(this);
+        var row = d3.select(this);
         var collapsed = !row.classed('chm-table-row--collapsed'); // ensure that you don't collapse an already collapsed row or expand an already expanded one
 
         row.classed('chm-table-row--collapsed', collapsed) //toggle the class
@@ -2411,7 +2416,7 @@
                     .classed('chm-table-row--collapsed', true);
             }); // grab all the new child rows
 
-            var childrenRows = d3$1.selectAll('.children'); // transform data to required format
+            var childrenRows = d3.selectAll('.children'); // transform data to required format
 
             var childrenCells = childrenRows.selectAll('td').data(function(d) {
                 return chart.config.cols.map(function(key) {
@@ -2479,7 +2484,6 @@
                     }).label
                 );
             }),
-            //        nests: this.config.key_cols.map((id_col, i) => `Nest ${i + 1}: ${id_col}`),
             filters: this.filters.map(function(filter) {
                 return _this.controls.config.inputs.find(function(input) {
                     return input.value_col === filter.col;
@@ -2487,9 +2491,9 @@
             })
         }; //Define headers.
 
-        this['export'].headers = d3$1.merge([this['export'].nests, this.config.headers.slice(1)]); //Define columns.
+        this['export'].headers = d3.merge([this['export'].nests, this.config.headers.slice(1)]); //Define columns.
 
-        this['export'].cols = d3$1.merge([this['export'].nests, this.config.cols.slice(1)]);
+        this['export'].cols = d3.merge([this['export'].nests, this.config.cols.slice(1)]);
         var subject_id_col_index = this.config.key_cols.indexOf(this.config.id_col);
         var subject_id_col = subject_id_col_index > -1; //Capture subject-level information.
 
@@ -2508,7 +2512,7 @@
             } // build look up for subject
 
             if (this.config.site_col || this.config.subject_export_cols) {
-                var subjects = d3$1
+                var subjects = d3
                     .set(
                         table.data.initial.map(function(d) {
                             return d[_this.config.id_col];
@@ -2541,7 +2545,7 @@
             table['export'].data = table['export'].data.filter(function(f) {
                 return !f.filtered || f.visible_child;
             });
-        } //Define data.
+        } //Add subject-level information
         //save subject label one time for use in join below
 
         var subject_label = this.initial_config.nestings.find(function(nesting) {
@@ -2634,7 +2638,7 @@
             type: 'text/csv;charset=utf-8;'
         });
         var fileName = 'CRF-Heat-Map-'.concat(
-            d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
             '.csv'
         );
         var link = this.wrap.select('.export#csv');
@@ -2737,6 +2741,55 @@
         ws[cell_ref] = cell;
     }
 
+    function createFiltersWS() {
+        var _this = this;
+
+        var filter_sheet = {}; //sheet for filter values
+
+        var range = {
+            s: {
+                c: 10000000,
+                r: 10000000
+            },
+            e: {
+                c: 0,
+                r: 0
+            }
+        };
+        var filter_col_width = {
+            wpx: 125
+        }; // add headers to filter sheet
+
+        ['Filter', 'Value'].forEach(function(header, col) {
+            addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
+        }); // Add filter names and values to filter sheet
+
+        this.filters.forEach(function(filter, index) {
+            // Add Filter name to Filter column
+            addCell(
+                filter_sheet,
+                _this['export'].filters[index],
+                'c',
+                clone(bodyStyle),
+                range,
+                index + 1,
+                0
+            ); // Add Filter value to Value column
+            // Handle multiselect
+
+            var filterValue =
+                Array.isArray(filter.val) && filter.val.length < filter.choices.length
+                    ? filter.val.join(', ')
+                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
+                    ? 'All'
+                    : filter.val;
+            addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
+        });
+        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
+        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
+        return filter_sheet;
+    }
+
     function defineXLSX() {
         var _this = this;
 
@@ -2745,12 +2798,7 @@
             return d.col;
         });
         var wb = new workBook();
-        var filter_col_width = {
-            wpx: 125
-        };
         var ws = {}; //sheet for heatmao
-
-        var filter_sheet = {}; //sheet for filter values
         var range = {
             s: {
                 c: 10000000,
@@ -2829,32 +2877,6 @@
                 var type = typeof value === 'number' ? 'n' : 's';
                 addCell(ws, value, type, cellStyle, range, row + 1, col);
             });
-        }); // add headers to filter sheet
-
-        ['Filter', 'Value'].forEach(function(header, col) {
-            addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
-        }); // Add filter names and values to filter sheet
-
-        this.filters.forEach(function(filter, index) {
-            // Add Filter name to Filter column
-            addCell(
-                filter_sheet,
-                _this['export'].filters[index],
-                'c',
-                clone(bodyStyle),
-                range,
-                index + 1,
-                0
-            ); // Add Filter value to Value column
-            // Handle multiselect
-
-            var filterValue =
-                Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                    ? filter.val.join(', ')
-                    : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                    ? 'All'
-                    : filter.val;
-            addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
         });
         ws['!ref'] = XLSX.utils.encode_range(range);
         ws['!cols'] = this['export'].cols.map(function(col, i) {
@@ -2866,10 +2888,8 @@
         ws['!autofilter'] = {
             ref: filterRange
         };
-        filter_sheet['!ref'] = XLSX.utils.encode_range(range);
-        filter_sheet['!cols'] = [filter_col_width, filter_col_width];
         wb.Sheets['CRF-Heatmap'] = ws;
-        wb.Sheets['Filters'] = filter_sheet;
+        wb.Sheets['Filters'] = createFiltersWS.call(this);
         this.XLSX = XLSX.write(wb, wbOptions);
     }
 
@@ -3092,7 +3112,7 @@
 
     function exportXLSX() {
         var fileName = 'crf-heatmap-'.concat(
-            d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
             '.xlsx'
         );
 
@@ -3112,6 +3132,7 @@
     }
 
     function reportWorkBook(sheetNames) {
+        sheetNames.push('Filters');
         this.SheetNames = sheetNames;
         this.Sheets = [];
     }
@@ -3120,11 +3141,7 @@
         var _this = this;
 
         var table = this;
-        var summarized = summarizeData.call(this, id);
-        this.data.top_temp = summarized.filter(function(d) {
-            return d.parents.length == 0;
-        });
-        this.data.raw_temp = this.data.top_temp;
+        var summarized = summarizeData.call(this, id, this.data.initial_filtered);
         this['export'] = {
             nests: id.map(function(id_col, i) {
                 return 'Nest '.concat(i + 1, ': ').concat(
@@ -3188,14 +3205,18 @@
             }
         } // Going to want expanded data - since current data doesn't include child rows unless all are expanded
 
-        this['export'].data = summarized.slice(); // need to filter rows when expanding in case some input boxes are in use
+        this['export'].data = summarized.slice(); // // need to filter rows when expanding in case some input boxes are in use
 
         if (this.columnControls.filtered) {
             table['export'].data = table['export'].data.filter(function(f) {
                 return !f.filtered || f.visible_child;
             });
-        } //Define data.
+        } //Add subject-level information
+        //save subject label one time for use in join below
 
+        var subject_label = this.initial_config.nestings.find(function(nesting) {
+            return nesting.value_col === _this.config.id_col;
+        }).label;
         this['export'].data.forEach(function(d, i, thisArray) {
             //Split ID variable into as many columns as nests currently in place.
             _this['export'].nests.forEach(function(id_col, j) {
@@ -3205,7 +3226,7 @@
 
             if ((_this.config.site_col || _this.config.subject_export_cols) && subject_id_col) {
                 var subjectID =
-                    d['Nest '.concat(subject_id_col_index + 1, ': ').concat(_this.config.id_col)];
+                    d['Nest '.concat(subject_id_col_index + 1, ': ').concat(subject_label)];
                 Object.assign(d, subjectMap[subjectID]);
             }
         }); //Remove total rows.
@@ -3247,10 +3268,14 @@
         var stylesheet = crfHeatMap().style.textContent;
         this['export'].data.forEach(function(d, row) {
             _this['export'].cols.forEach(function(variable, col) {
-                var value = d[variable];
+                var value_col = value_cols.indexOf(variable) > -1 ? true : false;
+                var value =
+                    value_col && !isNaN(d[variable + '_value'])
+                        ? d[variable + '_value']
+                        : d[variable];
                 var cellStyle = clone(bodyStyle);
 
-                if (value_cols.indexOf(variable) > -1) {
+                if (value_col) {
                     var level;
                     if (chart.typeDict[variable] == 'queries')
                         level =
@@ -3300,10 +3325,8 @@
             return {
                 wpx: value_cols.indexOf(col) > -1 ? 75 : i == 1 ? 125 : 100
             };
-        });
-        ws['!autofilter'] = {
-            ref: filterRange
-        };
+        }); //    ws['!autofilter'] = { ref: filterRange };
+
         return ws;
     }
 
@@ -3321,17 +3344,26 @@
             bookSST: false,
             type: 'binary'
         };
-        nesting_vars.forEach(function(d, i) {
-            deriveReportData.call(context, [d]);
+        nesting_vars.forEach(function(nesting_var, i) {
+            var ids = [nesting_var]; // add nests
+
+            var j;
+
+            for (j = 0; j < i; j++) {
+                ids.unshift(nesting_vars[i - j - 1]);
+            }
+
+            deriveReportData.call(context, ids);
             var ws = createWS.call(context);
             wb.Sheets[nesting_labels[i]] = ws;
         });
+        wb.Sheets['Filters'] = createFiltersWS.call(this);
         this.Report = XLSX.write(wb, wbOptions);
     }
 
     function exportReportXLSX(input) {
         var fileName = 'crf-heatmap-report-'.concat(
-            d3$1.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
+            d3.time.format('%Y-%m-%dT%H-%M-%S')(new Date()),
             '.xlsx'
         );
 
@@ -3433,7 +3465,7 @@
         //remove stylesheet
         this.parent.style.remove(); //clear container, removing one child node at a time (fastest method per https://jsperf.com/innerhtml-vs-removechild/37)
 
-        var node = d3$1.select(this.parent.element).node();
+        var node = d3.select(this.parent.element).node();
 
         while (node.firstChild) {
             node.removeChild(node.firstChild);
@@ -3443,9 +3475,9 @@
     function checkRequiredVariables() {
         var _this = this;
 
-        var requiredVariables = d3$1
+        var requiredVariables = d3
             .set(
-                d3$1.merge([
+                d3.merge([
                     this.settings.synced.nestings.map(function(nesting) {
                         return ''.concat(nesting.value_col, ' (').concat(nesting.label, ')');
                     }),

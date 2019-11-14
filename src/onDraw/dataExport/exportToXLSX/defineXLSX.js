@@ -3,14 +3,13 @@ import bodyStyle from './defineXLSX/bodyStyle';
 import workBook from './defineXLSX/workBook';
 import addCell from './defineXLSX/addCell';
 import clone from '../../../util/clone';
+import createFiltersWS from './defineXLSX/createFiltersWS';
 
 export default function defineXLSX() {
     const chart = this;
     const value_cols = this.config.value_cols.map(d => d.col);
     const wb = new workBook();
-    const filter_col_width = { wpx: 125 };
     const ws = {}; //sheet for heatmao
-    const filter_sheet = {}; //sheet for filter values
     const cols = [];
     const range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
     const wbOptions = {
@@ -91,35 +90,6 @@ export default function defineXLSX() {
         });
     });
 
-    // add headers to filter sheet
-    ['Filter', 'Value'].forEach((header, col) => {
-        addCell(filter_sheet, header, 'c', clone(headerStyle), range, 0, col);
-    });
-
-    // Add filter names and values to filter sheet
-    this.filters.forEach((filter, index) => {
-        // Add Filter name to Filter column
-        addCell(
-            filter_sheet,
-            this.export.filters[index],
-            'c',
-            clone(bodyStyle),
-            range,
-            index + 1,
-            0
-        );
-
-        // Add Filter value to Value column
-        // Handle multiselect
-        var filterValue =
-            Array.isArray(filter.val) && filter.val.length < filter.choices.length
-                ? filter.val.join(', ')
-                : Array.isArray(filter.val) && filter.val.length === filter.choices.length
-                ? 'All'
-                : filter.val;
-        addCell(filter_sheet, filterValue, 'c', clone(bodyStyle), range, index + 1, 1);
-    });
-
     ws['!ref'] = XLSX.utils.encode_range(range);
     ws['!cols'] = this.export.cols.map((col, i) => {
         return {
@@ -128,11 +98,8 @@ export default function defineXLSX() {
     });
     ws['!autofilter'] = { ref: filterRange };
 
-    filter_sheet['!ref'] = XLSX.utils.encode_range(range);
-    filter_sheet['!cols'] = [filter_col_width, filter_col_width];
-
     wb.Sheets['CRF-Heatmap'] = ws;
-    wb.Sheets['Filters'] = filter_sheet;
+    wb.Sheets['Filters'] = createFiltersWS.call(this);
 
     this.XLSX = XLSX.write(wb, wbOptions);
 }

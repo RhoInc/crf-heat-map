@@ -1,7 +1,6 @@
 import jsdom from 'jsdom';
 import crfHeatMap from '../src/wrapper.js';
 import expect from 'expect';
-import d3 from 'd3';
 
 describe('The destroy method is called.', () => {
     const { JSDOM } = jsdom;

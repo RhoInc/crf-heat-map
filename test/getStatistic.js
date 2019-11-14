@@ -1,7 +1,6 @@
 import jsdom from 'jsdom';
 import getStatistic from '../src/onInit/summarizeData/calculateStatistics/getStatistic.js';
 import expect from 'expect';
-import d3 from 'd3';
 
 describe('Calculate statistic', () => {
     describe('Calculate CRF Percentage' , () => {
