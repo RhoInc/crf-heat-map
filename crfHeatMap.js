@@ -1035,11 +1035,16 @@
                 '    font-size: 24px;' +
                 '    font-weight: bold;' +
                 '}',
-            /****---------------------------------------------------------------------------------\
-        Row 2 - Controls
-      \---------------------------------------------------------------------------------****/
+        /****---------------------------------------------------------------------------------\
+          Row 2 - Controls
+        \---------------------------------------------------------------------------------****/
+            '#chm-controls {' + '    display: block;' + '}',
             '#chm-controls .wc-controls {' + '    margin-right: 10px;' + '}',
-            '#chm-controls .control-group {' + '    width: 100%;' + '    margin: 0 0 5px 0;' + '}',
+            '#chm-controls .control-group {' +
+                '    width: 100%;' +
+                '    margin: 0 0 5px 0;' +
+                '    display: block;' +
+                '}',
             '#chm-controls .control-group > * {' + '    display: block;' + '    width: auto;' + '}',
             '#chm-controls .wc-control-label {' + '    text-align: center;' + '}',
             '#chm-controls .span-description {' + '}',
