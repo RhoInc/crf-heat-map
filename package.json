@@ -1,7 +1,7 @@
 {
   "name": "crf-heat-map",
   "description": "Heat Map showing database form status at different levels",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "author": "Rho, Inc.",
   "license": "MIT",
   "homepage": "https://github.com/rhoinc/crf-heat-map#readme",
@@ -13,26 +13,33 @@
   ],
   "dependencies": {
     "d3": "^3",
-    "webcharts": "^1.11.1",
-    "xlsx": "^0.13.0"
+    "webcharts": "^1.11.6",
+    "xlsx-style": "^0.8.13"
   },
   "scripts": {
-    "build": "npm audit fix && npm run bundle && npm run format && npm run build-wiki",
+    "build": "npm audit fix && npm run bundle && npm run format && npm run build-wiki && npm run save-data && npm run test",
     "build-wiki": "node ./scripts/configuration-markdown.js",
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-bundle",
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"src/**/!(*defineLayout|*defineStyles).js\"",
     "format-bundle": "prettier --print-width=100 --tab-width=4 --single-quote --write ./crfHeatMap.js",
+    "save-data": "node ./scripts/save-data.js",
+    "test": "mocha --require @babel/register ./test/*.js",
     "test-page": "start chrome ./test-page/index.html && start firefox ./test-page/index.html && start iexplore file://%CD%/test-page/index.html",
     "watch": "rollup -c -w"
   },
   "devDependencies": {
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.26.0",
-    "prettier": "^1.7.4",
-    "rollup": "^0.66.6",
-    "rollup-plugin-babel": "^3.0.2"
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/register": "^7.4.4",
+    "@babel/runtime": "^7.4.5",
+    "expect": "^24.8.0",
+    "jsdom": "^15.1.0",
+    "mocha": "^6.1.4",
+    "prettier": "^1.17.1",
+    "rollup": "^1.12.3",
+    "rollup-plugin-babel": "^4.3.2"
   },
   "repository": {
     "type": "git",

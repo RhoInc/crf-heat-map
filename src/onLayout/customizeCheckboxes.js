@@ -1,4 +1,4 @@
-import toggleCellAnnotations from './../onDraw/toggleCellAnnotations';
+import redraw from './customizeFilters/redraw';
 
 export default function customizeCheckboxes() {
     const context = this;
@@ -65,7 +65,7 @@ export default function customizeCheckboxes() {
     //Redefine change event listener of Display Cell Anntotions checkbox.
     this.controls.wrap
         .selectAll('.control-group')
-        .filter(d => d.option === 'display_cell_annotations')
+        .filter(d => d.option === 'display_fractions')
         .select('.changer')
         .on('change', function(d) {
             var changer_this = this;
@@ -82,7 +82,8 @@ export default function customizeCheckboxes() {
                     loadingdiv.classed('chm-hidden', true);
 
                     context.config[d.option] = changer_this.checked;
-                    toggleCellAnnotations.call(context);
+
+                    redraw.call(context);
                 }
             }, 25);
         });

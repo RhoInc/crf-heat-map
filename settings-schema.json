@@ -159,11 +159,11 @@
             },
           "default": ["site_col", "id_col"]
         },
-        "display_cell_annotations": {
-            "title": "Display Cell Annotations",
-            "description": "Displays cell annotations always or only on hover",
+        "display_fraction": {
+            "title": "Display Fractions",
+            "description": "Displays fractions for crf values alongside calculated percentages",
             "type": "boolean",
-            "default": true
+            "default": false
         },
         "expand_all": {
             "title": "Expand All Rows",

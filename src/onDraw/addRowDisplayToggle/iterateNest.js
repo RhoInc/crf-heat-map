@@ -1,3 +1,5 @@
+import { nest } from 'd3';
+
 export default function iterateNest() {
     var chart = this;
     var config = this.config;
@@ -11,8 +13,7 @@ export default function iterateNest() {
     // loop through levels of nest and develop a dictionary with children for parent keys
     // This will create an object with parent ids as the keys for the top level(s) and an array of child ids for the bottom level, allowing you to return the ids of the children of any row of data
     function iterateNest(d, id_level) {
-        return d3
-            .nest()
+        return nest()
             .key(d => d[config.key_cols[id_level]])
             .rollup(function(rows) {
                 if (id_level + 1 <= max_id_level) {

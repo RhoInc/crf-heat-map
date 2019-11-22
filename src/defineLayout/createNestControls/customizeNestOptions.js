@@ -1,3 +1,5 @@
+import { select } from 'd3';
+
 export default function customizeNestOptions(key_cols) {
     // disable third nest level when the second is not chosen
     this.containers.main
@@ -9,7 +11,7 @@ export default function customizeNestOptions(key_cols) {
         .selectAll('#chm-nest-control--3, #chm-nest-control--2')
         .selectAll('option')
         .style('display', function(d) {
-            var ids = key_cols.slice(0, d3.select(this.parentNode).datum());
+            var ids = key_cols.slice(0, select(this.parentNode).datum());
             return ids.includes(d.value_col) ? 'none' : null;
         });
 

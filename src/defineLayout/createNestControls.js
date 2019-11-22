@@ -1,6 +1,7 @@
 import redraw from '../onLayout/customizeFilters/redraw';
 import customizeNestOptions from './createNestControls/customizeNestOptions';
 import customizeNestSelects from './createNestControls/customizeNestSelects';
+import { select } from 'd3';
 
 export default function createNestControls() {
     const context = this;
@@ -29,11 +30,10 @@ export default function createNestControls() {
 
     idSelects
         .selectAll('option')
-        .data(
-            d =>
-                d === 0 // first dropdown shouldn't have "None" option
-                    ? idList.filter(n => n.value_col !== undefined)
-                    : idList
+        .data(d =>
+            d === 0 // first dropdown shouldn't have "None" option
+                ? idList.filter(n => n.value_col !== undefined)
+                : idList
         )
         .enter()
         .append('option')
@@ -41,7 +41,7 @@ export default function createNestControls() {
             return d.label;
         })
         .property('selected', function(d) {
-            var levelNum = d3.select(this.parentNode).datum();
+            var levelNum = select(this.parentNode).datum();
             return d.value_col == config.key_cols[levelNum];
         });
 

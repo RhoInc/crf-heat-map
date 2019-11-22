@@ -435,37 +435,56 @@ export default function defineStyles() {
                     '    font-size: 12px;' +
                     '    border: 1px solid white;' +
                     '}',
-                '.chm-cell--heat--level6,' +
-                    '.chm-cell--heat--level7,' +
-                    '.chm-cell--heat--level8,' +
-                    '.chm-cell--heat--level1,' +
-                    '.chm-cell--heat--level2,' +
-                    '.chm-cell--heat--level3 {' +
-                    '    color: black;' +
-                    '}',
-                '.chm-cell--heat--level9,' +
-                    '.chm-cell--heat--level10,' +
-                    '.chm-cell--heat--level11,' +
-                    '.chm-cell--heat--level4,' +
-                    '.chm-cell--heat--level5 {' +
-                    '    color: white;' +
-                    '}',
-                '.chm-cell--heat--level1 {' + '    background: #edf8e9;' + '}',
-                '.chm-cell--heat--level2 {' + '    background: #bae4b3;' + '}',
-                '.chm-cell--heat--level3 {' + '    background: #74c476' + '}',
-                '.chm-cell--heat--level4 {' + '    background: #31a354;' + '}',
-                '.chm-cell--heat--level5 {' + '    background: #006d2c;' + '}',
-                '.chm-cell--heat--level6 {' + '    background: #eff3ff;' + '}',
-                '.chm-cell--heat--level7 {' + '    background: #bdd7e7;' + '}',
-                '.chm-cell--heat--level8 {' + '    background: #6baed6' + '}',
-                '.chm-cell--heat--level9 {' + '    background: #3182bd;' + '}',
-                '.chm-cell--heat--level10 {' + '    background: #08519c;' + '}',
-                '.chm-cell--heat--level11 {' + '    background: #08519c;' + '    color: white;' + '}'
+
+                '.chm-cell--heat--level1 {' +
+                '    background: #edf8e9;' +
+                '    color: #000000;' +
+                '}',
+                '.chm-cell--heat--level2 {' +
+                '    background: #bae4b3;' +
+                '    color: #000000;' +
+                '}',
+                '.chm-cell--heat--level3 {' +
+                '    background: #74c476;' +
+                '    color: #000000;' +
+                '}',
+                '.chm-cell--heat--level4 {' +
+                '    background: #31a354;' +
+                '    color: #ffffff;' +
+                '}',
+                '.chm-cell--heat--level5 {' +
+                '    background: #006d2c;' +
+                '    color: #ffffff;' +
+                '}',
+                '.chm-cell--heat--level6 {' +
+                '    background: #eff3ff;' +
+                '    color: #000000;' +
+                '}',
+                '.chm-cell--heat--level7 {' +
+                '    background: #bdd7e7;' +
+                '    color: #000000;' +
+                '}',
+                '.chm-cell--heat--level8 {' +
+                '    background: #6baed6;' +
+                '    color: #000000;' +
+                '}',
+                '.chm-cell--heat--level9 {' +
+                '    background: #3182bd;' +
+                '    color: #ffffff;' +
+                '}',
+                '.chm-cell--heat--level10 {' +
+                '    background: #08519c;' +
+                '    color: #ffffff;' +
+                '}',
+                '.chm-cell--heat--level11 {' +
+                '    background: #08519c;' +
+                '    color: #ffffff;' +
+                '}'
             ];
 
     //Attach styles to DOM.
-    this.style = document.createElement('style');
+    this.style = this.document.createElement('style');
     this.style.type = 'text/css';
     this.style.innerHTML = styles.join('\n');
-    document.getElementsByTagName('head')[0].appendChild(this.style);
+    this.document.getElementsByTagName('head')[0].appendChild(this.style);
 }

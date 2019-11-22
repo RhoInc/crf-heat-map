@@ -1,6 +1,7 @@
 import deriveData from './dataExport/deriveData';
 import csv from './dataExport/csv';
-import xlsx from './dataExport/xlsx';
+import exportToXLSX from './dataExport/exportToXLSX';
+import exportReportToXLSX from './dataExport/exportReportToXLSX';
 
 export default function dataExport() {
     //Export to .csv.
@@ -15,7 +16,11 @@ export default function dataExport() {
     if (this.config.exports.find(export_ => export_ === 'xlsx')) {
         this.wrap.select('.export#xlsx').on('click', () => {
             deriveData.call(this);
-            xlsx.call(this);
+            exportToXLSX.call(this);
         });
     }
+
+    this.wrap.select('.export#report').on('click', () => {
+        exportReportToXLSX.call(this);
+    });
 }

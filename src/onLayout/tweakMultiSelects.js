@@ -1,3 +1,5 @@
+import { select } from 'd3';
+
 export default function tweakMultiSelects() {
     const context = this;
 
@@ -5,8 +7,7 @@ export default function tweakMultiSelects() {
         .selectAll('.control-group')
         .filter(d => d.type === 'subsetter' && d.multiple)
         .each(function(d) {
-            d3
-                .select(this)
+            select(this)
                 .select('select')
                 .attr(
                     'size',
